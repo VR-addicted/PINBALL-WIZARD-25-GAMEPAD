@@ -1,0 +1,7 @@
+# platformio.ini filter=stripcomments  # wahrscheinlich NICHT, aber falls du willst
+# wieder alles aktivieren, nachdem github eingerichtet ist, und vor dem ersten commit!!!
+*.cpp filter=stripcomments
+*.h   filter=stripcomments
+*.php filter=stripcomments
+*.js  filter=stripcomments
+*.ino filter=stripcomments
