@@ -1,12 +1,13 @@
 
-//!   THIS IS A NIGHTLY BUILD
+//!   THIS IS A STABLE NIGHTLY BUILD
 //!   MAYBE SOME COMPONETS ARE NOT FULLY INTEGRATED
 //!   TRY IT AT YOUR OWN RISK
 
-
+// xmas
+// 2025
 
 //!   PINBALL WIZARD 
-//!   (C) 21.01.2022 - 2025 by DOMin8or aka VR-addicted aka ORGATHM TECH
+//!   (C) 21.01.2019 - 2025 by DOMin8or aka VR-addicted aka ORGATHM TECH
 //!   18.12.2025 stable release. 
 //!   In stable releases debug is "off" by default to safe cpu for max performance.
 //!   If you need debug stuff, activate it in the menu.  or install a dbg release.
@@ -16,9 +17,9 @@
 //!   
 //!   If you fork my souce, allways have an eye on that OSD benchmark. dont let it go down.
 //!   Try to optimize your code, and mine as well. :-)
-//!   Do not wonder why i use so much globals. that safes a lot of time, because api calls are expensive.
+//!   Do not wonder why i use so much globals & flags. that safes a lot of time, because api calls are expensive.
 //!   Thats the reason why i implemnted some functions and methodes straight into the code.
-//!   And thats the reason of extensivly using flags. And there is potential to set more flags
+//!   And thats the reason of extensivly using flags. And there is potential to set more flags (marked with TODO:)
 //!   Some mini UI elements are not consequently controlled by flags and they are called directly.
 //!   That was lazyness while coding and could be fixed. But only if you implement so much stuff, 
 //!   and you want to get the last nano second. The code is in most parts highly optimzed for the
@@ -272,8 +273,8 @@ int readBatteryPercent() {
   uint16_t raw = (uint16_t)adc1_get_raw(ADC1_CHANNEL_6);  // Neues ADC-Sample holen (12 Bit, 0..4095)
   buf[idx] = raw;                                         // Sample in den Ringbuffer schreiben
   if(dbglvl) {Serial.print("Read analog raw: ");Serial.println(raw);}
-  // Index weiterschalten (0..7)
-  idx++;
+  
+  idx++;                                                  // Index weiterschalten (0..7)
   if (idx >= 8) {
     idx = 0;
     filled = true;                                        // Buffer ist ab jetzt voll
@@ -717,10 +718,6 @@ volatile struct {
   }   // END of BMI160
 
 
-
-
-
-
 //Touch Sensor & display
 #define TOUCH_SDA 33                                  // I2C SDA-Pin
 #define TOUCH_SCL 32                                  // I2C SCL-Pin
@@ -735,7 +732,9 @@ volatile struct {
 #define PWM_RESOLUTION 8                              // 8-Bit-Auflösung (0-255)
 #define PWM_FREQUENCY  5000                           // Frequenz in Hz
 
-#define IO_PIN_ADC_BATTERY 34 // Cut PCB! Solder from, this pin a 100k to GND and a 56k resistor to Battery +
+#define IO_PIN_ADC_BATTERY 34                         // Cut PCB! Solder from, this pin a 100k to GND and a 56k resistor to Battery +
+
+int PWM_POWER      = 100;                             // startwert und auch zielwert global gespeichert erstes einschalten. TODO: speicherbar machen 5-255. nicht zu dunkel....
 
 // debug Benchmark variablen 
 uint32_t loopCounter       = 0;
@@ -757,8 +756,6 @@ const uint8_t ioPinSideRight  =  17 ;                 // cut pcb trace
 const uint8_t ioPinFrontLeft  =   0 ;                 // only scratch pcb trace GPIO0 shared with boot mode, easy to flash with (FRONT LEFT)
 const uint8_t ioPinFrontRight =  16 ;                 // cut pcb trace
 
-
-int PWM_POWER      = 200;    // startwert und auch zielwert global gespeichert erstes einschalten. TODO: speicherbar machen 5-255. nicht zu dunkel....
 
 
 int  gamepadXfinal             = 0;
@@ -783,7 +780,7 @@ bool isGT911Connected() {
 }
 
 
-/* global timer vars */       // tastenabfrage variablen timemarks and flipflop flags
+/* global timer vars */                     // tastenabfrage variablen timemarks and flipflop flags
 
 uint32_t milliTimeCopy           = 0;
 
@@ -796,13 +793,13 @@ int flipFlopFlagSideRight        = 0;
 uint32_t keyTimerFlagFrontLeft   = 0;       // Front Taste links
 int flipFlopFlagFrontLeft        = 0;
 
-uint32_t keyTimerFlagFrontRight  = 0;        // Plunger
+uint32_t keyTimerFlagFrontRight  = 0;       // Plunger
 int flipFlopFlagFrontRight       = 0;
 
 uint32_t keyTimerFlagTwoButton   = 0;       // spezial keys durch 2 front tasten kombo ausgelöst
 int flipFlopFlagTwoButton        = 0;
 
-uint32_t keyTimerFlagFourButton  = 0;        // spezial keys durch 4 tasten kombo ausgelöst
+uint32_t keyTimerFlagFourButton  = 0;       // spezial keys durch 4 tasten kombo ausgelöst
 int flipFlopFlagFourButtons      = 0;
 
 uint32_t keyTimerFlagTilt        = 0;       // Timer Flag, wenn sich dieser ändert in größer als aktuelle zeit, setze auch direction, dann wird "flipFlopFlagTilt" high, bis debounce zuende ist
@@ -838,14 +835,14 @@ int flipFlopFlagAngleDown        = 0;
 
 int potiEinsTimerFlag            = 0;
 
-//float accelerationTriggerG      = 1.9;     // 1.8g  G-Force value to trigger the Tilt Key  ACHTUNG, ES MUSS EINE KOMMA ZAHL SEIN. z.b. 1.8 , 2.0 oder 2.3 etc.
+//float accelerationTriggerG      = 1.9;          // 1.8g  G-Force value to trigger the Tilt Key  ACHTUNG, ES MUSS EINE KOMMA ZAHL SEIN. z.b. 1.8 , 2.0 oder 2.3 etc.
 
-int angleTrigger                = 12;        // Bei Neigung mehr als .. Grad, aktiviere Spezial tasten. Z.b. rechter joystick, d-pad
+int angleTrigger                = 12;             // Bei Neigung mehr als .. Grad, aktiviere Spezial tasten. Z.b. rechter joystick, d-pad
 
 int benchmarkTimerFlag          = 0;
 int benchmarkRoundValue         = 0;
 
-int counterKeysPressedOverall   = 1337;      // TODO: load/save to lokal storage for overall pressed and session pressed keys  
+int counterKeysPressedOverall   = 1337;           // TODO: load/save to lokal storage for overall pressed and session pressed keys  
 int counterKeysPressedToday     = 0;
 
 
@@ -1017,7 +1014,7 @@ void sendBTcommandFlipperRechts(bool inputMode){
     int8_t useMode = emulationMode;  
     if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
 
-    // if(dbgGamePad > 0) useMode = 0;  // wenn im debnug menu die zahl größer 1 ist, überschreibe pin mit zahl aus UI // debug mode um tasten durchzuprobieren
+    // if(dbgGamePad > 0) useMode = 0;  // wenn im debug menu die zahl größer 1 ist, überschreibe pin mit zahl aus UI // debug mode UM TASTEN DURCHZUPROBIEREN
     // if(dbglvl  > 0 )Serial.printf("sendBTcommandFlipperRechts(inputMode:%d) useMode:%d, dbgGamepad:%d\n",inputMode,useMode,dbgGamePad); // debug
     if(inputMode){
         switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
@@ -1121,7 +1118,7 @@ void sendBTcommandTiltLeft(bool inputMode, int analogValue){
    
         int8_t useMode = emulationMode;  
         if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
-        //if(dbglvl)Serial.printf("sendBTcommandTiltLeft(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // debug   
+        //if(dbglvl)Serial.printf("sendBTcommandTiltLeft(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values.    
         if(inputMode){
             switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
                 // case 1: gamepad->setLeftThumb(analogValue,0);   gamepadSendReportFlag   = true;  break;  // [verified] quest  gamepadSendReportFlag   = false; kann eigentlich raus
@@ -1154,7 +1151,7 @@ void sendBTcommandTiltRight(bool inputMode, int analogValue){ // nudge/side bump
     
     int8_t useMode = emulationMode;  
     if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
-    //if(dbglvl)Serial.printf("sendBTcommandTiltRight(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // debug
+    //if(dbglvl)Serial.printf("sendBTcommandTiltRight(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
     if(inputMode){
         switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
             case 1: hid->gamepad->setLeftThumb(-analogValue, hid->gamepad->ly);      gamepadSendReportFlag   = true; break;  // [verified] quest (different syntax to set x axis only!)
@@ -1187,7 +1184,7 @@ void sendBTcommandAngleTiltButtonLeft(bool inputMode, int analogValue = 0){
         
         int8_t useMode = emulationMode;  
         if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
-        //if(dbglvl  > 0 )Serial.printf("sendBTcommandAngleTiltButtonLeft(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // debug
+        //if(dbglvl  > 0 )Serial.printf("sendBTcommandAngleTiltButtonLeft(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
         
         if(inputMode){
             switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
@@ -1222,7 +1219,7 @@ void sendBTcommandAngleTiltButtonRight(bool inputMode, int analogValue = 0){
     
     int8_t useMode = emulationMode;  
     if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
-    //if(dbglvl  > 0 )Serial.printf("sendBTcommandAngleTiltButtonRight(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // debug
+    //if(dbglvl  > 0 )Serial.printf("sendBTcommandAngleTiltButtonRight(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
     if(inputMode){
         switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
             case 1: hid->gamepad->setHat(2);                          gamepadSendReportFlag   = true;  break;  // [verified] android
@@ -1255,7 +1252,7 @@ void sendBTcommandAngleTiltButtonUp(bool inputMode, int analogValue = 0){
     
     int8_t useMode = emulationMode;  
     if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
-    //if(dbglvl  > 0 )Serial.printf("sendBTcommandAngleTiltButtonUp(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // debug    
+    //if(dbglvl  > 0 )Serial.printf("sendBTcommandAngleTiltButtonUp(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values.   
     if(inputMode){
         switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
             case 1: hid->gamepad->setHat(0);                          gamepadSendReportFlag   = true;  break;  // [verified] quest
@@ -1413,8 +1410,6 @@ void setup() {
 // BBBBBB   LL        EEEEE       CC     OO   OO  MM M MM  PPPPPP  OO   OO  SSSSS    II     TT     EEEEE
 // BB   BB  LL        EE          CC   C OO   OO  MM   MM  PP      OO   OO      SS   II     TT     EE
 // BBBBBB   LLLLLLLL  EEEEEEE      CCCC   OOOOO   MM   MM  PP       OOOOO   SSSSS   IIII    TT     EEEEEEE
-//!TODO:   
-// Eigene MAC-Adresse direkt auslesen (ohne WiFi-Stack) only to see debug msg for the foot pedal espnow connection
   
   if(dbglvl){ 
             uint8_t myMAC[6];
@@ -1625,10 +1620,10 @@ void loop() {
 
     _isBleConnected = isBleConnected();
     milliTimeCopy = millis();           // to reduce traffic to the millis() function and for consistence  
-    // loopStartTime = milliTimeCopy;           // Startzeit der aktuellen Loop. loopStartTime nur für benchmark nehmen.
+    // loopStartTime = milliTimeCopy;   // Startzeit der aktuellen Loop. loopStartTime nur für benchmark nehmen.
     
     //lastLoopTime = loopStartTime - lastLoopStartTime;  // Zeit seit letzter Loop benchmark berechnen (nur für benchmark benutzen!!)
-    //lastLoopStartTime = milliTimeCopy;  // Aktuelle Startzeit für nächsten Durchlauf speichern. benchmark   
+    //lastLoopStartTime = milliTimeCopy;// Aktuelle Startzeit für nächsten Durchlauf speichern. benchmark   
     
     gamepadSendReportFlag   = false;    // damit nur ein report pro schleife gesendet wird, auch wenn mehrere änderungen auftreten
     keyboardSendReportFlag  = false;    // damit nur ein report pro schleife gesendet wird, auch wenn mehrere änderungen auftreten
@@ -1636,9 +1631,9 @@ void loop() {
 
  
 //>>>>>> time trap 20-100 ms [ UIupdate() ] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        if (UIintervalTimerFlag <= milliTimeCopy) {    // UI update Timetrap
+        if (UIintervalTimerFlag <= milliTimeCopy) {               // UI update Timetrap
         UIintervalTimerFlag  = milliTimeCopy + UIinterval;
-        ui->UIupdate(loopsPerSecond, milliTimeCopy);            // refresh actual GUI menu, with time trap
+        ui->UIupdate(loopsPerSecond, milliTimeCopy);              // refresh actual GUI menu, with time trap
 }  // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
    
 
@@ -1649,11 +1644,11 @@ void loop() {
         loopsPerSecond = loopCounter;                             // übernehme die sekündliche auszählung
         loopCounter = 0;                                          // resette zähler jede sekunde
         
-    batteryESP32Status =  readBatteryPercent();                   // gemittelten prozent wert interener 8 byte ringbuffer
+    batteryESP32Status =  readBatteryPercent();                   // gemittelten prozent wert interner 8 byte ringbuffer
     if(batteryESP32Status != batteryESP32StatusLastround)
        {
         batteryESP32StatusLastround = batteryESP32Status;
-        if( UImenu == 1 ) ui->drawBatteryLocal(batteryESP32Status);
+        if( UImenu == 1 ) ui->drawBatteryLocal(batteryESP32Status); // TODO: change to flag methode
         if (dbglvl) { Serial.print("batteryESP32Status: "); Serial.println(batteryESP32Status);}
     }
     
@@ -1688,25 +1683,25 @@ void loop() {
             if(power.left && !power.cnt_left) {
                 powerCalculatedLeft = power.left * tiltGain;              // set value, and use >0 as trigger
                 if(powerCalculatedLeft > 32767) powerCalculatedLeft = 32767; // max value for joystick
-                //if(dbglvl >4 ) Serial.printf("show calculated values. Links: %.2fg RAW=%d powerCalculatedLeft=%d\n", RAW_TO_G(power.left), power.left, powerCalculatedLeft);
+                //if(dbglvl >4 ) Serial.printf("show calculated values. Links: %.2fg RAW=%d powerCalculatedLeft=%d\n", RAW_TO_G(power.left), power.left, powerCalculatedLeft);        // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
                 tiltCounterGlob++;
-                if(UImenu == 1) ui->drawPeakMeterNudgeDirection(1, powerCalculatedLeft);  // if(!secondKeyButtonFlag) 
+                if(UImenu == 1) ui->drawPeakMeterNudgeDirection(1, powerCalculatedLeft);  // if(!secondKeyButtonFlag) // TODO: change to flag methode
                 power.left = 0;  // reset parallel task variable
             }
             if(power.right && !power.cnt_right) {
                 powerCalculatedRight = power.right * tiltGain;            // set value, and use >0 as trigger
                 if(powerCalculatedRight > 32767) powerCalculatedRight = 32767; // max value for joystick
-                //if(dbglvl >4 ) Serial.printf("show calculated values. Rechts: %.2fg RAW=%d, powerCalculatedRight=%d\n", RAW_TO_G(power.right), power.right, powerCalculatedRight);
+                //if(dbglvl >4 ) Serial.printf("show calculated values. Rechts: %.2fg RAW=%d, powerCalculatedRight=%d\n", RAW_TO_G(power.right), power.right, powerCalculatedRight);   // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
                 tiltCounterGlob++;
-                if(UImenu == 1) ui->drawPeakMeterNudgeDirection(2, powerCalculatedRight);  // power.right *tiltGain
+                if(UImenu == 1) ui->drawPeakMeterNudgeDirection(2, powerCalculatedRight);  // power.right *tiltGain  // TODO: change to flag methode
                 power.right = 0;// reset parallel task variable
             }
             if(power.up && !power.cnt_up) {
                 powerCalculatedUp = power.up * tiltGain;                   // set value, and use >0 as trigger
                 if(powerCalculatedUp > 32767) powerCalculatedUp = 32767; // max value for joystick
-                //if(dbglvl >4 ) Serial.printf("show calculated values. Hoch: %.2fg RAW=%d, powerCalculatedUp=%d\n", RAW_TO_G(power.up), power.up, powerCalculatedUp);
+                //if(dbglvl >4 ) Serial.printf("show calculated values. Hoch: %.2fg RAW=%d, powerCalculatedUp=%d\n", RAW_TO_G(power.up), power.up, powerCalculatedUp);                 // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
                 tiltCounterGlob++;
-                if(UImenu == 1) ui->drawPeakMeterNudgeDirection(3, powerCalculatedUp);
+                if(UImenu == 1) ui->drawPeakMeterNudgeDirection(3, powerCalculatedUp);    // TODO: change to flag methode
                 power.up = 0;// reset parallel task variable
                 }
 
@@ -1728,17 +1723,17 @@ if(release_sendBTcommandTiltLeft || release_sendBTcommandTiltRight || release_se
     if(release_sendBTcommandTiltLeft){
         release_sendBTcommandTiltLeft=0;
         sendBTcommandTiltLeft(0, 0);     // reset X
-        //if (dbglvl > 0) {Serial.printf("Set BT release_sendBTcommandTiltLeft\n");} 
+        //if (dbglvl > 0) {Serial.printf("Set BT release_sendBTcommandTiltLeft\n");}  // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
         }
     if(release_sendBTcommandTiltRight){
         release_sendBTcommandTiltRight=0;
         sendBTcommandTiltRight(0, 0);    // reset X
-        //if (dbglvl > 0) {Serial.printf("Set BT release_sendBTcommandTiltRight\n");} 
+        //if (dbglvl > 0) {Serial.printf("Set BT release_sendBTcommandTiltRight\n");} // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
     }
     if(release_sendBTcommandTiltUp){     // reset Y
         release_sendBTcommandTiltUp=0;
         sendBTcommandTiltFront(0, 0);
-        //if (dbglvl > 0) {Serial.printf("Set BT release_sendBTcommandTiltUp\n");} 
+        //if (dbglvl > 0) {Serial.printf("Set BT release_sendBTcommandTiltUp\n");}     // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
         }
     }
 
@@ -1820,8 +1815,8 @@ if(secondKeyButtonFlag)
         if(keyTimerFlagAngleUp > milliTimeCopy){  // wenn größer, muss timer gesetzt sein und taste aktiv 
             
             if (flipFlopFlagAngleUp == 0){  
-                                                sendBTcommandAngleTiltButtonDown(1, 32767); // TODO: roll * 100
-                                                ui->drawVirtualTiltingJoystickKeys(1,1);
+                                                sendBTcommandAngleTiltButtonDown(1, 32767); // TODO: roll * 100 falls es sinn macht diese daten analog zu nutzen. (movement z.b.)
+                                                ui->drawVirtualTiltingJoystickKeys(1,1);    // TODO: change to flag methode
                                                 flipFlopFlagAngleUp = 1;
                                             }
             }
@@ -1829,7 +1824,7 @@ if(secondKeyButtonFlag)
                 {   // zeit ist abgelaufen, setze einmal auf weiß und auf release
                 if (flipFlopFlagAngleUp == 1){   
                                                 sendBTcommandAngleTiltButtonDown(0);
-                                                ui->drawVirtualTiltingJoystickKeys(1,0);
+                                                ui->drawVirtualTiltingJoystickKeys(1,0);    // TODO: change to flag methode
                                                 flipFlopFlagAngleUp = 0;
                                                 }
             }
@@ -1839,8 +1834,8 @@ if(secondKeyButtonFlag)
         if(keyTimerFlagAngleDown > milliTimeCopy){  // wenn größer, muss timer gesetzt sein und taste aktiv 
         
                 if (flipFlopFlagAngleDown == 0){  
-                                                sendBTcommandAngleTiltButtonUp(1, 32767); // TODO: roll * 100 invertieren? analog joystick to 2/3 left
-                                                ui->drawVirtualTiltingJoystickKeys(2,1);                                            
+                                                sendBTcommandAngleTiltButtonUp(1, 32767);   // TODO: roll * 100 invertieren? analog joystick to 2/3 left
+                                                ui->drawVirtualTiltingJoystickKeys(2,1);    // TODO: change to flag methode                                          
                                                 flipFlopFlagAngleDown = 1;
                                                 }
             }
@@ -1848,7 +1843,7 @@ if(secondKeyButtonFlag)
                 {   // zeit ist abgelaufen, setze einmal auf weiß und auf release
                 if (flipFlopFlagAngleDown == 1){   
                                                 sendBTcommandAngleTiltButtonUp(0);                                
-                                                ui->drawVirtualTiltingJoystickKeys(2,0);
+                                                ui->drawVirtualTiltingJoystickKeys(2,0);    // TODO: change to flag methode
                                                 flipFlopFlagAngleDown = 0;
                                                 }
         }
@@ -1859,7 +1854,7 @@ if(secondKeyButtonFlag)
             
             if (flipFlopFlagAngleLeft == 0){  
                                             sendBTcommandAngleTiltButtonRight(1, 32767);                            
-                                            ui->drawVirtualTiltingJoystickKeys(3,1);
+                                            ui->drawVirtualTiltingJoystickKeys(3,1);        // TODO: change to flag methode
                                             flipFlopFlagAngleLeft = 1;
                                             }
             }
@@ -1867,7 +1862,7 @@ if(secondKeyButtonFlag)
             {   // zeit ist abgelaufen, setze einmal auf weiß und auf release
             if (flipFlopFlagAngleLeft == 1){   
                                             sendBTcommandAngleTiltButtonRight(0);                                
-                                            ui->drawVirtualTiltingJoystickKeys(3,0);
+                                            ui->drawVirtualTiltingJoystickKeys(3,0);        // TODO: change to flag methode
                                             flipFlopFlagAngleLeft = 0;
                                             }
         }
@@ -1878,7 +1873,7 @@ if(secondKeyButtonFlag)
             
             if (flipFlopFlagAngleRight == 0){  
                                                 sendBTcommandAngleTiltButtonLeft(1, 32767);
-                                                ui->drawVirtualTiltingJoystickKeys(4,1);
+                                                ui->drawVirtualTiltingJoystickKeys(4,1);    // TODO: change to flag methode
                                                 flipFlopFlagAngleRight = 1;
                                             }
             }
@@ -1886,7 +1881,7 @@ if(secondKeyButtonFlag)
                 {   // zeit ist abgelaufen, setze einmal auf weiß und auf release
                 if (flipFlopFlagAngleRight == 1){   
                                                 sendBTcommandAngleTiltButtonLeft(0); 
-                                                ui->drawVirtualTiltingJoystickKeys(4,0);
+                                                ui->drawVirtualTiltingJoystickKeys(4,0);   // TODO: change to flag methode
                                                 flipFlopFlagAngleRight = 0;
                                                 }
         }
@@ -1914,8 +1909,8 @@ if(secondKeySetLaterRelease && secondKeySetLaterReleaseTimerFlag < milliTimeCopy
 if(keyTimerFlagFrontLeft > milliTimeCopy){ // pressed  // wenn größer, muss timer gesetzt sein und taste aktiv 
     
     if (flipFlopFlagFrontLeft == 0){    // run only once by flip flop flag
-                                        if(UImenu == 1) {ui->drawPhysicalVirtualKeys(2,1);    
-                                                         ui->drawPhysicalVirtualKeys(6,0);}
+                                        if(UImenu == 1) {ui->drawPhysicalVirtualKeys(2,1);                 // here is okay, no flags, its not time intense
+                                                         ui->drawPhysicalVirtualKeys(6,0);}                // here is okay, no flags, its not time intense
                                         // if(dbglvl>1)Serial.println("button front left triggered set time stamp");
                                         secondKeyButtonFlag = 0;  
                                         secondKeyButtonTimeMark = milliTimeCopy;                           // setze feste zeitmarke des erstcontact einmalig, um später die differenz zur aktuellen zeit auswerten zu können
@@ -1938,13 +1933,13 @@ else
                                     hid->gamepad->setHat(8);                                               // release und lösche alle möglichen virtual keys um den kreis nächste code zeile
                                     gamepadSendReportFlag = 1;  
 
-                                    if(UImenu == 1) {ui->drawPhysicalVirtualKeys(6,0); 
-                                                     ui->drawPhysicalVirtualKeys(2,0);
-                                                     ui->fillSpriteBackground(); 
-                                                     ui->drawVirtualTiltingJoystickKeys(1,0);  // clear UI
-                                                     ui->drawVirtualTiltingJoystickKeys(2,0);
-                                                     ui->drawVirtualTiltingJoystickKeys(3,0);
-                                                     ui->drawVirtualTiltingJoystickKeys(4,0);
+                                    if(UImenu == 1) {ui->drawPhysicalVirtualKeys(6,0);                     // here is okay, no flags, its not time intense 
+                                                     ui->drawPhysicalVirtualKeys(2,0);                     // here is okay, no flags, its not time intense 
+                                                     ui->fillSpriteBackground();                           // here is okay, no flags, its not time intense 
+                                                     ui->drawVirtualTiltingJoystickKeys(1,0);  // clear UI // here is okay, no flags, its not time intense 
+                                                     ui->drawVirtualTiltingJoystickKeys(2,0);              // here is okay, no flags, its not time intense 
+                                                     ui->drawVirtualTiltingJoystickKeys(3,0);              // here is okay, no flags, its not time intense 
+                                                     ui->drawVirtualTiltingJoystickKeys(4,0);              // here is okay, no flags, its not time intense 
                                                     }
                                     flipFlopFlagFrontLeft = 0;
                                      
@@ -1954,7 +1949,7 @@ else
 // Enable [virtual] [second key] , if time is over 500ms (secondKeyActivationTime) and first key is pressed. like a shift key on a keyboard
 if( milliTimeCopy - secondKeyButtonTimeMark >= secondKeyActivationTime && flipFlopFlagFrontLeft == 1){
     secondKeyButtonFlag = 1;
-    if(UImenu == 1) ui->drawPhysicalVirtualKeys(6,1);
+    if(UImenu == 1) ui->drawPhysicalVirtualKeys(6,1);                                                      // here is okay, no flags, its not time intense
     //if(dbglvl)Serial.println("SHIFT for second keys active");  
     }
  else 
@@ -1982,12 +1977,12 @@ if(keyTimerFlagFrontRight > milliTimeCopy){                                     
                                         keyAbenchmarkTimeMark = millis();                  // merke time stamp beim drücken
                                         sendBTcommandPlungerRechts(1); 
                                         }                        
-                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(1,1);
+                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(1,1);  // TODO: change to flag methode
                                         releaseTrickFlagFrontR = 0;                        // stellt 100% zuverlässig ausschließlich den korrekten button nach benutzung zurück
                                     }
                                     else{                                                  // virtual "second" key front right set
                                         sendBTcommandPlungerRechtsSecondKey(1);                        
-                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(5,1);
+                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(5,1);  // TODO: change to flag methode
                                         releaseTrickFlagFrontR = 1;                        // stellt 100% zuverlässig ausschließlich den korrekten button nach benutzung zurück
                                     }
                                     flipFlopFlagFrontRight = 1;
@@ -2002,11 +1997,11 @@ else
                                         sendBTcommandPlungerRechts(0); 
                                         }
                                         if(CheatLockRecordMode == 2) sendTimedPlungerButtonA = true;   // set virtual key "skillshot" with timed release                
-                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(1,0);
+                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(1,0);  // TODO: change to flag methode
                                     }
                                     else{                                                  // virtual "second" key front right release
                                         sendBTcommandPlungerRechtsSecondKey(0);                       
-                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(5,0);
+                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(5,0);  // TODO: change to flag methode
                                     }
                                     flipFlopFlagFrontRight = 0;
     }
@@ -2030,12 +2025,12 @@ if(keyTimerFlagSideLeft > milliTimeCopy){                                       
     if (flipFlopFlagSideLeft == 0){    
                                     if(!secondKeyButtonFlag){                              // Standart Key set
                                         sendBTcommandFlipperLinks(1); 
-                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(7,0);
+                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(7,0);  // TODO: change to flag methode
                                         releaseTrickFlagSideL = 0;                         // stellt 100% zuverlässig ausschließlich den korrekten button nach benutzung zurück
                                     }
                                     else{                                                  // virtual "second" key front left set
                                         sendBTcommandFlipperLinksSecondKey(1); 
-                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(3,1);
+                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(3,1);  // TODO: change to flag methode
                                         releaseTrickFlagSideL = 1;                         // stellt 100% zuverlässig ausschließlich den korrekten button nach benutzung zurück
                                     }
                                     ButtonFlipperLeftCounterToday++;
@@ -2048,11 +2043,11 @@ else
     if (flipFlopFlagSideLeft == 1){   
                                     if(!releaseTrickFlagSideL){                            // Standart Key release  // 
                                         sendBTcommandFlipperLinks(0); 
-                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(7,1);
+                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(7,1);  // TODO: change to flag methode
                                     }
                                     else{                                                  // virtual "second" key front right release
                                         sendBTcommandFlipperLinksSecondKey(0);
-                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(3,0);
+                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(3,0);  // TODO: change to flag methode
                                     }
                                     flipFlopFlagSideLeft = 0;
     }
@@ -2067,12 +2062,12 @@ if(keyTimerFlagSideRight > milliTimeCopy){                                      
     if (flipFlopFlagSideRight == 0){  
                                     if(!secondKeyButtonFlag){                              // Standart Key set
                                         sendBTcommandFlipperRechts(1);                     // bleGamepad.press(BUTTON_8);
-                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(8,0);  // draw red flipper
+                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(8,0);  // draw red flipper // TODO: change to flag methode
                                         releaseTrickFlagSideR = 0;                         // stellt 100% zuverlässig ausschließlich den korrekten button nach benutzung zurück
                                     }
                                     else{                                                  // virtual "second" key front right set
                                         sendBTcommandFlipperRechtsSecondKey(1);
-                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(4,1);
+                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(4,1);  // TODO: change to flag methode
                                         releaseTrickFlagSideR = 1;                         // stellt 100% zuverlässig ausschließlich den korrekten button nach benutzung zurück
                                     }
                                     ButtonFlipperRightCounterToday++;
@@ -2085,11 +2080,11 @@ else
     if (flipFlopFlagSideRight == 1){   
                                     if(!releaseTrickFlagSideR){                             // Standart Key release  // 
                                        sendBTcommandFlipperRechts(0); 
-                                       if(UImenu == 1) ui->drawPhysicalVirtualKeys(8,1);    // draw white flipper
+                                       if(UImenu == 1) ui->drawPhysicalVirtualKeys(8,1);    // draw white flipper  // TODO: change to flag methode
                                     }
                                     else{                                                   // virtual "second" key front right release
                                        sendBTcommandFlipperRechtsSecondKey(0);
-                                       if(UImenu == 1) ui->drawPhysicalVirtualKeys(4,0);
+                                       if(UImenu == 1) ui->drawPhysicalVirtualKeys(4,0);    // TODO: change to flag methode
                                     }
                                     flipFlopFlagSideRight = 0;
                                     }
@@ -2104,9 +2099,9 @@ if(sendTimedPlungerButtonA && sendTimedPlungerButtonATimerReleaseFlag == 0){    
 
 ms = millis();if(dbglvl) Serial.printf("[%lu.%03lu] skill shot virtual key [] triggered. set virtual key time flag\n", ms/1000,ms%1000);  // debug 
    sendBTcommandPlungerRechts(1);    
-   if(UImenu==4)ui->drawSkillShotButton(2);        // zeichne roten aktivitäts rahmen
-   if(UImenu==1)ui->drawPhysicalVirtualKeys(1,2); 
-   // if(dbglvl > 1)Serial.println("sendTimedPlungerButtonA High Timestamp: ");
+   if(UImenu==4)ui->drawSkillShotButton(2);        // zeichne roten aktivitäts rahmen    // not time intense. is okay. 
+   if(UImenu==1)ui->drawPhysicalVirtualKeys(1,2);                                        // not time intense. is okay. 
+   // if(dbglvl > 1)Serial.println("sendTimedPlungerButtonA High Timestamp: ");          // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
    if(dbglvl){ ms = millis();Serial.printf("[%lu.%03lu]  skillshot time trap sendTimedPlungerButtonA set, sendBTcommandPlungerRechts(1)\n", ms/1000,ms%1000);}  // debug   
 sendTimedPlungerButtonATimerReleaseFlag = ms + skillShotMillisSend; // neues future flag time basiert setzen
 }
@@ -2117,8 +2112,8 @@ if(sendTimedPlungerButtonATimerReleaseFlag != 0 && sendTimedPlungerButtonATimerR
    ms = millis();
    if(dbglvl) Serial.printf("[%lu.%03lu] skill shot release time trap sendTimedPlungerButtonA vor GFX darstellung\n",ms/1000,ms%1000);
    sendBTcommandPlungerRechts(0);
-   if(UImenu==4)ui->drawSkillShotButton(3);       // lösche/überzeichne roten aktivitäts rahmen
-   if(UImenu==1)ui->drawPhysicalVirtualKeys(1,0);
+   if(UImenu==4)ui->drawSkillShotButton(3);       // lösche/überzeichne roten aktivitäts rahmen  // not time intense. is okay.
+   if(UImenu==1)ui->drawPhysicalVirtualKeys(1,0);                                                // not time intense. is okay.
    sendTimedPlungerButtonA = false;  //  flag löschen
    if(dbglvl) {ms = millis(); Serial.printf("[%lu.%03lu] skill shot release time trap sendTimedPlungerButtonA release, sendBTcommandPlungerRechts(0)\n", ms/1000,ms%1000);}  // debug 
 }
@@ -2127,8 +2122,8 @@ if(sendTimedPlungerButtonATimerReleaseFlag != 0 && sendTimedPlungerButtonATimerR
 // sende report, falls taste oder gamepad gedrückt wurde und gerät verfügbar.
 if(gamepadSendReportFlag){
    gamepadSendReportFlag = false;
-   if(dbglvl) Serial.printf("[%lu.%03lu] milliTimeCopy (round start time)\n", milliTimeCopy/1000,milliTimeCopy%1000); // debug
-//ms = millis();if(dbglvl) Serial.printf("[%lu.%03lu] realtime millis() vor gamepad report senden\n", ms/1000,ms%1000);  // debug    
+   if(dbglvl) Serial.printf("[%lu.%03lu] milliTimeCopy (round start time)\n", milliTimeCopy/1000,milliTimeCopy%1000);        // debug
+//ms = millis();if(dbglvl) Serial.printf("[%lu.%03lu] realtime millis() vor gamepad report senden\n", ms/1000,ms%1000);      // debug    
    hid->gamepad->sendGamepadReport();     // ? SEND: manueller Report
    sleepTimerMillis  = milliTimeCopy + sleepTimer  * 60000; // verlängere sleeptimer um x minuten bei tastendruck am pad. bei so vielen sekunden zeitunkritisch. hier reicht millitimecopy um cpu zu schonen
    if(dbglvl){ ms = millis();Serial.printf("[%lu.%03lu] realtime millis() nach gamepad report senden\n", ms/1000,ms%1000); } // debug 
@@ -2136,16 +2131,12 @@ if(gamepadSendReportFlag){
 
 if(keyboardSendReportFlag) {
    keyboardSendReportFlag = false; 
-   if(dbglvl) Serial.printf("[%lu.%03lu] milliTimeCopy (round start time)\n", milliTimeCopy/1000,milliTimeCopy%1000);  // debug
-//ms = millis();if(dbglvl) Serial.printf("[%lu.%03lu] realtime millis() vor keyboard report senden\n", ms/1000,ms%1000);  // debug                    
+   if(dbglvl) Serial.printf("[%lu.%03lu] milliTimeCopy (round start time)\n", milliTimeCopy/1000,milliTimeCopy%1000);         // debug
+//ms = millis();if(dbglvl) Serial.printf("[%lu.%03lu] realtime millis() vor keyboard report senden\n", ms/1000,ms%1000);      // debug                    
    hid->keyboard->sendKeyReport();        // ? SEND: manueller Report
    sleepTimerMillis  = milliTimeCopy + sleepTimer  * 60000; // verlängere sleeptimer um x minuten bei tastendruck am keyboard
    if(dbglvl){ms = millis(); Serial.printf("[%lu.%03lu] realtime millis() nach keyboard report senden\n", ms/1000,ms%1000); } // debug 
 }
-
-// test 
-
-
 
 
 
@@ -2158,7 +2149,7 @@ if(keyboardSendReportFlag) {
 //
 // GAME OVER? NEVER EVER! :-)
 // HAPPY PINBALL and PEACE   
-// DOMin8or 2025 
+// DOMin8or aka Vr-addicted 2025 
 
 // What comes next?
 // take a look into the todos
