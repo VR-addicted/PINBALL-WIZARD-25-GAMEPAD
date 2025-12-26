@@ -55,7 +55,7 @@ In long pressed mode (aka shift mode) we can take nudges or tilting the controll
 You can flash, config and debug the device with an usb cable and your browser. 
 (Testet with Edge/Chrome. Check your browser for USB support enabled.)
 Dont mind this wired URL. Its free webspace for developers.
-https://68f04208780f46090cc97d76--lively-trifle-02f390.netlify.app/
+https://pinball-wizard-25.netlify.app/
 Don`t install nightly builds if you are not envolved or instructed. 
 Nightlys are realtime snapshots with bugs and/or unfinished functions!
 
