@@ -1,6 +1,6 @@
 # PINBALL-WIZARD-25-GAMEPAD
 <div>
-<img src="Pictures\pbwz25-WIP-12-2025.jpg" width="600">
+<img src="Pictures\pbwz25-WIP-12-2025.jpg" width="800">
 </div>
 
 
@@ -10,8 +10,34 @@ Based on ESP32 "CHEAP YELLOW PCB" from China/Amazon (20€-30€).
 + GT911 Touch Controller 
 + BMI160 Acc Gyro Sensor
 + xxxxx Battery Controller
-+ Sanwa Switches (or comparable clones)
++ Sanwa or Qanba Switches (or size comparable clones)
 + 1000 mAh Rechargeable Battery
++ Bluetooth BLE
++ Gamepad emulation
++ Keyboard at same time. (Hybrid protocol)
++ 1/300000 of a second button press reaction time 
++ Wireless foot pedal for arcade mode "X" button. works.
++ Auto Power off sleep timer to save battery
++ Display light dimmer timer to save battery
++ Adjustable gyroscope for nudging
++ Different key map profiles for different games
++ Speed optimized code
++ Cheat mode
++ Working Devices: Meta Quest, Android Smart Phones
++ Temporarely not working connecting to PC. (it worked in the past, but i missconfigured something)
+
++ Optional RGB Led Qanba keys support in future.
++ Optional Docking Station in progress
++ Optional Battery Meter (Voltage divider)
++ Optional "X" Button next to the flipper button.
+
+
+Future Ideas without any warranty:
++ Animated solenoid driven flippers and freeplay "knock" (depends on the game and platform)
++ Rumble  (depends on the game and platform)
++ Powerbank inside to power the RGB leds and the Meta Quest
++ UART over bluetooth to configure it via APK tool on the Quest
+
 
 You can find All 3d CAD files and the BOM on Printables.
 
