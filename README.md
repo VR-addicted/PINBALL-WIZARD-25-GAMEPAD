@@ -27,7 +27,7 @@ Based on ESP32 "CHEAP YELLOW PCB" from China/Amazon (20€-30€).
 + Ergonomic multi purpose design. On your legs, your table, on a docking station and/or on a stand.
 + Adjustable Flipper buttons positions for your needings
 + Mainframe from 50 to 60 cm easy extendable
-+ Button press logger / counter, for statistics or button life cycle logging.
++ Flipper-Button press logger / counter for your statistics or button life cycle logging.
 
 
 Optional:
@@ -67,7 +67,9 @@ Don`t install nightly builds if you are not envolved or instructed.
 Nightlys are realtime snapshots with bugs and/or unfinished functions!
 
 
-If you beginn the project, feel free to get in contact with me on meta, discord or here.
-discord: vraddicted, Meta: VR-addicted
+If you beginn the project, feel free to get in contact with me on printables, meta, discord or here.
+You can ask me any question about this project. You are wellcome.
+Discord: vraddicted
+Meta: VR-addicted
 
 Stay stable, and the force will be with you. 
