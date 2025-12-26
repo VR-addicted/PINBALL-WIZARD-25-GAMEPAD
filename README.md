@@ -32,7 +32,7 @@ Based on ESP32 "CHEAP YELLOW PCB" from China/Amazon (20€-30€).
 
 Optional:
 + Optional RGB Led Qanba keys support in future. work in progress
-+ Optional Docking Station in progress. work in progress
++ Optional Docking Station. work in progress
 + Optional Battery Meter (Voltage divider). works
 + Optional "X" Button next to the flipper button. work in progress
 
@@ -71,5 +71,9 @@ If you beginn the project, feel free to get in contact with me on printables, me
 You can ask me any question about this project. You are wellcome.
 Discord: vraddicted
 Meta: VR-addicted
+
+HINT, small manual: If the device goes to sleep, or you powered it off via menu, press the left front button to re-start the device. I write a manual, if some people are interested in the project.
+And press the bluetooth icon in the BT menu, to be ready to connect to a device.
+
 
 Stay stable, and the force will be with you. 
