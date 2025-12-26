@@ -38,7 +38,7 @@ Optional:
 + Optional 2 addon batterys 18650. work in progress
 
 Future Ideas without any warranty:
-+ Mechanicaliy animated solenoid driven flippers and freeplay "knock" (depends on the game and platform)
++ Mechanicaly animated solenoid driven flippers and freeplay "knock" (depends on the game and platform)
 + Rumble  (depends on the game and platform)
 + Powerbank inside, to power the RGB button leds and the Meta Quest. work in progress
 + UART over bluetooth to configure it via APK tool on the Quest
@@ -77,3 +77,14 @@ And press the bluetooth icon in the BT menu, to be ready to connect to a device.
 
 
 Stay stable, and the force will be with you. 
+
+More project links:
+
+https://github.com/VR-addicted/PINBALL-WIZARD-25-WEB-TOOL
+https://github.com/VR-addicted/PINBALL-WIZARD-25-PEDAL
+
+CAD:
+
+https://github.com/VR-addicted/PINBALL-WIZARD-25-CAD
+https://www.thingiverse.com/thing:7241122
+https://www.printables.com/model/1516410-pinball-wizard-25-bluetooth-controller-with-gyro-t
