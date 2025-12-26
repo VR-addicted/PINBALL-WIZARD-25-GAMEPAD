@@ -35,7 +35,7 @@ Optional:
 + Optional Docking Station. work in progress
 + Optional Battery Meter (Voltage divider). works
 + Optional "X" Button next to the flipper button. work in progress
-
++ Optional 2 addon batterys 18650. work in progress
 
 Future Ideas without any warranty:
 + Mechanicaliy animated solenoid driven flippers and freeplay "knock" (depends on the game and platform)
