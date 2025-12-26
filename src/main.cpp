@@ -27,7 +27,10 @@
 //!   And some other compiler performance optimizations.
 //!   Shrinked or removed standart libraries to have maximum controll over the code.  
 
-
+//!   This Bluetooth Gamepad is a hybrid gamepad and keyboard HID controller at the same time.
+//!   Maybe UART over bluetooth is an option for the future, as well.
+//!   That could opens the door to many config helpers in VR as an app. and for rumble, free game solenoid click, and much more. 
+//!   In the future, we will see what the git hub and the pinball coder community will implement, or not. :-)
 
 
 #ifndef BUILD_NUMBER                      // sicherung falls in der platformIO das python skript die .build_number datei nicht lesen kann
@@ -639,7 +642,6 @@ int tiltLimiter   = 10;                                      // Limits nudge pow
 #define GYRO_TO_DPS(raw) ((float)raw * 0.0076293945f)        // 250.0f / 32768.0f
 
 
-// Globale Variablen
 volatile struct {  
     // Accel (für Schlagerkennung)
     int16_t left, right, up;
@@ -861,7 +863,7 @@ void sendBTcommandPlungerLinks(bool inputMode){   // diese taste zuerst abfragen
             case 4: hid->gamepad->press(BUTTON_1);           gamepadSendReportFlag   = true;  break;  // iphone
             case 5: hid->keyboard->keyPress(KEY_I);          keyboardSendReportFlag  = true;  break;  // switch
             case 6: hid->gamepad->press(BUTTON_2);           gamepadSendReportFlag   = true;  break;  // [verified] quest star wars pinball different keymap
-           default: break;                                             // wird aufgerufen falls kein case getroffen wurde
+           default: break;                                                                            // wird aufgerufen falls kein case getroffen wurde
         }
     }
     else{
@@ -872,7 +874,7 @@ void sendBTcommandPlungerLinks(bool inputMode){   // diese taste zuerst abfragen
             case 4: hid->gamepad->release(BUTTON_1);         gamepadSendReportFlag   = true;  break;  // iphone
             case 5: hid->keyboard->keyRelease(KEY_I);        keyboardSendReportFlag  = true;  break;  // pinballFX 2025
             case 6: hid->gamepad->release(BUTTON_2);         gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
-           default: break;                                             // wird aufgerufen falls kein case getroffen wurde
+           default: break;                                                                            // wird aufgerufen falls kein case getroffen wurde
         }
     }
 }
@@ -893,7 +895,7 @@ void sendBTcommandPlungerRechts(bool inputMode){
                     case 4: hid->gamepad->press(BUTTON_1);    gamepadSendReportFlag   = true;  break;  // iphone
                     case 5: hid->keyboard->keyPress(KEY_8);   keyboardSendReportFlag  = true;  break;  // switch
                     case 6: hid->gamepad->press(BUTTON_1);    gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
-                   default: break;                                     // wird aufgerufen falls kein case getroffen wurde
+                   default: break;                                                                     // wird aufgerufen falls kein case getroffen wurde
                 }
             }
         else{
@@ -905,7 +907,7 @@ void sendBTcommandPlungerRechts(bool inputMode){
                     case 4: hid->gamepad->release(BUTTON_1);  gamepadSendReportFlag   = true;  break;  // iphone
                     case 5: hid->keyboard->keyRelease(KEY_8); keyboardSendReportFlag  = true;  break;  // keyboard for pinballFX
                     case 6: hid->gamepad->release(BUTTON_1);  gamepadSendReportFlag   = true;  break;  // [release] quest star wars pinball different keymap
-                   default: break;                                     // wird aufgerufen falls kein case getroffen wurde
+                   default: break;                                                                     // wird aufgerufen falls kein case getroffen wurde
                 }
             }
 }
@@ -926,7 +928,7 @@ void sendBTcommandPlungerRechtsSecondKey(bool inputMode){
                     case 4: hid->gamepad->press(BUTTON_1);     gamepadSendReportFlag   = true;  break;  // iphone
                     case 5: hid->gamepad->press(BUTTON_2);     gamepadSendReportFlag   = true;  break;  // switch
                     case 6: hid->gamepad->press(BUTTON_11);    gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap oder im game key bindings ändern, wird dann HAT pressed
-                   default: break;                                     // wird aufgerufen falls kein case getroffen wurde
+                   default: break;                                                                      // wird aufgerufen falls kein case getroffen wurde
                 }
             }
         else{
@@ -937,7 +939,7 @@ void sendBTcommandPlungerRechtsSecondKey(bool inputMode){
                     case 4: hid->gamepad->release(BUTTON_1);   gamepadSendReportFlag   = true;  break;  // iphone
                     case 5: hid->gamepad->release(BUTTON_2);   gamepadSendReportFlag   = true;  break;  // switch
                     case 6: hid->gamepad->release(BUTTON_11);  gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
-                   default: break;                                     // wird aufgerufen falls kein case getroffen wurde
+                   default: break;                                                                      // wird aufgerufen falls kein case getroffen wurde
                 }
             }
 }
@@ -958,7 +960,7 @@ void sendBTcommandFlipperLinks(bool inputMode){
             case 4: hid->gamepad->press(BUTTON_7);       gamepadSendReportFlag   = true;  break;  // iphone
             case 5: hid->keyboard->keyPress(KEY_U);      keyboardSendReportFlag  = true;  break;  // keyboard "A"
             case 6: hid->gamepad->press(BUTTON_7);       gamepadSendReportFlag   = true;  break;  // 9 quest star wars pinball different keymap [verified]
-           default: break;                                       // wird aufgerufen falls kein case getroffen wurde
+           default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
         }
     }
     else{           // 0 release
@@ -969,7 +971,7 @@ void sendBTcommandFlipperLinks(bool inputMode){
             case 4: hid->gamepad->release(BUTTON_7);     gamepadSendReportFlag   = true;  break;  // iphone
             case 5: hid->keyboard->keyRelease(KEY_U);    keyboardSendReportFlag  = true;  break;  // switch
             case 6: hid->gamepad->release(BUTTON_7);     gamepadSendReportFlag   = true;  break;  // 9 quest star wars pinball different keymap
-           default: break;                                       // wird aufgerufen falls kein case getroffen wurde
+           default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
         }
     }
 }
@@ -990,7 +992,7 @@ void sendBTcommandFlipperLinksSecondKey(bool inputMode){
             case 4: hid->gamepad->press(BUTTON_7);        gamepadSendReportFlag   = true;  break;  // iphone
             case 5: hid->gamepad->press(BUTTON_7);        gamepadSendReportFlag   = true;  break;  // switch
             case 6: hid->gamepad->press(BUTTON_15);       gamepadSendReportFlag   = true;  break;  // [BUTTON_15]+[R-HAT-PRESS][recenter view] (muss in starwars pinball auf quest in optionen auf HAT umgestellt werden!)
-           default: break;                                         // wird aufgerufen falls kein case getroffen wurde
+           default: break;                                                                         // wird aufgerufen falls kein case getroffen wurde
         }
     }
     else{           // 0 release
@@ -1001,7 +1003,7 @@ void sendBTcommandFlipperLinksSecondKey(bool inputMode){
             case 4: hid->gamepad->release(BUTTON_7);      gamepadSendReportFlag   = true;  break;  // iphone
             case 5: hid->gamepad->release(BUTTON_7);      gamepadSendReportFlag   = true;  break;  // switch
             case 6: hid->gamepad->release(BUTTON_15);     gamepadSendReportFlag   = true;  break;  // [BUTTON_15]+[R-HAT-release][quest star wars pinball different keymap
-           default: break;                                         // wird aufgerufen falls kein case getroffen wurde
+           default: break;                                                                         // wird aufgerufen falls kein case getroffen wurde
         }
     }
 }
@@ -1023,9 +1025,9 @@ void sendBTcommandFlipperRechts(bool inputMode){
             case 2: hid->gamepad->press(BUTTON_8);        gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->press(BUTTON_8);        gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->press(BUTTON_8);        gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->keyboard->keyPress(KEY_6);       keyboardSendReportFlag  = true;  break;   // keyboard for pinballFX
+            case 5: hid->keyboard->keyPress(KEY_6);       keyboardSendReportFlag  = true;  break;  // keyboard for pinballFX
             case 6: hid->gamepad->press(BUTTON_8);        gamepadSendReportFlag   = true;  break;  // [8][10] [verified] quest star wars pinball different keymap
-           default: break;                                        // wird aufgerufen falls kein case getroffen wurde 
+           default: break;                                                                         // wird aufgerufen falls kein case getroffen wurde 
         }
     }
     else{
@@ -1037,7 +1039,7 @@ void sendBTcommandFlipperRechts(bool inputMode){
             case 4: hid->gamepad->release(BUTTON_8);      gamepadSendReportFlag   = true;  break;  // iphone
             case 5: hid->keyboard->keyRelease(KEY_6);     keyboardSendReportFlag  = true;  break;  // keyboard for pinballFX
             case 6: hid->gamepad->release(BUTTON_8);      gamepadSendReportFlag   = true;  break;  // [8][10] [release]] star wars pinball different keymap
-           default: break;                                        // wird aufgerufen falls kein case getroffen wurde
+           default: break;                                                                         // wird aufgerufen falls kein case getroffen wurde
         }
     }
 }
@@ -1052,14 +1054,14 @@ void sendBTcommandFlipperRechtsSecondKey(bool inputMode){
 
     if(inputMode){
         switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
-            //case 1: gamepadXfinal = -32767;           gamepadSendReportFlag   = true;  break;  // [verified] quest setRZ(32767);
+            //case 1: gamepadXfinal = -32767;           gamepadSendReportFlag   = true;  break;   // [verified] quest setRZ(32767);
             case 1: hid->gamepad->setZ(32767);           gamepadSendReportFlag   = true;  break;  // [verified] quest setRZ(32767);
             case 2: hid->gamepad->press(BUTTON_8);       gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->press(BUTTON_8);       gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->press(BUTTON_8);       gamepadSendReportFlag   = true;  break;  // iphone
             case 5: hid->gamepad->press(BUTTON_8);       gamepadSendReportFlag   = true;  break;  // switch
             case 6: hid->gamepad->press(BUTTON_8);       gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
-           default: break;                                       // wird aufgerufen falls kein case getroffen wurde
+           default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
         }
     }
     else{
@@ -1070,7 +1072,7 @@ void sendBTcommandFlipperRechtsSecondKey(bool inputMode){
             case 4: hid->gamepad->release(BUTTON_8);     gamepadSendReportFlag   = true;  break;  // iphone
             case 5: hid->gamepad->release(BUTTON_8);     gamepadSendReportFlag   = true;  break;  // switch
             case 6: hid->gamepad->release(BUTTON_8);     gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
-           default: break;                                       // wird aufgerufen falls kein case getroffen wurde
+           default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
         }
     }
 }
@@ -1086,7 +1088,7 @@ void sendBTcommandTiltFront(bool inputMode, int analogValue ){
         if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
         if(inputMode){
             switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
-                //case 1: gamepad->setLeftThumb(0,-analogValue); gamepadSendReportFlag   = true;  break; // [verified] quest WICHTIG "-"
+                // case 1: gamepad->setLeftThumb(0,-analogValue); gamepadSendReportFlag   = true;  break; // [verified] quest WICHTIG "-"
                 // case 1: gamepadYfinal =-analogValue;                gamepadSendReportFlag   = true;  break;  // [verified] quest WICHTIG "-" (different syntax to set y axis only!)
                 case 1: hid->gamepad->setLeftThumb(hid->gamepad->lx ,-analogValue);   gamepadSendReportFlag   = true;  break;  // [verified] quest WICHTIG "-" (different syntax to set y axis only!)
                 case 2: gamepadYfinal =-analogValue;                                  gamepadSendReportFlag   = true;  break;  // android
@@ -1094,7 +1096,7 @@ void sendBTcommandTiltFront(bool inputMode, int analogValue ){
                 case 4: gamepadYfinal =-analogValue;                                  gamepadSendReportFlag   = true;  break;  // iphone
                 case 5: hid->keyboard->keyPress(KEY_A);                               keyboardSendReportFlag  = true;  break;  // Keyboard Nudge A-up oder S-down testen
                 case 6: gamepadYfinal =-analogValue;                                  gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
-               default: break;                                                                // wird aufgerufen falls kein case getroffen wurde
+               default: break;                                                                                                 // wird aufgerufen falls kein case getroffen wurde
             }
         }
         else{
@@ -1106,7 +1108,7 @@ void sendBTcommandTiltFront(bool inputMode, int analogValue ){
                 case 4: gamepadYfinal = 0;                                            gamepadSendReportFlag   = true;  break;  // iphone
                 case 5: hid->keyboard->keyRelease(KEY_A);                             keyboardSendReportFlag  = true;  break;  // Keyboard Nudge A-up oder S-down testen
                 case 6: gamepadYfinal = 0;                                            gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
-               default: break;                                                                // wird aufgerufen falls kein case getroffen wurde 
+               default: break;                                                                                                 // wird aufgerufen falls kein case getroffen wurde 
             }
         }
     }
@@ -1128,7 +1130,7 @@ void sendBTcommandTiltLeft(bool inputMode, int analogValue){
                 case 4: hid->gamepad->setLeftThumb(0,-analogValue);                   gamepadSendReportFlag   = true; break;  // iphone
                 case 5: hid->keyboard->keyPress(KEY_F);                               keyboardSendReportFlag  = true; break;  // PinballFX 2025
                 case 6: hid->gamepad->setLeftThumb(analogValue,0);                    gamepadSendReportFlag   = true; break;  // quest star wars pinball different keymap
-               default: break;                                                               // wird aufgerufen falls kein case getroffen wurde
+               default: break;                                                                                                // wird aufgerufen falls kein case getroffen wurde
             }
         }
         else{
@@ -1139,7 +1141,7 @@ void sendBTcommandTiltLeft(bool inputMode, int analogValue){
                 case 4: hid->gamepad->setLeftThumb(0,0);                              gamepadSendReportFlag   = true; break;  // iphone
                 case 5: hid->keyboard->keyRelease(KEY_F);                             keyboardSendReportFlag  = true; break;  // switch   keyboard->keyRelease(KEY_F);
                 case 6: hid->gamepad->setLeftThumb(0,0);                              gamepadSendReportFlag   = true; break;  // quest star wars pinball different keymap
-               default: break;                                                               // wird aufgerufen falls kein case getroffen wurde
+               default: break;                                                                                                // wird aufgerufen falls kein case getroffen wurde
             }
         }
 }
@@ -1160,7 +1162,7 @@ void sendBTcommandTiltRight(bool inputMode, int analogValue){ // nudge/side bump
             case 4: hid->gamepad->setLeftThumb(-analogValue,0);                      gamepadSendReportFlag   = true; break;  // iphone
             case 5: hid->keyboard->keyPress(KEY_D);                                  keyboardSendReportFlag  = true; break;  // keyboard D for pinballFX
             case 6: hid->gamepad->setLeftThumb(-analogValue,0);                      gamepadSendReportFlag   = true; break;  // quest star wars pinball different keymap
-           default: break;                                                                   // wird aufgerufen falls kein case getroffen wurde
+           default: break;                                                                                                   // wird aufgerufen falls kein case getroffen wurde
         }
     }
     else{
@@ -1171,7 +1173,7 @@ void sendBTcommandTiltRight(bool inputMode, int analogValue){ // nudge/side bump
             case 4: hid->gamepad->setLeftThumb(0,0);                                 gamepadSendReportFlag   = true; break;  // iphone
             case 5: hid->keyboard->keyRelease(KEY_D);                                keyboardSendReportFlag  = true; break;  // keyboard D for pinballFX
             case 6: hid->gamepad->setLeftThumb(0,0);                                 gamepadSendReportFlag   = true; break;  // quest star wars pinball different keymap
-           default: break;                                                                   // wird aufgerufen falls kein case getroffen wurde
+           default: break;                                                                                                   // wird aufgerufen falls kein case getroffen wurde
         }
     }
 }
@@ -1195,7 +1197,7 @@ void sendBTcommandAngleTiltButtonLeft(bool inputMode, int analogValue = 0){
                 case 4: hid->gamepad->press(BUTTON_1);                gamepadSendReportFlag   = true;  break; // iphone
                 case 5: hid->gamepad->press(BUTTON_2);                gamepadSendReportFlag   = true;  break; // switch
                 case 6: hid->gamepad->setLeftThumb(-analogValue,0);   gamepadSendReportFlag   = true;  break; // quest star wars pinball different keymap
-               default: break;                                               // wird aufgerufen falls kein case getroffen wurde
+               default: break;                                                                                // wird aufgerufen falls kein case getroffen wurde
             }
         }
         else{
@@ -1206,7 +1208,7 @@ void sendBTcommandAngleTiltButtonLeft(bool inputMode, int analogValue = 0){
                 case 4: hid->gamepad->release(BUTTON_1);              gamepadSendReportFlag   = true;  break;  // iphone
                 case 5: hid->gamepad->release(BUTTON_2);              gamepadSendReportFlag   = true;  break;  // keyboard pinball fx 2025
                 case 6: hid->gamepad->release(BUTTON_2);              gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
-               default: break;                                                // wird aufgerufen falls kein case getroffen wurde
+               default: break;                                                                                 // wird aufgerufen falls kein case getroffen wurde
             }
         }
     }
@@ -1228,7 +1230,7 @@ void sendBTcommandAngleTiltButtonRight(bool inputMode, int analogValue = 0){
             case 4: hid->gamepad->press(BUTTON_1);                    gamepadSendReportFlag   = true;  break;  // iphone
             case 5: hid->gamepad->press(BUTTON_2);                    gamepadSendReportFlag   = true;  break;  // switch
             case 6: hid->gamepad->press(BUTTON_2);                    gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
-           default: break;                                                  // wird aufgerufen falls kein case getroffen wurde
+           default: break;                                                                                     // wird aufgerufen falls kein case getroffen wurde
         }
     }
     else{
@@ -1239,7 +1241,7 @@ void sendBTcommandAngleTiltButtonRight(bool inputMode, int analogValue = 0){
             case 4: hid->gamepad->release(BUTTON_1);                  gamepadSendReportFlag   = true;  break;  // iphone
             case 5: hid->gamepad->release(BUTTON_2);                  gamepadSendReportFlag   = true;  break;  // switch
             case 6: hid->gamepad->release(BUTTON_2);                  gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
-           default: break;                                                  // wird aufgerufen falls kein case getroffen wurde
+           default: break;                                                                                     // wird aufgerufen falls kein case getroffen wurde
         }
     }
 }
@@ -1261,7 +1263,7 @@ void sendBTcommandAngleTiltButtonUp(bool inputMode, int analogValue = 0){
             case 4: hid->gamepad->setLeftThumb(0,-analogValue);       gamepadSendReportFlag   = true;  break;  // iphone
             case 5: hid->gamepad->setLeftThumb(0,-analogValue);       gamepadSendReportFlag   = true;  break;  // switch
             case 6: hid->gamepad->setLeftThumb(0,-analogValue);       gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
-           default: break;                                                    // wird aufgerufen falls kein case getroffen wurde
+           default: break;                                                                                     // wird aufgerufen falls kein case getroffen wurde
         }
     }
     else{
@@ -1272,7 +1274,7 @@ void sendBTcommandAngleTiltButtonUp(bool inputMode, int analogValue = 0){
             case 4: hid->gamepad->setLeftThumb(0,0);                  gamepadSendReportFlag   = true;  break;  // iphone
             case 5: hid->gamepad->setLeftThumb(0,0);                  gamepadSendReportFlag   = true;  break;  // switch
             case 6: hid->gamepad->setLeftThumb(0,0);                  gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
-           default: break;                                                    // wird aufgerufen falls kein case getroffen wurde
+           default: break;                                                                                     // wird aufgerufen falls kein case getroffen wurde
         }
     }
 }
@@ -1293,7 +1295,7 @@ void sendBTcommandAngleTiltButtonDown(bool inputMode, int analogValue = 0){ // 4
             case 4: hid->gamepad->setLeftThumb(0,analogValue);         gamepadSendReportFlag   = true;  break;  // iphone
             case 5: hid->gamepad->setLeftThumb(0,analogValue);         gamepadSendReportFlag   = true;  break;  // switch
             case 6: hid->gamepad->setLeftThumb(0,analogValue);         gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
-           default: break;                                                     // wird aufgerufen falls kein case getroffen wurde
+           default: break;                                                                                      // wird aufgerufen falls kein case getroffen wurde
         }
     }
     else{
@@ -1304,7 +1306,7 @@ void sendBTcommandAngleTiltButtonDown(bool inputMode, int analogValue = 0){ // 4
             case 4: hid->gamepad->setLeftThumb(0,0);                   gamepadSendReportFlag   = true;  break;  // iphone
             case 5: hid->gamepad->setLeftThumb(0,0);                   gamepadSendReportFlag   = true;  break;  // switch
             case 6: hid->gamepad->setLeftThumb(0,0);                   gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
-           default: break;                                                     // wird aufgerufen falls kein case getroffen wurde
+           default: break;                                                                                      // wird aufgerufen falls kein case getroffen wurde
         }
     }
 }
@@ -1323,7 +1325,7 @@ void sendBTcommandActionKey(bool inputMode){
             case 4: hid->gamepad->press(BUTTON_1);       gamepadSendReportFlag   = true;  break;  // iphone
             case 5: hid->keyboard->keyPress(KEY_5);      keyboardSendReportFlag  = true;  break;  // switch
             case 6: hid->gamepad->press(BUTTON_2);       gamepadSendReportFlag   = true;  break;  // [verified] quest star wars pinball different keymap
-           default: break;                                       // wird aufgerufen falls kein case getroffen wurde
+           default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
         }
     }
     else{
@@ -1334,7 +1336,7 @@ void sendBTcommandActionKey(bool inputMode){
             case 4: hid->gamepad->release(BUTTON_1);     gamepadSendReportFlag   = true;  break;  // iphone
             case 5: hid->keyboard->keyRelease(KEY_5);    keyboardSendReportFlag  = true;  break;  // pinballFX 2025
             case 6: hid->gamepad->release(BUTTON_2);     gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
-           default: break;                                       // wird aufgerufen falls kein case getroffen wurde
+           default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
         }
     }
 }
@@ -1954,14 +1956,6 @@ if( milliTimeCopy - secondKeyButtonTimeMark >= secondKeyActivationTime && flipFl
     }
  else 
    {secondKeyButtonFlag = 0;}
-
-
-
-
-
-
-
-
 
 
 

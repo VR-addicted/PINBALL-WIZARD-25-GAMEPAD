@@ -1671,7 +1671,7 @@ int8_t GUI::drawButtonCheatPlusMinus(int8_t mode){
 void GUI::drawTextCheatProfileName(int8_t profileNumber){
         _tft.drawRect(5, 110, 234, 26, 0xFFFF);
         _tft.fillRect(6, 111, 198, 24, bgColor);
-    if(profileNumber == 0) return;           // breakout, somit 0 cleanes frame
+      if(profileNumber == 0) return;           // breakout, somit 0 cleanes frame
         _tft.setTextColor(0xFFFF);
         _tft.setTextSize(1);
         _tft.setFreeFont(&FreeMono12pt7b);

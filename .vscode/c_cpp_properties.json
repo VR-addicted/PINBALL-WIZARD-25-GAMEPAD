@@ -491,7 +491,7 @@
                 ]
             },
             "defines": [
-                "BUILD_NUMBER=1832",
+                "BUILD_NUMBER=1835",
                 "PLATFORMIO=60118",
                 "ARDUINO_ESP32_DEV",
                 "CONFIG_ARDUINO_RUNNING_CORE=1",
