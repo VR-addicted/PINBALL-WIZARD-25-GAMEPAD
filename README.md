@@ -14,21 +14,23 @@ Based on ESP32 "CHEAP YELLOW PCB" from China/Amazon (20€-30€).
 + 1000 mAh rechargeable main Battery
 + Bluetooth BLE
 + Gamepad emulation
-+ Keyboard at same time. (Hybrid protocol)
-+ 1/300000 of a second button press reaction time 
-+ Wireless foot pedal for arcade mode "X" button. works
++ Keyboard emulation at same time. (Hybrid protocol)
++ Wireless foot pedal for arcade mode "X" button. (esp-now protocol)
 + Auto Power off sleep timer to save battery
 + Display light dimmer timer to save battery
-+ Adjustable gyroscope for nudging
-+ Different key map profiles for different games
-+ Speed optimized code
++ On Display adjustable gyroscope/accelerometer for nudging
++ On Display different key map profiles for different games
++ Speed optimized code (1/300000 of a second button press reaction time)
 + Cheat mode
 + Working Devices: Meta Quest, Android Smart Phones
 + Temporarely not working connecting to PC. (it worked in the past, but i missconfigured something)
-+ Ergonomic multi purpose design. On your legs, your table or on a stand.
++ Ergonomic multi purpose design. On your legs, your table, on a docking station and/or on a stand.
 + Adjustable Flipper buttons positions for your needings
 + Mainframe from 50 to 60 cm easy extendable
++ Button press logger / counter, for statistics or button life cycle logging.
 
+
+Optional:
 + Optional RGB Led Qanba keys support in future. work in progress
 + Optional Docking Station in progress. work in progress
 + Optional Battery Meter (Voltage divider). works
@@ -63,5 +65,9 @@ https://pinball-wizard-25.netlify.app/
 
 Don`t install nightly builds if you are not envolved or instructed. 
 Nightlys are realtime snapshots with bugs and/or unfinished functions!
+
+
+If you beginn the project, feel free to get in contact with me on meta, discord or here.
+discord: vraddicted, Meta: VR-addicted
 
 Stay stable, and the force will be with you. 
