@@ -58,7 +58,7 @@ In long pressed mode (aka shift mode) we can take nudges or tilting the controll
 
 Can you use the ESP32 Cheap Yellow Display Board for your own projects, without the Pinball Wizard Case?
 Yes, absolutely. But order one with same Touch controller, Same Display and same Display Resolution.
-Exakt type: ESP-Display,ESP Modul WiFi Bluetooth 3.2" Zoll 240 * 320 ESP Display TFT Modul ESP-2432S032C-I capacitive Touchscreen with GT911 Controller.
+Exakt type: ESP-Display,ESP Modul WiFi Bluetooth 3.2" Zoll 240 * 320 ESP Display TFT Modul ESP-2432S032C-I capacitive Touchscreen with GT911 touch Controller.
 https://www.amazon.de/dp/B0D3WDQ6FJ
 
 
