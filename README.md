@@ -56,6 +56,11 @@ This will give more controll over the game`s menu system, reset view in VR and o
 Plus we have 4 more Virtual Buttons in combination with the gyro sensor.
 In long pressed mode (aka shift mode) we can take nudges or tilting the controller to simulate 4 more keys to trigger in game functions.
 
+Can you use the ESP32 Cheap Yellow Display Board for your own projects, without the Pinball Wizard Case?
+Yes, absolutely. But order one with same Touch controller, Same Display and same Display Resolution.
+Exakt type: ESP-Display,ESP Modul WiFi Bluetooth 3.2" Zoll 240 * 320 ESP Display TFT Modul ESP-2432S032C-I capacitive Touchscreen with GT911 Controller.
+https://www.amazon.de/dp/B0D3WDQ6FJ
+
 
 You can flash, config and debug the device with an usb cable and your browser. 
 (Testet with Edge/Chrome. Check your browser for USB support enabled.)
@@ -81,10 +86,13 @@ Stay stable, and the force will be with you.
 More project links:
 
 https://github.com/VR-addicted/PINBALL-WIZARD-25-WEB-TOOL
+
 https://github.com/VR-addicted/PINBALL-WIZARD-25-PEDAL
 
 CAD:
 
 https://github.com/VR-addicted/PINBALL-WIZARD-25-CAD
+
 https://www.thingiverse.com/thing:7241122
+
 https://www.printables.com/model/1516410-pinball-wizard-25-bluetooth-controller-with-gyro-t
