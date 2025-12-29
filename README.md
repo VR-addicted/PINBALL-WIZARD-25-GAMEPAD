@@ -4,6 +4,12 @@
 </div>
 
 
+<div>
+<img src="Pictures\PBWZ25-PCB-MOD-BASIS.jpg" width="800">
+</div>
+
+
+
 Central firmware for the great Pinball Wizard 2025 with Blutooth BLE + ESP NOW. 
 Based on ESP32 "CHEAP YELLOW PCB" from China/Amazon (20€-30€). 
 + 3.2 Inch Ips Display 

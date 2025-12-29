@@ -724,6 +724,7 @@ volatile struct {
 #define TOUCH_SDA 33                                  // I2C SDA-Pin
 #define TOUCH_SCL 32                                  // I2C SCL-Pin
 #define TOUCH_INT 0                                   // Interrupt-Pin (falls nicht verwendet, auf -1 setzen)
+//#define TOUCH_INT 21                                // Interrupt-Pin auf cheap yellow PCB
 #define TOUCH_RST 25                                  // Reset-Pin
 #define GT911_I2C_ADDR 0x5D                           // Standard-Adresse des GT911
 #define SCREEN_WIDTH  240                             // Korrekte Breite des Touchscreens
