@@ -344,7 +344,7 @@ struct __attribute__((packed)) KeyEvent {
 };
 
 
-const char* DEVICE_NAME = "PWZ25";                    //! device name
+const char* DEVICE_NAME = "PBWZ25";                    //! device name
 const char* DEVICE_MANUFACTURER = "VR1337";           //! manufacturer
 bool _isBleConnected = 0;
 
@@ -723,8 +723,8 @@ volatile struct {
 //Touch Sensor & display
 #define TOUCH_SDA 33                                  // I2C SDA-Pin
 #define TOUCH_SCL 32                                  // I2C SCL-Pin
-#define TOUCH_INT 0                                   // Interrupt-Pin (falls nicht verwendet, auf -1 setzen)
-//#define TOUCH_INT 21                                // Interrupt-Pin auf cheap yellow PCB
+//#define TOUCH_INT -1                                   // Interrupt-Pin (falls nicht verwendet, auf -1 setzen)
+#define TOUCH_INT 21                                  // Interrupt-Pin auf cheap yellow PCB
 #define TOUCH_RST 25                                  // Reset-Pin
 #define GT911_I2C_ADDR 0x5D                           // Standard-Adresse des GT911
 #define SCREEN_WIDTH  240                             // Korrekte Breite des Touchscreens

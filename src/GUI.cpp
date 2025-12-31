@@ -1490,34 +1490,60 @@ void GUI::UIupdate(int loopsPerSecond, int loopTimeMs) {
 
 
 
-bool GUI::processTouch(int* x, int* y) {                              // war bis jetzt gut
+bool GUI::processTouch(int* x, int* y) {
 
-    if (_touch != nullptr) {
-        // Aktualisiere die Touch-Daten mit der öffentlichen Methode `touched()`
-        uint8_t contacts = _touch->touched(GT911_MODE_POLLING);       // Polling-Modus 
+    if (!_touch) return false;
 
-        if (contacts > 0) {
-            GTPoint point = _touch->getPoint(0);                      // Ersten Touch-Punkt holen
-            *x = point.x;     // global verfügbar machen
-            *y = point.y;     // global verfügbar machen
-            // bei tastendruck alle sleep timer wieder neu setzen
-            ledTimeOffMillis  = milliTimeCopy + ledTimeOff  * 1000;      
-            stdMenuTimeMillis = milliTimeCopy + stdMenuTime * 1000;          
-            sleepTimerMillis  = milliTimeCopy + sleepTimer  * 60000; 
+    uint8_t contacts = _touch->touched(GT911_MODE_POLLING);
+    //uint8_t contacts = _touch->touched(GT911_MODE_INTERRUPT);
 
-            if (dbglvl > 4) {
-                if(dbglvl>1) Serial.printf("Touch detected: X=%d, Y=%d\n", point.x, point.y);
-                _tft.fillCircle(point.x, point.y, 3, TFT_RED);
-                
-            }
-            return true;
-        }
+    if (contacts == 0) return false;
+
+    GTPoint p = _touch->getPoint(0);
+
+    *x = p.x;
+    *y = p.y;
+
+    // Sleep-Timer resetten
+    ledTimeOffMillis  = milliTimeCopy + ledTimeOff  * 1000;
+    stdMenuTimeMillis = milliTimeCopy + stdMenuTime * 1000;
+    sleepTimerMillis  = milliTimeCopy + sleepTimer  * 60000;
+
+    if (dbglvl > 4) {
+        if (dbglvl > 1) Serial.printf("Touch detected: X=%d, Y=%d\n", p.x, p.y);
+        _tft.fillCircle(p.x, p.y, 3, TFT_RED);
     }
-    return false;
 
-
-
+    return true;
 }
+
+
+
+// bool GUI::processTouch(int* x, int* y) {                              // war bis jetzt gut
+
+//     if (_touch != nullptr) {
+//         // Aktualisiere die Touch-Daten mit der öffentlichen Methode `touched()`
+//         uint8_t contacts = _touch->touched(GT911_MODE_POLLING);       // Polling-Modus 
+
+//         if (contacts > 0) {
+//             GTPoint point = _touch->getPoint(0);                      // Ersten Touch-Punkt holen
+//             *x = point.x;     // global verfügbar machen
+//             *y = point.y;     // global verfügbar machen
+//             // bei tastendruck alle sleep timer wieder neu setzen
+//             ledTimeOffMillis  = milliTimeCopy + ledTimeOff  * 1000;      
+//             stdMenuTimeMillis = milliTimeCopy + stdMenuTime * 1000;          
+//             sleepTimerMillis  = milliTimeCopy + sleepTimer  * 60000; 
+
+//             if (dbglvl > 4) {
+//                 if(dbglvl>1) Serial.printf("Touch detected: X=%d, Y=%d\n", point.x, point.y);
+//                 _tft.fillCircle(point.x, point.y, 3, TFT_RED);
+                
+//             }
+//             return true;
+//         }
+//     }
+//     return false;
+// }
 
 
 
