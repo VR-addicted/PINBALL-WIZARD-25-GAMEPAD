@@ -3,8 +3,20 @@
 //!   MAYBE SOME COMPONETS ARE NOT FULLY INTEGRATED
 //!   TRY IT AT YOUR OWN RISK
 
-// Silvester
-// 31.12.2025
+// xmas release
+// 2025
+
+// 1.1.2026 the developement of the PBWZ26 has begun.
+// Unfortunely the Cheap Yellow Display esp32 from China has changing PCB. Thats annoying.
+// And no interrupt line for the touch panel. For that reason i switch to an other Display.
+// I think a good Candidate is a Waveshare esp32 S3 with integrated gyro/acc.
+// Some Displays are on the way and we will see what display wins.
+// The new display will have newer and faster Bluetooth and USB-HOST as well, 
+// for extra extra low latency and some other goodies.
+
+
+
+
 
 //!   PINBALL WIZARD 
 //!   (C) 21.01.2019 - 2025 by DOMin8or aka VR-addicted aka ORGATHM TECH
@@ -32,7 +44,7 @@
 //!   That could opens the door to many config helpers in VR as an app. and for rumble, free game solenoid click, and much more. 
 //!   In the future, we will see what the git hub and the pinball coder community will implement, or not. :-)
 
-// This Parameters are controlled in the platformIO.ini with the different compiler enviroments.
+
 #ifndef BUILD_NUMBER                      // sicherung falls in der platformIO das python skript die .build_number datei nicht lesen kann
  #define BUILD_NUMBER 0 
 #endif
@@ -63,7 +75,7 @@ int     dbglvlOSD   = DBGLVLOSD_DEFAULT ; // only a small blue sprite with minim
 
  Todo: Battery Voltage Meter from foot pedal synchen!
 
- Todo: Hardware Tiefpassfilter via software auf dem acc/gyro. andere tiefpass filter einstellungen testen.
+ Todo: Tiefpassfilter via software auf dem acc/gyro aktivieren. ich denke 50-200 hz max oder so müssten eigentlich reichen.
  
  Todo: Qanba Gravity RGB LEDs einbauen
 
@@ -255,7 +267,7 @@ int8_t batteryESP32Status  = 0;                 // this esp32  0-100%  3.3-4.2 V
 int8_t batteryESPNOWstatus = 0;                 // external esp foot controller
 int8_t batteryESP32StatusLastround = -1;   
 
-// local battery check without MOSFET. TODO: mosfet einbauen um strom zu sparen. benutze einen pin, der so oder so dauerhaft auf high liegt. spart io pins
+// local battery check without MOSFET. TODO: mosfet einbauen um strom zu sparen. benutze einen pin, der so oder so auf high liegt. spart io pins
 
 // --- 8-Bytes-Ringbuffer für geglättete ADC-Werte (bei 1000ms time trap 8 sekunden)---
 
@@ -300,7 +312,7 @@ if (dbglvl) { Serial.print("avg: "); Serial.println(avg); }
 
 
 // --- Kalibrierte Prozentberechnung im ADC-Raum --- 
-// Diese beiden Werte kannst du später mit echten Messungen setzen, tut aber keine not. ist ja kein präzisions messgerät: 
+// Diese beiden Werte musst du später mit echten Messungen setzen: 
 // ADC-Wert bei "0 % Akku" (z.B. 3.30 V) const int RAW_0PCT = 2600; 
 
 
@@ -311,11 +323,15 @@ int pct;
 if ((int32_t)avg <= RAW_0PCT) { pct = 0; } 
   else if ((int32_t)avg >= RAW_100PCT) { pct = 100; } 
   else { int32_t num = ((int32_t)avg - RAW_0PCT) * 100;
-         int32_t denom = (RAW_100PCT - RAW_0PCT);
-         pct = (int)(num / denom); // integer, aber völlig ausreichend und viel schneller beim rechnen }
-         if (dbglvl) { Serial.print("ungefiltert. Prozent: "); Serial.println(pct);}
-         return pct;
+int32_t denom = (RAW_100PCT - RAW_0PCT);
+pct = (int)(num / denom); // integer, aber völlig ausreichend }
+if (dbglvl) { Serial.print("ungefiltert. Prozent: "); Serial.println(pct);}
+return pct;
   }
+
+
+
+
 }
 
 
@@ -330,20 +346,20 @@ int TIMEOUT_MS = 1000;                                // Zeit ohne esp-now Empfa
 // Variablen für Verbindungsüberwachung
 unsigned long lastPacketTime = 0;
 bool wasConnected = false;
-
 // Zustandsvariable (vom Sender empfangen)
 volatile uint8_t espnowAirButtonCurrentState = 0;
 volatile uint8_t espnowAirButtonCurrentStateSend = 0;
-
 // Callback wenn Daten empfangen wurden
+
 struct __attribute__((packed)) KeyEvent {
   uint8_t state;                                      // 0=release, 1=press
 };
 
 
-const char* DEVICE_NAME = "PBWZ25";                    //! device name
+const char* DEVICE_NAME = "PWZ25";                    //! device name
 const char* DEVICE_MANUFACTURER = "VR1337";           //! manufacturer
 bool _isBleConnected = 0;
+
   
 String macAdress = "00:00:00:00:00:00";               // dummy mac bis connected
 
@@ -719,8 +735,8 @@ volatile struct {
 //Touch Sensor & display
 #define TOUCH_SDA 33                                  // I2C SDA-Pin
 #define TOUCH_SCL 32                                  // I2C SCL-Pin
-#define TOUCH_INT -1                                   // Interrupt-Pin (falls nicht verwendet, auf -1 setzen)
-//#define TOUCH_INT 21                                  // Interrupt-Pin auf cheap yellow PCB
+#define TOUCH_INT 0                                   // Interrupt-Pin (falls nicht verwendet, auf -1 setzen)
+//#define TOUCH_INT 21                                // Interrupt-Pin auf cheap yellow PCB
 #define TOUCH_RST 25                                  // Reset-Pin
 #define GT911_I2C_ADDR 0x5D                           // Standard-Adresse des GT911
 #define SCREEN_WIDTH  240                             // Korrekte Breite des Touchscreens
@@ -1684,7 +1700,7 @@ void loop() {
                 if(powerCalculatedLeft > 32767) powerCalculatedLeft = 32767; // max value for joystick
                 //if(dbglvl >4 ) Serial.printf("show calculated values. Links: %.2fg RAW=%d powerCalculatedLeft=%d\n", RAW_TO_G(power.left), power.left, powerCalculatedLeft);        // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
                 tiltCounterGlob++;
-                if(UImenu == 1) ui->drawPeakMeterNudgeDirection(1, powerCalculatedLeft);  // TODO: change to flag methode
+                if(UImenu == 1) ui->drawPeakMeterNudgeDirection(1, powerCalculatedLeft);  // if(!secondKeyButtonFlag) // TODO: change to flag methode
                 power.left = 0;  // reset parallel task variable
             }
             if(power.right && !power.cnt_right) {
@@ -1692,7 +1708,7 @@ void loop() {
                 if(powerCalculatedRight > 32767) powerCalculatedRight = 32767; // max value for joystick
                 //if(dbglvl >4 ) Serial.printf("show calculated values. Rechts: %.2fg RAW=%d, powerCalculatedRight=%d\n", RAW_TO_G(power.right), power.right, powerCalculatedRight);   // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
                 tiltCounterGlob++;
-                if(UImenu == 1) ui->drawPeakMeterNudgeDirection(2, powerCalculatedRight);  // TODO: change to flag methode
+                if(UImenu == 1) ui->drawPeakMeterNudgeDirection(2, powerCalculatedRight);  // power.right *tiltGain  // TODO: change to flag methode
                 power.right = 0;// reset parallel task variable
             }
             if(power.up && !power.cnt_up) {
@@ -1936,9 +1952,9 @@ else
                                                      ui->drawPhysicalVirtualKeys(2,0);                     // here is okay, no flags, its not time intense 
                                                      ui->fillSpriteBackground();                           // here is okay, no flags, its not time intense 
                                                      ui->drawVirtualTiltingJoystickKeys(1,0);  // clear UI // here is okay, no flags, its not time intense 
-                                                     ui->drawVirtualTiltingJoystickKeys(2,0);  // clear UI // here is okay, no flags, its not time intense 
-                                                     ui->drawVirtualTiltingJoystickKeys(3,0);  // clear UI // here is okay, no flags, its not time intense 
-                                                     ui->drawVirtualTiltingJoystickKeys(4,0);  // clear UI // here is okay, no flags, its not time intense 
+                                                     ui->drawVirtualTiltingJoystickKeys(2,0);              // here is okay, no flags, its not time intense 
+                                                     ui->drawVirtualTiltingJoystickKeys(3,0);              // here is okay, no flags, its not time intense 
+                                                     ui->drawVirtualTiltingJoystickKeys(4,0);              // here is okay, no flags, its not time intense 
                                                     }
                                     flipFlopFlagFrontLeft = 0;
                                      
@@ -2110,7 +2126,7 @@ if(sendTimedPlungerButtonATimerReleaseFlag != 0 && sendTimedPlungerButtonATimerR
 }
 
 
-// sende report, falls taste(n) oder gamepad gedrückt wurde und BT connection verfügbar.
+// sende report, falls taste oder gamepad gedrückt wurde und gerät verfügbar.
 if(gamepadSendReportFlag){
    gamepadSendReportFlag = false;
    if(dbglvl) Serial.printf("[%lu.%03lu] milliTimeCopy (round start time)\n", milliTimeCopy/1000,milliTimeCopy%1000);        // debug

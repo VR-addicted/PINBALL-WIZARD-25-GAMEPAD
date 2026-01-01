@@ -8,6 +8,14 @@
 <img src="Pictures\PBWZ25-PCB-MOD-BASIS.jpg" width="800">
 </div>
 
+!! 1.1.2026 the developement of the next great controller PBWZ-26 has begun.
+!! Unfortunely the Cheap Yellow Display esp32 from China has changing PCB. Thats annoying.
+!! And no interrupt line for the touch panel. For that reason i switch to an other Display.
+!! I think a good Candidate is a Waveshare ESP32 S3 with integrated gyro/acc.
+!! Some Displays are on the way and we will see what display wins.
+!! There are some candidates in the 25$ to 40$ range.
+!! The new display will have newer and faster Bluetooth and USB-HOST as well, 
+!! for extra extra low latency and some other goodies.
 
 
 Central firmware for the great Pinball Wizard 2025 with Blutooth BLE + ESP NOW. 
