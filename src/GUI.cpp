@@ -65,6 +65,7 @@ extern const char* DEVICE_MANUFACTURER;
 
 extern bool isBleConnected();
 
+extern void RGBall0();                               // alle leds auf 0
 extern void formatNVS();
 extern void sendBTcommandActionKey(bool inputMode);
 extern bool wasConnected;
@@ -1337,6 +1338,7 @@ void GUI::menu6() {
                             delay(500);
                             _tft.print("OFF");
                             if(dbglvl>1) Serial.println("esp_deep_sleep_start()");
+                            RGBall0();
                             delay(2000);
                             esp_deep_sleep_start(); 
                             }

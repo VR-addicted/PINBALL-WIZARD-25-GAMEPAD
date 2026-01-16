@@ -311,9 +311,37 @@ void setPinballLed(uint8_t ledIndex, uint8_t r, uint8_t g, uint8_t b, uint8_t w 
 }
 
 
+void RGBall0(){
+    for (uint16_t i = 0; i < PixelCount -1; i++) {   // wegen hotfix -1
+        setPinballLed(i, 0, 0, 0);
+    }
+    strip.Show();
+}
+
+void RGBall40(){
+    for (uint16_t i = 0; i < PixelCount -1; i++) {   // wegen hotfix -1
+        setPinballLed(i, 40, 40, 40);
+    }
+    strip.Show();
+}
 
 
-
+void RGBbaseLight(){
+    // base light config
+    // strip.SetPixelColor(0, RgbwColor(40,   0,   0,  0));
+    // strip.SetPixelColor(1, RgbwColor(  0, 40,   0,  0));
+    // strip.SetPixelColor(2, RgbwColor(  0,   0, 40,  0));
+    // strip.SetPixelColor(3, RgbwColor(  0,   0, 40,  0));
+    // strip.SetPixelColor(4, RgbwColor(  0, 40,   0,  0));
+    // strip.SetPixelColor(5, RgbwColor(40,   0,   0,  0));
+    setPinballLed(0,  40,  40, 40);   // DOT-R
+    setPinballLed(1,  40,  40, 40);   // FL-R
+    setPinballLed(2, 255,  40, 40);   // Front-R
+    setPinballLed(3,  40,  40, 40);   // FL-L
+    setPinballLed(4,  40, 180, 40);   // FRONT-L
+    setPinballLed(5,  40,  40, 40);   // DOT RGBW-L
+    strip.Show();
+}
 
 
 
@@ -1541,47 +1569,10 @@ void setup() {
     adc1_config_channel_atten(ADC1_CHANNEL_6, ADC_ATTEN_DB_12);     // Spannung 3.3 
 
     if(dbglvl) Serial.println("RGB strip.Begin()");
-    strip.Begin();  
-    for(int i=0; i < PixelCount; i++) {
-        setPinballLed(i, 40,40,40,0);
-    }
-    strip.Show();                                                // start RGB lights
+    strip.Begin(); 
+    RGBall40();
+ 
 
-    // RGB intro 
-    uint32_t start = millis();
-
-    // ~2 Sekunden Animation
-    while (millis() - start < 2000) {
-        uint32_t t = millis() - start;
-
-        for (uint16_t i = 0; i < PixelCount; i++) {
-            uint8_t hue = (t / 8 + i * 40) & 0xFF;
-
-            // individuelle Helligkeit pro LED
-            uint8_t brightness = 80 + i * 60; // LED0 dunkler, LED2 heller
-            setPinballLed(i, hue,40,40,0);
-            // strip.SetPixelColor(i, wheel(hue, brightness));
-
-        }
-
-        strip.Show();
-    }
-    delay(200);
-    // base light config
-    // strip.SetPixelColor(0, RgbwColor(40,   0,   0,  0));
-    // strip.SetPixelColor(1, RgbwColor(  0, 40,   0,  0));
-    // strip.SetPixelColor(2, RgbwColor(  0,   0, 40,  0));
-    // strip.SetPixelColor(3, RgbwColor(  0,   0, 40,  0));
-    // strip.SetPixelColor(4, RgbwColor(  0, 40,   0,  0));
-    // strip.SetPixelColor(5, RgbwColor(40,   0,   0,  0));
-
-    setPinballLed(0, 40,40,40,0);
-    setPinballLed(1, 40,40,40,0);
-    setPinballLed(2, 40,40,40,0);
-    setPinballLed(3, 40,40,40,0);
-    setPinballLed(4, 40,40,40,0);
-    setPinballLed(5, 40,40,40,0);
-    strip.Show();
 
 // ======================================================================================================= //
 // BBBBB    LL        EEEEEEE      CCCC   OOOOO   MM   MM  PPPPPP   OOOOO   SSSSS   IIII  TTTTTTT  EEEEEEE
@@ -1683,7 +1674,115 @@ if (esp_now_add_peer(&peerInfo) != ESP_OK) {
     }
     
 
-    // Sensor Setup
+    // // Sensor Setup
+    // if(dbglvl>1) Serial.println("Initializing Gyro Sensor...");
+      
+    //   Wire.begin(I2C_SDA, I2C_SCL, 1000000);
+    //   delay(50);
+
+    //   // BMI160 Initialisierung 
+    //   // 1. Hardware-Reset (optional, aber sauber), falls man im programm noch mal neu kalibrieren will, vllt nützlich
+    //   Wire.beginTransmission(BMI160_ADDR);
+    //   Wire.write(0x7E);
+    //   Wire.write(0xB6); // Softreset
+    //   Wire.endTransmission();
+    //   delay(50);
+    
+    //   Wire.beginTransmission(BMI160_ADDR);     // SetAccelFilter first!!! TIEFPASSFILTER INTERNAL in BMI160
+    //   Wire.write(0x40);                        // Accel Config Register
+    //   Wire.write(0b00001011);                  // ODR=200Hz, BW=0b1011 (OSR4, ~200Hz Cutoff) //BW=0b1100 (NORMAL_AVG4, ~62.5Hz Cutoff),0b1000: OSR4 (höchste Bandbreite), 0b1111: OSR2 (stärkste Filterung)
+    //   Wire.endTransmission();
+    //   delay(50);
+      
+    //   Wire.beginTransmission(BMI160_ADDR);
+    //   Wire.write(0x7E);     // CMD-Register
+    //   Wire.write(0x11);     // Accel normal mode
+    //   Wire.endTransmission();
+    //   delay(50);
+    
+    //   Wire.beginTransmission(BMI160_ADDR);
+    //   Wire.write(0x7E); 
+    //   Wire.write(0x15);     // Gyro normal mode
+    //   Wire.endTransmission();
+    //   delay(50);
+      
+    //   Wire.beginTransmission(BMI160_ADDR);
+    //   Wire.write(0x41);
+    //   Wire.write(0x0F);     // Accel-Range ±16G (Register 0x41: 0x0F)
+    //   Wire.endTransmission();
+    //   delay(50);
+      
+    //   Wire.beginTransmission(BMI160_ADDR);
+    //   Wire.write(0x43);
+    //   Wire.write(0x00);     // Gyro-Range 250DPS (Register 0x43: 0x00)
+    //   Wire.endTransmission();
+    //   delay(50);
+    
+    //   // Auto-Kalibrierung (Accel)
+    //   Wire.beginTransmission(BMI160_ADDR);
+    //   Wire.write(0x7E);
+    //   Wire.write(0x37);     // Accel Offset Kalibrierung
+    //   Wire.endTransmission();
+    //   delay(500);
+    
+    // power_mutex = xSemaphoreCreateMutex();   // Multitask Mutex für den Sensor
+    // xTaskCreatePinnedToCore(
+    //   sensorTask,
+    //   "SensorTask",
+    //   TASK_STACK,
+    //   NULL,
+    //   TASK_PRIORITY,
+    //   NULL,
+    //   0
+    // );
+    
+    //   if(dbglvl>1) Serial.println("Initialisierung abgeschlossen");
+   
+     
+    // UI mit Gamepad verknüpfen
+    ui->begin();           // Jetzt ist ui initialisiert
+    ui->setTouch(&touch);  
+
+   // ui->setGamepad(gamepad);
+     ui->setGamepad(hid->gamepad);
+
+
+    if(dbglvl>1) Serial.println("Initializing PWM...");
+    ledcSetup(PWM_CHANNEL, PWM_FREQUENCY, PWM_RESOLUTION);
+    ledcAttachPin(BACKLIGHT_PIN, PWM_CHANNEL);
+    
+    // Backlight einschalten  (macht intro() mit einem softstart sonnenaufgang)
+    if(dbglvl>1) Serial.println("Showing intro...");
+    ui->intro();  // hier in die warteschleife rgb rainbow animation
+    RGBbaseLight();
+    // RGB intro 
+    // uint32_t start = millis();
+
+    // ~2 Sekunden Animation
+    // while (millis() - start < 2000) {
+    //     uint32_t t = millis() - start;
+
+    //     for (uint16_t i = 0; i < PixelCount; i++) {
+    //         uint8_t hue = (t / 8 + i * 40) & 0xFF;
+
+    //         // individuelle Helligkeit pro LED
+    //         uint8_t brightness = 80 + i * 60; // LED0 dunkler, LED2 heller
+    //         //setPinballLed(i, hue,40,40,0);
+    //         setPinballLed(i, wheel(hue, brightness));
+    //         // strip.SetPixelColor(i, wheel(hue, brightness));
+
+    //     }
+
+    //     strip.Show();
+    //     }
+    //delay(200);
+
+
+
+
+
+
+// Sensor Setup
     if(dbglvl>1) Serial.println("Initializing Gyro Sensor...");
       
       Wire.begin(I2C_SDA, I2C_SCL, 1000000);
@@ -1732,7 +1831,7 @@ if (esp_now_add_peer(&peerInfo) != ESP_OK) {
       Wire.write(0x7E);
       Wire.write(0x37);     // Accel Offset Kalibrierung
       Wire.endTransmission();
-      delay(500);
+      delay(50);
     
     power_mutex = xSemaphoreCreateMutex();   // Multitask Mutex für den Sensor
     xTaskCreatePinnedToCore(
@@ -1745,24 +1844,36 @@ if (esp_now_add_peer(&peerInfo) != ESP_OK) {
       0
     );
     
-      if(dbglvl>1) Serial.println("Initialisierung abgeschlossen");
-   
-     
-    // UI mit Gamepad verknüpfen
-    ui->begin();           // Jetzt ist ui initialisiert
-    ui->setTouch(&touch);  
-
-   // ui->setGamepad(gamepad);
-     ui->setGamepad(hid->gamepad);
+      if(dbglvl>1) Serial.println("BMI160 Initialisierung abgeschlossen");
 
 
-    if(dbglvl>1) Serial.println("Initializing PWM...");
-    ledcSetup(PWM_CHANNEL, PWM_FREQUENCY, PWM_RESOLUTION);
-    ledcAttachPin(BACKLIGHT_PIN, PWM_CHANNEL);
-    
-    // Backlight einschalten  (macht intro() mit einem softstart sonnenaufgang)
-    if(dbglvl>1) Serial.println("Showing intro...");
-    ui->intro();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // ========================================================================== //
@@ -1777,7 +1888,7 @@ if (esp_now_add_peer(&peerInfo) != ESP_OK) {
     // PCB Power management                // Deep Sleep Wake-Up bei fallender Flanke, also wenn linker plunger gedrückt wird.
     // TODO: statt deep sleep 2x die leitung des batterie management chips auf ground ziehen, für endgültige abschaltung
     esp_sleep_enable_ext0_wakeup((gpio_num_t) ioPinFrontLeft, 0);  // hängt an gpio0, besser an ioPinFrontRight. mit 47k. verbraucht weniger strom der hängt an 10k pullup. somit checke high to low
-
+    RGBbaseLight();
     if(dbglvl>1) Serial.println("Setup complete.");
 
 
@@ -2344,8 +2455,8 @@ if(keyboardSendReportFlag) {
 }
 
 if(PixelReadyToSend){
-        PixelReadyToSend = 0;
-        strip.Show();
+   PixelReadyToSend = 0;  // clear counter flag
+   strip.Show();
 }
 
 //    GGGGGG    AAAAA     MM    MM   EEEEEEE      OOOOOO    VV     VV   EEEEEEE   RRRRRR
