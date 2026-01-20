@@ -65,7 +65,11 @@ extern const char* DEVICE_MANUFACTURER;
 
 extern bool isBleConnected();
 
+// extern void setPinballLed();
+extern void setPinballLed(uint8_t ledIndex, uint8_t r, uint8_t g, uint8_t b, uint8_t w = 0);
 extern void RGBall0();                               // alle leds auf 0
+
+
 extern void formatNVS();
 extern void sendBTcommandActionKey(bool inputMode);
 extern bool wasConnected;
@@ -193,9 +197,20 @@ int touchX, touchY;
 
 
 
-GUI::GUI(TFT_eSPI& display, GamepadHID* gp, KeyboardHID* kb)
-    : _tft(display), _gamepad(gp), _keyboard(kb)
-{}
+// GUI::GUI(TFT_eSPI& display, GamepadHID* gp, KeyboardHID* kb)
+//     : _tft(display), _gamepad(gp), _keyboard(kb)
+// {}
+
+GUI::GUI(TFT_eSPI& tft,
+         GamepadHID* gp,
+         KeyboardHID* kb,
+         NeoPixelBus<NeoGrbFeature, NeoEsp32Rmt0800KbpsMethod>& strip)
+    : _tft(tft),
+      _gamepad(gp),
+      _keyboard(kb),
+      _strip(strip)
+{
+}
 
 
 
@@ -1334,11 +1349,22 @@ void GUI::menu6() {
                         if (currentBlock >= totalBlocks) {
                             _tft.setTextColor(TFT_WHITE, TFT_BLACK);
                             _tft.setTextSize(3);
-                            _tft.setCursor(92, 145);  
-                            delay(500);
-                            _tft.print("OFF");
-                            if(dbglvl>1) Serial.println("esp_deep_sleep_start()");
+                            _tft.setCursor(50, 80);  
+                            _tft.print("SLEEP MODE");
+                            delay(1500);
+                            _tft.setCursor(50, 140);  
+                            _tft.print("TO");
+                            _tft.setCursor(50, 140);  
+                            _tft.print("WAKE UP");
+                            _tft.setCursor(50, 180);  
+                            _tft.print("PRESS");
+                            _tft.setCursor(50, 220);  
+                            _tft.print("FRONT LEFT");
+                            if(dbglvl) Serial.println("esp_deep_sleep_start()");
                             RGBall0();
+                            setPinballLed(4,  20,  2, 2);   // FRONT-L-RGB als wakeup button reminder, läuft eh nur wenn an usb angeschlossen ist
+                            _strip.Show();
+                            delay(100);   // let the led get there last update 
                             delay(2000);
                             esp_deep_sleep_start(); 
                             }
@@ -1433,30 +1459,30 @@ void GUI::UIupdate(int loopsPerSecond, int loopTimeMs) {
         
   
 
-    
+    // ESP NOW x-Button
     static uint32_t uiButtonESPnowResetviewTimeFlag  = 0;   
     if(espnowAirButtonCurrentState != espnowAirButtonCurrentStateSend)
     {
         espnowAirButtonCurrentStateSend =  espnowAirButtonCurrentState;
         if(espnowAirButtonCurrentStateSend == 0) { 
                 sendBTcommandActionKey(0);
-                if(UImenu == 1) espnowButton(3);            
+                if(UImenu == 1) espnowButton(3);  // pfeil down, nur in menu 1 dem flipper diagnose tisch anzeigen          
                 uiButtonESPnowResetviewTimeFlag = milliTimeCopy + 1000;      
             }
         if(espnowAirButtonCurrentStateSend == 1) {          
                 sendBTcommandActionKey(1);
-                if(UImenu == 1) espnowButton(2);            
+                if(UImenu == 1) espnowButton(2);  // pfeil up, nur in menu 1 dem flipper diagnose tisch anzeigen           
                 uiButtonESPnowResetviewTimeFlag=0;
             } 
     }
   
-    if(uiButtonESPnowResetviewTimeFlag){                    
+    if(uiButtonESPnowResetviewTimeFlag){          // nachlauf. nach 1000ms wieder das X icon anzeigen               
       if(uiButtonESPnowResetviewTimeFlag < milliTimeCopy){  
-            if(UImenu == 1) espnowButton(1);                
+            if(UImenu == 1) espnowButton(1);      // nur in menu 1 dem flipper diagnose tisch anzeigen               
             uiButtonESPnowResetviewTimeFlag = 0;            
         }
     }
-
+  
 
 
 
