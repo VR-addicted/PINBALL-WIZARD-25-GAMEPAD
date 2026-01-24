@@ -1,13 +1,80 @@
 # PINBALL-WIZARD-25-GAMEPAD
+<div>
+<img src="Pictures\pbwz25-WIP-12-2025.jpg" width="800">
+</div>
 
+
+<div>
+<img src="Pictures\PBWZ25-PCB-MOD-BASIS.jpg" width="800">
+</div>
+
+📺 
+[![Watch the video](https://img.youtube.com/vi/zgfT5R-a2N8/maxresdefault.jpg)](https://www.youtube.com/watch?v=zgfT5R-a2N8)
+
+**Video:** https://www.youtube.com/watch?v=zgfT5R-a2N8
+
+
+
+
+!!  
+!! 1.1.2026 Developement of the next great pinball controller PBWZ-26 has begun.  
+!!  
+!! Unfortunely the Cheap Yellow Display esp32 from China has changing PCB. Thats annoying.  
+!! Specially the Power Off function makes trouble and i dont want to use a sliding power switch.  
+!! The device will work, but if you get a wrong board, you have to install a switch, instead of the button.  
+!! For me its inaceptable, its not a big deal, but it shows that future pcb could do more trouble.  
+!! That makes reproducing the pinball wizard not easier. So i decided to pay 5-10 bucks more,  
+!! for a good seller like Waveshare with a good supply chain and good documentation.  
+!! On top we become better hardware in all cases.   
+!! I think a good Candidate is a Waveshare ESP32 S3 the 3.5" version with integrated gyro/acc.  
+!! Some Displays are on the way and we will see what display wins.  
+!! There are some candidates in the 25$ to 40$ range.  
+!! The new display will have bigger screen, better display resolution, extensa7 insteead of intensa6 mcu,   
+!! newer & faster Bluetooth and USB-HOST as well, for extra extra low latency.  
+!! Working power button, inbuild volt meter for the battery, better gyro/acc sensor,   
+!! and some other goodies like stereo speaker connector,   
+!! and a 16 pin header in 2.54 size where we easy connect the flipper buttons and what ever es needed.  
+  
+  
 Central firmware for the great Pinball Wizard 2025 with Blutooth BLE + ESP NOW. 
 Based on ESP32 "CHEAP YELLOW PCB" from China/Amazon (20€-30€). 
 + 3.2 Inch Ips Display 
 + GT911 Touch Controller 
 + BMI160 Acc Gyro Sensor
 + xxxxx Battery Controller
-+ Sanwa Switches (or comparable clones)
-+ 1000 mAh Rechargeable Battery
++ Sanwa or Qanba Switches (or size comparable clones)
++ 1000 mAh rechargeable main Battery
++ Bluetooth BLE
++ Gamepad emulation
++ Keyboard emulation at same time. (Hybrid protocol)
++ Wireless foot pedal for arcade mode "X" button. (esp-now protocol)
++ Auto Power off sleep timer to save battery
++ Display light dimmer timer to save battery
++ On Display adjustable gyroscope/accelerometer for nudging
++ On Display different key map profiles for different games
++ Speed optimized code (1/300000 of a second button press reaction time)
++ Cheat mode
++ Working Devices: Meta Quest, Android Smart Phones
++ Temporarely not working connecting to PC. (it worked in the past, but i missconfigured something)
++ Ergonomic multi purpose design. On your legs, your table, on a docking station and/or on a stand.
++ Adjustable Flipper buttons positions for your needings
++ Mainframe from 50 to 60 cm easy extendable
++ Flipper-Button press logger / counter for your statistics or button life cycle logging.
+
+
+Optional:
++ Optional RGB Led Qanba keys support in future. work in progress
++ Optional Docking Station. work in progress
++ Optional Battery Meter (Voltage divider). works
++ Optional "X" Button next to the flipper button. work in progress
++ Optional 2 addon batterys 18650. work in progress
+
+Future Ideas without any warranty:
++ Mechanicaly animated solenoid driven flippers and freeplay "knock" (depends on the game and platform)
++ Rumble  (depends on the game and platform)
++ Powerbank inside, to power the RGB button leds and the Meta Quest. work in progress
++ UART over bluetooth to configure it via APK tool on the Quest
++ Analog Plunger (depends on the game)
 
 You can find All 3d CAD files and the BOM on Printables.
 
@@ -21,12 +88,43 @@ This will give more controll over the game`s menu system, reset view in VR and o
 Plus we have 4 more Virtual Buttons in combination with the gyro sensor.
 In long pressed mode (aka shift mode) we can take nudges or tilting the controller to simulate 4 more keys to trigger in game functions.
 
+Can you use the ESP32 Cheap Yellow Display Board for your own projects, without the Pinball Wizard Case?
+Yes, absolutely. But order one with same Touch controller, Same Display and same Display Resolution.
+Exakt type: ESP-Display,ESP Modul WiFi Bluetooth 3.2" Zoll 240 * 320 ESP Display TFT Modul ESP-2432S032C-I capacitive Touchscreen with GT911 touch Controller.
+https://www.amazon.de/dp/B0D3WDQ6FJ
+
 
 You can flash, config and debug the device with an usb cable and your browser. 
 (Testet with Edge/Chrome. Check your browser for USB support enabled.)
 Dont mind this wired URL. Its free webspace for developers.
-https://68f04208780f46090cc97d76--lively-trifle-02f390.netlify.app/
+
+https://pinball-wizard-25.netlify.app/
+
 Don`t install nightly builds if you are not envolved or instructed. 
 Nightlys are realtime snapshots with bugs and/or unfinished functions!
 
+
+If you beginn the project, feel free to get in contact with me on printables, meta, discord or here.
+You can ask me any question about this project. You are wellcome.
+Discord: vraddicted
+Meta: VR-addicted
+
+HINT, small manual: If the device goes to sleep, or you powered it off via menu, press the left front button to re-start the device. I write a manual, if some people are interested in the project.
+And press the bluetooth icon in the BT menu, to be ready to connect to a device.
+
+
 Stay stable, and the force will be with you. 
+
+More project links:
+
+https://github.com/VR-addicted/PINBALL-WIZARD-25-WEB-TOOL
+
+https://github.com/VR-addicted/PINBALL-WIZARD-25-PEDAL
+
+CAD:
+
+https://github.com/VR-addicted/PINBALL-WIZARD-25-CAD
+
+https://www.thingiverse.com/thing:7241122
+
+https://www.printables.com/model/1516410-pinball-wizard-25-bluetooth-controller-with-gyro-t

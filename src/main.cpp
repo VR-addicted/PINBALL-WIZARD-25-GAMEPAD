@@ -356,20 +356,29 @@ void RGBbaseLight(){
     strip.Show();
 }
 
+
 void RGBshutDownSequence(){
-for(uint8_t i=20; i > 0; i--){
+
+for (int i = 0; i < 60; i++) {
+    float t = (float)i / 60.0f;       // 0.0 → 1.0
+    float speed = 1.0f - powf(t, 2);  // Quadratische Kurve (langsam → schnell)
+
+    int d1 = 10 + speed * 80;         // 10–90 ms
+    int d2 = 5  + speed * 40;         // 5–45 ms
+
     RGBall0();
     strip.Show();
-    delay(i * 30);
-    setPinballLed(4,  255, 10, 10);   // FRONT-L
-    strip.Show();
-    delay(i * 10);
-    }
+    delay(d1);
 
-setPinballLed(4,  40, 10, 10);   // FRONT-L 
-strip.Show();  
- 
+    setPinballLed(4, 255, 10, 10);
+    strip.Show();
+    delay(d2);
 }
+
+setPinballLed(4, 40, 10, 10);
+strip.Show();
+}
+
 
 // einfache Rainbow-Funktion (HSV → RGB)
 RgbColor wheel(uint8_t pos, uint8_t brightness)

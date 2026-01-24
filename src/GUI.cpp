@@ -1307,36 +1307,32 @@ void GUI::menu6() {
         if(_touchDetected){
            if(_lastTouchY < 240){
             animationFlag = true;
-
-ledcWrite(0, 255); // display noch mal richtig hell machen für die reaktivierungs message im shutdown screen 
-_tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bgColor);   // clear screen   
-_tft.setTextColor(0xFFFF);
-_tft.setTextSize(1);
-_tft.setFreeFont(&FreeMono18pt7b);
-_tft.drawString("DEEPSLEEP", 25, 30);
-_tft.drawRect(16, 143, 205, 71, 0xFFFF);
-_tft.fillRect(20, 214, 11, 9, 0xE8EC);
-_tft.fillRect(207, 214, 10, 3, 0x7A08);
-_tft.fillRect(13, 158, 3, 15, 0x7A08);
-_tft.fillRect(221, 158, 3, 15, 0x7A08);
-_tft.fillRect(110, 161, 19, 31, 0x73AE);
-_tft.setTextColor(0xE8EC);
-_tft.drawString("RESTART", 17, 257);
-_tft.drawLine(25, 227, 25, 249, 0xE8EC);
-_tft.drawLine(26, 229, 34, 237, 0xE8EC);
-_tft.drawLine(24, 229, 16, 237, 0xE8EC);
-_tft.drawLine(0, 0, 0, 0, 0x73AE);
-_tft.drawLine(38, 144, 38, 195, 0x73AE);
-_tft.drawLine(38, 196, 197, 196, 0x73AE);
-_tft.drawLine(0, 0, 0, 0, 0x73AE);
-_tft.drawLine(197, 195, 197, 144, 0x73AE);
-_tft.setTextColor(0x24BE);
-_tft.drawString("bye bye", 41, 84);
-RGBshutDownSequence();
-delay(2000);
-
-
-
+            ledcWrite(0, 255); // display noch mal richtig hell machen für die reaktivierungs message im shutdown screen 
+            _tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bgColor);   // clear screen   
+            _tft.setTextColor(0xFFFF);
+            _tft.setTextSize(1);
+            _tft.setFreeFont(&FreeMono18pt7b);
+            _tft.drawString("DEEPSLEEP", 25, 30);
+            _tft.drawRect(16, 143, 205, 71, 0xFFFF);
+            _tft.fillRect(20, 214, 11, 9, 0xE8EC);
+            _tft.fillRect(207, 214, 10, 3, 0x7A08);
+            _tft.fillRect(13, 158, 3, 15, 0x7A08);
+            _tft.fillRect(221, 158, 3, 15, 0x7A08);
+            _tft.fillRect(110, 161, 19, 31, 0x73AE);
+            _tft.setTextColor(0xE8EC);
+            _tft.drawString("RESTART", 17, 257);
+            _tft.drawLine(25, 227, 25, 249, 0xE8EC);
+            _tft.drawLine(26, 229, 34, 237, 0xE8EC);
+            _tft.drawLine(24, 229, 16, 237, 0xE8EC);
+            _tft.drawLine(0, 0, 0, 0, 0x73AE);
+            _tft.drawLine(38, 144, 38, 195, 0x73AE);
+            _tft.drawLine(38, 196, 197, 196, 0x73AE);
+            _tft.drawLine(0, 0, 0, 0, 0x73AE);
+            _tft.drawLine(197, 195, 197, 144, 0x73AE);
+            _tft.setTextColor(0x24BE);
+            _tft.drawString("bye bye", 41, 84);
+            RGBshutDownSequence();
+            delay(2000);
            }
 
 
