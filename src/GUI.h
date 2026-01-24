@@ -29,9 +29,7 @@
 
 #include <GamepadKeyboardHID.h>
 
-#include <cstdio>  
-#include <NeoPixelBus.h>
-
+#include <cstdio>    
 
 extern TFT_eSprite spr;
 
@@ -41,16 +39,7 @@ class GUI {
   public:
     
     
-    //GUI(TFT_eSPI& display, GamepadHID* gp, KeyboardHID* kb);  
-    //GUI(TFT_eSPI& tft, Gamepad& gamepad, Keyboard& keyboard, NeoPixelBus<NeoGrbFeature, NeoEsp32Rmt0800KbpsMethod>& strip);
-
-//     // GUI.h
-// GUI(TFT_eSPI& tft,
-//     GamepadHID* gp,
-//     KeyboardHID* kb,
-//     NeoPixelBus<NeoGrbFeature, NeoEsp32Rmt0800KbpsMethod>& strip);
-
-    GUI(TFT_eSPI& tft, GamepadHID* gp, KeyboardHID* kb, NeoPixelBus<NeoGrbFeature, NeoEsp32Rmt0800KbpsMethod>& strip);
+    GUI(TFT_eSPI& display, GamepadHID* gp, KeyboardHID* kb);  
 
     bool UIclearScreen = true  ;
     #define bgColor 0x2104
@@ -126,7 +115,8 @@ bool drawButtonCheatStoreProfile(int8_t mode = 0);
 
 private:
 
-    NeoPixelBus<NeoGrbFeature, NeoEsp32Rmt0800KbpsMethod>& _strip;
+    
+    
     
     GamepadHID* _gamepad = nullptr;
     KeyboardHID* _keyboard = nullptr;

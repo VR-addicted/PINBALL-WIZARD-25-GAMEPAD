@@ -65,11 +65,8 @@ extern const char* DEVICE_MANUFACTURER;
 
 extern bool isBleConnected();
 
-// extern void setPinballLed();
-extern void setPinballLed(uint8_t ledIndex, uint8_t r, uint8_t g, uint8_t b, uint8_t w = 0);
 extern void RGBall0();                               // alle leds auf 0
-
-
+extern void RGBshutDownSequence();                   // alle leds aus, front left flashen, dann front left soft red als standby und reaktivation hinweis leuchte
 extern void formatNVS();
 extern void sendBTcommandActionKey(bool inputMode);
 extern bool wasConnected;
@@ -197,20 +194,9 @@ int touchX, touchY;
 
 
 
-// GUI::GUI(TFT_eSPI& display, GamepadHID* gp, KeyboardHID* kb)
-//     : _tft(display), _gamepad(gp), _keyboard(kb)
-// {}
-
-GUI::GUI(TFT_eSPI& tft,
-         GamepadHID* gp,
-         KeyboardHID* kb,
-         NeoPixelBus<NeoGrbFeature, NeoEsp32Rmt0800KbpsMethod>& strip)
-    : _tft(tft),
-      _gamepad(gp),
-      _keyboard(kb),
-      _strip(strip)
-{
-}
+GUI::GUI(TFT_eSPI& display, GamepadHID* gp, KeyboardHID* kb)
+    : _tft(display), _gamepad(gp), _keyboard(kb)
+{}
 
 
 
@@ -1288,7 +1274,8 @@ void GUI::menu6() {
         static bool animationFlag = 0;
         
         if (!animationStarted) {
-            
+
+
 
             
             int index = 0;
@@ -1318,7 +1305,41 @@ void GUI::menu6() {
         }
     
         if(_touchDetected){
-           if(_lastTouchY < 240) animationFlag = true;
+           if(_lastTouchY < 240){
+            animationFlag = true;
+
+ledcWrite(0, 255); // display noch mal richtig hell machen für die reaktivierungs message im shutdown screen 
+_tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bgColor);   // clear screen   
+_tft.setTextColor(0xFFFF);
+_tft.setTextSize(1);
+_tft.setFreeFont(&FreeMono18pt7b);
+_tft.drawString("DEEPSLEEP", 25, 30);
+_tft.drawRect(16, 143, 205, 71, 0xFFFF);
+_tft.fillRect(20, 214, 11, 9, 0xE8EC);
+_tft.fillRect(207, 214, 10, 3, 0x7A08);
+_tft.fillRect(13, 158, 3, 15, 0x7A08);
+_tft.fillRect(221, 158, 3, 15, 0x7A08);
+_tft.fillRect(110, 161, 19, 31, 0x73AE);
+_tft.setTextColor(0xE8EC);
+_tft.drawString("RESTART", 17, 257);
+_tft.drawLine(25, 227, 25, 249, 0xE8EC);
+_tft.drawLine(26, 229, 34, 237, 0xE8EC);
+_tft.drawLine(24, 229, 16, 237, 0xE8EC);
+_tft.drawLine(0, 0, 0, 0, 0x73AE);
+_tft.drawLine(38, 144, 38, 195, 0x73AE);
+_tft.drawLine(38, 196, 197, 196, 0x73AE);
+_tft.drawLine(0, 0, 0, 0, 0x73AE);
+_tft.drawLine(197, 195, 197, 144, 0x73AE);
+_tft.setTextColor(0x24BE);
+_tft.drawString("bye bye", 41, 84);
+RGBshutDownSequence();
+delay(2000);
+
+
+
+           }
+
+
              else {
                     UImenu = 0;        
                     UIclearScreen = 1;
@@ -1331,6 +1352,10 @@ void GUI::menu6() {
         }
         
         if(animationFlag){
+
+
+
+
 
             for (int speedUp = 0; speedUp <16 ; speedUp++) 
             {
@@ -1346,26 +1371,10 @@ void GUI::menu6() {
                 else {
                         
                         
-                        if (currentBlock >= totalBlocks) {
-                            _tft.setTextColor(TFT_WHITE, TFT_BLACK);
-                            _tft.setTextSize(3);
-                            _tft.setCursor(50, 80);  
-                            _tft.print("SLEEP MODE");
-                            delay(1500);
-                            _tft.setCursor(50, 140);  
-                            _tft.print("TO");
-                            _tft.setCursor(50, 140);  
-                            _tft.print("WAKE UP");
-                            _tft.setCursor(50, 180);  
-                            _tft.print("PRESS");
-                            _tft.setCursor(50, 220);  
-                            _tft.print("FRONT LEFT");
-                            if(dbglvl) Serial.println("esp_deep_sleep_start()");
-                            RGBall0();
-                            setPinballLed(4,  20,  2, 2);   // FRONT-L-RGB als wakeup button reminder, läuft eh nur wenn an usb angeschlossen ist
-                            _strip.Show();
-                            delay(100);   // let the led get there last update 
-                            delay(2000);
+                        if (currentBlock >= totalBlocks) {  // end off destruction animation
+
+                            if(dbglvl>1) Serial.println("esp_deep_sleep_start()");
+                            _tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bgColor);   // clear screen  
                             esp_deep_sleep_start(); 
                             }
                         }
@@ -1373,6 +1382,15 @@ void GUI::menu6() {
         }
 
 }
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1459,30 +1477,30 @@ void GUI::UIupdate(int loopsPerSecond, int loopTimeMs) {
         
   
 
-    // ESP NOW x-Button
+    
     static uint32_t uiButtonESPnowResetviewTimeFlag  = 0;   
     if(espnowAirButtonCurrentState != espnowAirButtonCurrentStateSend)
     {
         espnowAirButtonCurrentStateSend =  espnowAirButtonCurrentState;
         if(espnowAirButtonCurrentStateSend == 0) { 
                 sendBTcommandActionKey(0);
-                if(UImenu == 1) espnowButton(3);  // pfeil down, nur in menu 1 dem flipper diagnose tisch anzeigen          
+                if(UImenu == 1) espnowButton(3);            
                 uiButtonESPnowResetviewTimeFlag = milliTimeCopy + 1000;      
             }
         if(espnowAirButtonCurrentStateSend == 1) {          
                 sendBTcommandActionKey(1);
-                if(UImenu == 1) espnowButton(2);  // pfeil up, nur in menu 1 dem flipper diagnose tisch anzeigen           
+                if(UImenu == 1) espnowButton(2);            
                 uiButtonESPnowResetviewTimeFlag=0;
             } 
     }
   
-    if(uiButtonESPnowResetviewTimeFlag){          // nachlauf. nach 1000ms wieder das X icon anzeigen               
+    if(uiButtonESPnowResetviewTimeFlag){                    
       if(uiButtonESPnowResetviewTimeFlag < milliTimeCopy){  
-            if(UImenu == 1) espnowButton(1);      // nur in menu 1 dem flipper diagnose tisch anzeigen               
+            if(UImenu == 1) espnowButton(1);                
             uiButtonESPnowResetviewTimeFlag = 0;            
         }
     }
-  
+
 
 
 
