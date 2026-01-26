@@ -49,14 +49,12 @@ extern int dbgGamePad;
 extern int flipFlopFlagSideLeft;
 extern int THRESHOLD_X, THRESHOLD_Y, THRESHOLD_Z;     // Thresholds for tilt detection
 extern bool secondKeyButtonFlag;
-extern bool animationFlag = 0;
 //extern float accX,accY;
 extern float pitch, roll;
 extern uint32_t ButtonFlipperLeftCounterToday;
 extern uint32_t ButtonFlipperLeftCounterAlltime;
 extern uint32_t ButtonFlipperRightCounterToday;
 extern uint32_t ButtonFlipperRightCounterAlltime;
-extern int8_t batteryESP32StatusLastround;
 extern bool btPairingActive;
 extern String macAdress;
 extern uint8_t myMAC[6];
@@ -708,10 +706,10 @@ static uint8_t batteryESP32StatusOld = 0;   // TODO: war schon draußen. checken
 
 
 // TODO ACHTUNG DAS WAR SCHON RAUSGESCHMISSEN. EVTL WIEDER RAUS SCHMEIßEN!
-    // if(batteryESP32Status != batteryESP32StatusOld) {
-    //     batteryESP32StatusOld = batteryESP32Status;
-    //     drawBatteryLocal(batteryESP32Status);
-    // }
+    if(batteryESP32Status != batteryESP32StatusOld) {
+        batteryESP32StatusOld = batteryESP32Status;
+        drawBatteryLocal(batteryESP32Status);
+    }
 
 
 
@@ -1256,132 +1254,106 @@ static unsigned long timeTrap = 0;              //
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Menu Gameover deepsleep/power off
 void GUI::menu6() {               
     
-                    int startX = 0;
-                    int startY = 40;
+        int startX = 0;
+        int startY = 40;
+   
+        if(drawOnce){                 // draw once
+        _tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bgColor);   // clean background
+        _tft.drawRect(startX, startY , 240, 170, TFT_WHITE);
+        _tft.setTextFont(2);         
+        _tft.setTextSize(6);
+        _tft.setTextColor(0x2000);    // 0x3186  // 0x4208  // todo: orange leuchten lassen
+        _tft.setCursor(startX + 20, startY );
+        _tft.print("GAME");        
+        _tft.setCursor(startX + 22, startY + 80);
+        _tft.print  ("OVER");        
+        _tft.setTextColor(0xFC00);    //TFT_WHITE
+        _tft.setCursor(startX + 45, startY + 185);
+        _tft.setTextSize(2);
+        _tft.println("SHUT DOWN");
+        _tft.setCursor(startX + 43, startY + 230);
+        _tft.print("INSERT COIN");
+                
+        _touchDetected = 0;  // ausnahmsweise um eine runde auszusetzen
+        drawOnce = 0;
+        }
+
+   
+        static bool animationStarted = false;
+        static int totalBlocks = (SCREEN_WIDTH / 8) * (SCREEN_HEIGHT / 8);
+        static int16_t blockPositions[1200][2]; // 30x40 = 1200 Blöcke
+        static int currentBlock = 0;
+        static bool animationFlag = 0;
+        // Initialisierung beim ersten Aufruf
+        if (!animationStarted) {
+
+
+
             
-                    if(drawOnce){              // draw once 
-                       drawOnce = 0;              // clear flag
-                                _tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bgColor);   // clean background
-                                _tft.drawRect(startX, startY , 240, 170, TFT_WHITE);
-                                _tft.setTextFont(2);         
-                                _tft.setTextSize(6);
-                                _tft.setTextColor(0x2000);    // 0x3186  // 0x4208  // todo: orange leuchten lassen
-                                _tft.setCursor(startX + 20, startY );
-                                _tft.print("GAME");        
-                                _tft.setCursor(startX + 22, startY + 80);
-                                _tft.print  ("OVER");        
-                                _tft.setTextColor(0xFC00);    //TFT_WHITE
-                                _tft.setCursor(startX + 45, startY + 185);
-                                _tft.setTextSize(2);
-                                _tft.println("SHUT DOWN");
-                                _tft.setCursor(startX + 43, startY + 230);
-                                _tft.print("INSERT COIN");
-                            
-                    _touchDetected = 0;           // ausnahmsweise um eine runde auszusetzen
-                    delay(500);                   // touch pad entprellen
-                    // TODO: clean touchBuffer in klasse
-                    }
-                    dbglvlOSD = 0;             // macht das störende blaue fenster während abschluss animation weg. reine optik
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
-    
-                if(_touchDetected){
-                   _touchDetected = 0;
-                    if(_lastTouchY < 240)      //animationFlag = true;
-                        {
-                        ledcWrite(0, 200); // display noch mal richtig hell machen für die reaktivierungs message im shutdown screen 
-                        _tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bgColor);   // clear screen   
-                        _tft.setTextColor(0xFFFF);
-                        _tft.setTextSize(1);
-                        _tft.setFreeFont(&FreeMono18pt7b);
-                        _tft.drawString("DEEPSLEEP", 25, 30);
-                        _tft.drawRect(16, 143, 205, 71, 0xFFFF);
-                        _tft.fillRect(20, 214, 11, 9, 0xE8EC);
-                        _tft.fillRect(207, 214, 10, 3, 0x7A08);
-                        _tft.fillRect(13, 158, 3, 15, 0x7A08);
-                        _tft.fillRect(221, 158, 3, 15, 0x7A08);
-                        _tft.fillRect(110, 161, 19, 31, 0x73AE);
-                        _tft.setTextColor(0xE8EC);
-                        _tft.drawString("RESTART", 17, 257);
-                        _tft.drawLine(25, 227, 25, 249, 0xE8EC);
-                        _tft.drawLine(26, 229, 34, 237, 0xE8EC);
-                        _tft.drawLine(24, 229, 16, 237, 0xE8EC);
-                        _tft.drawLine(0, 0, 0, 0, 0x73AE);
-                        _tft.drawLine(38, 144, 38, 195, 0x73AE);
-                        _tft.drawLine(38, 196, 197, 196, 0x73AE);
-                        _tft.drawLine(0, 0, 0, 0, 0x73AE);
-                        _tft.drawLine(197, 195, 197, 144, 0x73AE);
-                        _tft.setTextColor(0x24BE);
-                        _tft.drawString("bye bye", 41, 84);
-                        RGBshutDownSequence();
-                        delay(2000);
 
-                        // play destroy animation
-                        int totalBlocks = (SCREEN_WIDTH / 8) * (SCREEN_HEIGHT / 8);
-                        //int16_t blockPositions[1200][2]; // 30x40 = 1200 Blöcke
-                        int16_t blockPositions[totalBlocks][2]; // 30x40 = 1200 Blöcke mit X,Y coordinaten
-               
-                        // Array mit allen Block-Positionen füllen
-                        int index = 0;
-                        for (int y = 0; y < SCREEN_HEIGHT; y += 8) {
-                            for (int x = 0; x < SCREEN_WIDTH; x += 8) {
-                                blockPositions[index][0] = x;
-                                blockPositions[index][1] = y;
-                                index++;
-                            }
-                        }
-
-                        // Fisher-Yates Shuffle für zufällige Reihenfolge
-                        for (int i = totalBlocks - 1; i > 0; i--) {
-                            int j = random(i + 1);
-                            int16_t tempX = blockPositions[i][0];
-                            int16_t tempY = blockPositions[i][1];
-                            blockPositions[i][0] = blockPositions[j][0];
-                            blockPositions[i][1] = blockPositions[j][1];
-                            blockPositions[j][0] = tempX;
-                            blockPositions[j][1] = tempY;
-                        }
-                        // Ausgabe
-                        for(int16_t currentBlock=0; currentBlock < totalBlocks; currentBlock++)
-                            {
-                            _tft.fillRect(blockPositions[currentBlock][0], blockPositions[currentBlock][1], 8, 8, TFT_BLACK
-                            );
-                            delay(2); // Kleine Verzögerung für sichtbare Animation
-                            }
-                        ledcWrite(0, 0);
-                        if(dbglvl>1) Serial.println("esp_deep_sleep_start()");
-                        _tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, TFT_RED);   // clear screen  
-                        esp_deep_sleep_start(); 
+            // Array mit allen Block-Positionen füllen
+            int index = 0;
+            for (int y = 0; y < SCREEN_HEIGHT; y += 8) {
+                for (int x = 0; x < SCREEN_WIDTH; x += 8) {
+                    blockPositions[index][0] = x;
+                    blockPositions[index][1] = y;
+                    index++;
                 }
-            else {
+            }
+    
+            // Fisher-Yates Shuffle für zufällige Reihenfolge
+            for (int i = totalBlocks - 1; i > 0; i--) {
+                int j = random(i + 1);
+                int16_t tempX = blockPositions[i][0];
+                int16_t tempY = blockPositions[i][1];
+                blockPositions[i][0] = blockPositions[j][0];
+                blockPositions[i][1] = blockPositions[j][1];
+                blockPositions[j][0] = tempX;
+                blockPositions[j][1] = tempY;
+            }
+    
+            animationStarted = true;   // calculate only once
+            currentBlock = 0;
+            dbglvlOSD = 0;             // macht das störende blaue fenster während abschluss animation weg. reine optik
+            
+        }
+    
+        if(_touchDetected){
+           if(_lastTouchY < 240) animationFlag = true;
+            animationFlag = true;
+            ledcWrite(0, 255); // display noch mal richtig hell machen für die reaktivierungs message im shutdown screen 
+            _tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bgColor);   // clear screen   
+            _tft.setTextColor(0xFFFF);
+            _tft.setTextSize(1);
+            _tft.setFreeFont(&FreeMono18pt7b);
+            _tft.drawString("DEEPSLEEP", 25, 30);
+            _tft.drawRect(16, 143, 205, 71, 0xFFFF);
+            _tft.fillRect(20, 214, 11, 9, 0xE8EC);
+            _tft.fillRect(207, 214, 10, 3, 0x7A08);
+            _tft.fillRect(13, 158, 3, 15, 0x7A08);
+            _tft.fillRect(221, 158, 3, 15, 0x7A08);
+            _tft.fillRect(110, 161, 19, 31, 0x73AE);
+            _tft.setTextColor(0xE8EC);
+            _tft.drawString("RESTART", 17, 257);
+            _tft.drawLine(25, 227, 25, 249, 0xE8EC);
+            _tft.drawLine(26, 229, 34, 237, 0xE8EC);
+            _tft.drawLine(24, 229, 16, 237, 0xE8EC);
+            _tft.drawLine(0, 0, 0, 0, 0x73AE);
+            _tft.drawLine(38, 144, 38, 195, 0x73AE);
+            _tft.drawLine(38, 196, 197, 196, 0x73AE);
+            _tft.drawLine(0, 0, 0, 0, 0x73AE);
+            _tft.drawLine(197, 195, 197, 144, 0x73AE);
+            _tft.setTextColor(0x24BE);
+            _tft.drawString("bye bye", 41, 84);
+            RGBshutDownSequence();
+            delay(2000);
+           }
+
+
+             else {
                     UImenu = 0;        // zurück ins hauptmenu und cleane einige flags
                     UIclearScreen = 1;
                     flagUImenu6drawMenuOnce = 1;
@@ -1389,34 +1361,40 @@ void GUI::menu6() {
                     flagUImenu0DrawRowCells = true;
                     flagUImenu1SpriteDown = false; 
             }
-         }
+            _touchDetected = 0;
+        }
+        
+        if(animationFlag){
+
+            for (int speedUp = 0; speedUp <16 ; speedUp++)   // Zeige einen 16 Blocks pro Frame
+            {
+                if (currentBlock < totalBlocks) {
+                _tft.fillRect(
+                    blockPositions[currentBlock][0],
+                    blockPositions[currentBlock][1],
+                    8, 8, TFT_BLACK
+                );
+                currentBlock++;
+                delay(1); // Kleine Verzögerung für sichtbare Animation
+                } 
+                else {
+                        // Zeige Text nach abgeschlossener Animation
+                        // Deep Sleep nach Animation
+                        if (currentBlock >= totalBlocks) {
+
+
+
+
+
+                            if(dbglvl>1) Serial.println("esp_deep_sleep_start()");
+                            _tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bgColor);   // clear screen  
+                            esp_deep_sleep_start(); 
+                            }
+                        }
+                    }
+        }
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1984,33 +1962,33 @@ static int16_t posY = 220;               // später in klasse und dort per über
                 _tft.setCursor(208, posY - 8);
                 _tft.print("+");
                 
-                // show key mapping profile
+                
                 _tft.setTextFont(2); 
                 _tft.setTextSize(1);
-                _tft.setTextColor(TFT_BLACK, TFT_LIGHTGREY);   // TFT_WHITE
-                _tft.setCursor(64, posY + 11);   // 65     
+                _tft.setTextColor(TFT_BLACK, TFT_LIGHTGREY);   
+                _tft.setCursor(64, posY + 11);   
 
                 if(emulationModeOverride > 0){
                     _tft.print("[MAN] PROFILE ");
                     _tft.print(emulationModeOverride); 
                 }
-                else{  // if override is 0
+                else{  
                     _tft.print("[AUTO] PROFILE ");
                     _tft.print(emulationMode);         
                 }
             }
-        else if(mode == 2)// check touch fields, set redraw flag,  and return 0/1/2
+        else if(mode == 2)
                 {
-                        if(_lastTouchX > 1 && _lastTouchX < 50 && _lastTouchY > posY && _lastTouchY < posY + 40){         // minus button
+                        if(_lastTouchX > 1 && _lastTouchX < 50 && _lastTouchY > posY && _lastTouchY < posY + 40){         
                             emulationModeOverride--  ;
                             if(emulationModeOverride < 1) emulationModeOverride = 0;
                             if(emulationModeOverride > 0) emulationMode = emulationModeOverride;
 
                             return -1; 
                          }
-                        else if(_lastTouchX > 199 && _lastTouchX < 241 && _lastTouchY > posY && _lastTouchY < posY + 40){  // plus button
+                        else if(_lastTouchX > 199 && _lastTouchX < 241 && _lastTouchY > posY && _lastTouchY < posY + 40){  
                             emulationModeOverride++;
-                            if(emulationModeOverride > 5) emulationModeOverride = 6;                                       // limit der profile im menu
+                            if(emulationModeOverride > 5) emulationModeOverride = 6;                                       
                             if(emulationModeOverride > 0) emulationMode = emulationModeOverride;
                             
                             return 1;
@@ -2021,12 +1999,10 @@ return 0;
 
 
 
-// =====================================================================================
-// BT methoden
 
 
 
-// extern void setupAdvertising();
+
 
 
 
@@ -2065,7 +2041,7 @@ void GUI::clearBluetoothPairings() {
 
     if (dbglvl > 1) Serial.println("Clearing all BLE bonds...");
     
-    // Nie während aktiver Verbindung!
+    
     NimBLEServer* srv = NimBLEDevice::getServer();
     if (srv && srv->getConnectedCount() > 0) {
         if (dbglvl > 0) Serial.println("[clearBluetoothPairings()] Cannot clear bonds while connected!");
@@ -2074,16 +2050,16 @@ void GUI::clearBluetoothPairings() {
     
     btPairingActive = true;
     
-    // Advertising stoppen
+    
     NimBLEAdvertising* adv = NimBLEDevice::getAdvertising();
     if (adv) adv->stop();
     
-    // Bonds löschen
+    
     bool success = NimBLEDevice::deleteAllBonds();
     
     if (dbglvl > 0) Serial.printf("[deleteAllBonds()] Delete all bonds: %s\n", success ? "OK" : "FAILED");
         
-    // Advertising neu starten
+    
     if (adv) {
         delay(100);
         adv->start(0);
@@ -2097,11 +2073,11 @@ void GUI::clearBluetoothPairings() {
 
 
 
-// Wandelt "AA:BB:CC:DD:EE:FF" in 6 Bytes um.
-// Gibt true zurück, wenn genau 6 Hex-Bytes gelesen wurden.
+
+
 static bool parseMac(const String& macStr, uint8_t out[6]) {
     int v[6];
-    if (macStr.length() < 11) return false; // minimaler Schutz; eigentlich sind es 17 Zeichen
+    if (macStr.length() < 11) return false; 
     if (sscanf(macStr.c_str(), "%x:%x:%x:%x:%x:%x",
                &v[0], &v[1], &v[2], &v[3], &v[4], &v[5]) != 6) {
         return false;
@@ -2120,13 +2096,13 @@ void GUI::startFreshPairing() {
   NimBLEAdvertising* adv = NimBLEDevice::getAdvertising();
   if (adv && adv->isAdvertising()) adv->stop();
 
-  // Optional: Bonds nicht generell löschen, nur falls nötig.
-  // NimBLEDevice::deleteAllBonds();
+  
+  
 
   delay(200);
   if (adv) adv->start(0);
 
-  // Optional: 10s warten und UI Punkte malen
+  
   unsigned long t0 = millis();
   while (millis() - t0 < 20000 && !isBleConnected()) {
     delay(1400);
@@ -2139,8 +2115,8 @@ void GUI::startFreshPairing() {
 
 
 
-// translate mac address to device name and set emulation mode if not set by user
-// Verbesserte Device-Erkennung
+
+
 String GUI::getDeviceName(const String& macAddress) {
     String oui = macAddress.substring(0, 8);
     
@@ -2150,7 +2126,7 @@ String GUI::getDeviceName(const String& macAddress) {
     }
     
     if (emulationModeOverride == 0) {
-        // Quest-Varianten (verschiedene OUIs möglich)
+        
         if (oui == "c0:dd:8a" || oui == "2c:26:17" || oui == "ac:37:43") {
             emulationMode = 1;
             return "META QUEST";
@@ -2160,7 +2136,7 @@ String GUI::getDeviceName(const String& macAddress) {
             return "Samsung";
         }
         else if (oui == "64:5d:86") {
-            emulationMode = 5;    // this profile with keyboard strokes für pinballFX2025
+            emulationMode = 5;    
             return "ASUS PC";
         }
     }

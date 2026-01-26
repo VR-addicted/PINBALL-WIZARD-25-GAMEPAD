@@ -267,50 +267,12 @@ int     dbglvlOSD   = DBGLVLOSD_DEFAULT ; // only a small blue sprite with minim
 const uint16_t PixelCount = 6;                  // normal 6px, aber wenn man rgb mit rgbw mischt, mischt man 3 mit 4 byte sequenzen. notlösung eigene array füllfunktion.
 const uint8_t PixelPin = 5;
 int16_t PixelReadyToSend = 0;
+
+
 // GRB + RMT
-// NeoPixelBus<NeoGrbFeature, NeoEsp32Rmt0800KbpsMethod> strip(PixelCount, PixelPin);  // RGB ONLY, 3 byte pakete. minimal schneller.
-// NeoGrbwFeature / NeoRgbwFeature falls farben vertauscht sind.
-//NeoPixelBus<NeoGrbwFeature, NeoEsp32Rmt0800KbpsMethod> strip(PixelCount, PixelPin);    // RGBW, 4 byte pakete. Mischung RGB + RGBW möglich und notwendig wegen der RGBW DOTS
 NeoPixelBus<NeoGrbFeature, NeoEsp32Rmt0800KbpsMethod> strip(PixelCount, PixelPin);    // RGBW, 3 byte pakete. Mischung RGB + RGBW möglich, aber nicht gut. eigene array füllfunktion nutzen
 
-
-// HOT-FIX wenn man gemischte RGB mit RGBW mixen will. 
-// void setPinballLed(uint8_t ledIndex, uint8_t r, uint8_t g, uint8_t b, uint8_t w = 0) {
-//     uint16_t bp = 0; // Absolute Byte-Position in der Kette
-
-//     // Hardware-Mapping (wie gehabt)
-//     if (ledIndex == 0)      bp = 0;   // in meiner kette: RGBW DOT R, 4 bytes
-//     else if (ledIndex == 1) bp = 4;   // in meiner kette: FL R, 3 bytes
-//     else if (ledIndex == 2) bp = 7;   // in meiner kette: FRONT R, 3 bytes
-//     else if (ledIndex == 3) bp = 10;  // in meiner kette: FL L, 3 bytes
-//     else if (ledIndex == 4) bp = 13;  // in meiner kette: Front L, 3 bytes
-//     else if (ledIndex == 5) bp = 16;  // in meiner kette: RGBW DOT L, 4 bytes
-//     else return;
-
-//     // Hilfsfunktion zum Schreiben einzelner Bytes in den RGB-Puffer
-//     auto setRawByte = [&](uint16_t bytePos, uint8_t value) {
-//         uint16_t pixelIdx = bytePos / 3;
-//         uint8_t colorChannel = bytePos % 3;
-        
-//         RgbColor current = strip.GetPixelColor(pixelIdx);
-//         if (colorChannel == 0) current.G = value; // NeoGrb: 0=G, 1=R, 2=B
-//         else if (colorChannel == 1) current.R = value;
-//         else if (colorChannel == 2) current.B = value;
-//         strip.SetPixelColor(pixelIdx, current);
-//     };
-
-//     // Bytes nacheinander schreiben (Reihenfolge G-R-B für WS2812/SK6812)
-//     setRawByte(bp,     g);
-//     setRawByte(bp + 1, r);
-//     setRawByte(bp + 2, b);
-
-//     // Das W-Byte bei Index 0 und 5
-//     if (ledIndex == 0 || ledIndex == 5) {
-//         setRawByte(bp + 3, w);
-//     }
-// }
-
-
+// vereinfachter 3 byte call, machts aber unnötig langsam. nur ein überbleibsel, wenn man wieder auf die rgbw methode umsteigen will. das geht dann durch austauschen der funktion setPinballLed() hier drüber auskommentieren und den kurzen setPinballLed() auskommentieren
 void setPinballLed(uint8_t ledIndex, uint8_t r, uint8_t g, uint8_t b) {
     // Nutze die Standard-Funktion, sie ist auf dem S3/ESP32 extrem schnell
     // und verhindert, dass du den internen RMT-Pointer korrumpierst.
@@ -318,22 +280,18 @@ void setPinballLed(uint8_t ledIndex, uint8_t r, uint8_t g, uint8_t b) {
 }
 
 
-
-
-
-
-
-
 void RGBall0(){
     for (uint16_t i = 0; i < PixelCount ; i++) {   // wegen hotfix -1
-        setPinballLed(i, 0, 0, 0);
+        //setPinballLed(i, 0, 0, 0);   // same command but 1 api call more
+        strip.SetPixelColor(i, RgbColor(0, 0, 0));
     }
     strip.Show();
 }
 
 void RGBall40(){
     for (uint16_t i = 0; i < PixelCount ; i++) {   // wegen hotfix -1
-        setPinballLed(i, 40, 40, 40);
+        //setPinballLed(i, 40, 40, 40);
+        strip.SetPixelColor(i, RgbColor(40, 40, 40));
     }
     strip.Show();
 }
@@ -341,18 +299,18 @@ void RGBall40(){
 
 void RGBbaseLight(){
     // base light config
-    // strip.SetPixelColor(0, RgbwColor(40,   0,   0,  0));
-    // strip.SetPixelColor(1, RgbwColor(  0, 40,   0,  0));
-    // strip.SetPixelColor(2, RgbwColor(  0,   0, 40,  0));
-    // strip.SetPixelColor(3, RgbwColor(  0,   0, 40,  0));
-    // strip.SetPixelColor(4, RgbwColor(  0, 40,   0,  0));
-    // strip.SetPixelColor(5, RgbwColor(40,   0,   0,  0));
-    setPinballLed(0,  40,  40, 40);   // DOT-R
-    setPinballLed(1,  40,  40, 40);   // FL-R
-    setPinballLed(2, 255,  40, 40);   // Front-R
-    setPinballLed(3,  40,  40, 40);   // FL-L
-    setPinballLed(4,  40, 180, 40);   // FRONT-L
-    setPinballLed(5,  40,  40, 40);   // DOT RGBW-L
+    strip.SetPixelColor(0, RgbColor( 40,  40, 40));  // DOT-R
+    strip.SetPixelColor(1, RgbColor( 40,  40, 40));  // FL-R
+    strip.SetPixelColor(2, RgbColor(255,  40, 40));  // Front-R
+    strip.SetPixelColor(3, RgbColor( 40,  40, 40));  // FL-L
+    strip.SetPixelColor(4, RgbColor( 40, 180, 40));  // FRONT-L
+    strip.SetPixelColor(5, RgbColor( 40,  40, 40));  // DOT RGBW-L
+    // setPinballLed(0,  40,  40, 40);   // DOT-R
+    // setPinballLed(1,  40,  40, 40);   // FL-R
+    // setPinballLed(2, 255,  40, 40);   // Front-R
+    // setPinballLed(3,  40,  40, 40);   // FL-L
+    // setPinballLed(4,  40, 180, 40);   // FRONT-L
+    // setPinballLed(5,  40,  40, 40);   // DOT RGBW-L
     strip.Show();
 }
 
@@ -370,12 +328,14 @@ for (int i = 0; i < 60; i++) {
     strip.Show();
     delay(d1);
 
-    setPinballLed(4, 255, 10, 10);
+    strip.SetPixelColor(4, RgbColor( 255, 10, 10));  // FRONT-L
+    //setPinballLed(4, 255, 10, 10);
     strip.Show();
     delay(d2);
 }
 
-setPinballLed(4, 40, 10, 10);
+//setPinballLed(4, 40, 10, 10);
+strip.SetPixelColor(4, RgbColor( 40, 10, 10));  // FRONT-L
 strip.Show();
 }
 
@@ -955,6 +915,8 @@ const uint8_t ioPinSideLeft   =   4 ;                 // cut pcb trace
 const uint8_t ioPinSideRight  =  17 ;                 // cut pcb trace
 const uint8_t ioPinFrontLeft  =   0 ;                 // only scratch pcb trace GPIO0 shared with boot mode, easy to flash with (FRONT LEFT) pullup resistor
 const uint8_t ioPinFrontRight =  16 ;                 // cut pcb trace
+const uint8_t ioPinSideX      =  35 ;                 // solder 10k pullup to 3.3v. button left+right shares 1 line. (same function). liegt auf anderer speicherbank. pin35 - 32 = 3. das gleiche geht mit mod
+const uint8_t ioPinSideXbit   = ioPinSideX %32;
 
 
 
@@ -1013,6 +975,9 @@ bool secondKeySetLaterRelease    = 0;
 unsigned long secondKeySetLaterReleaseTimerFlag = 0;
 bool sendTimedPlungerButtonA     = false;
 unsigned long sendTimedPlungerButtonATimerReleaseFlag = 0;
+uint32_t keyTimerFlagActionKey   = 0;       // Flipper rechts debounce Timemark
+int flipFlopFlagActionKey        = 0;
+
 
 // sendet nach debouncetilt ca 100 ms die padX (0)message
 #define debounceTilt 100 
@@ -1509,7 +1474,7 @@ void sendBTcommandAngleTiltButtonDown(bool inputMode, int analogValue = 0){ // 4
     }
 }
 
-// Action Key (ist normal X auf dem meta controller) ich verwende ihn z.b. für den funkbutton
+// Action Key (ist normal X-Key auf dem meta controller) ich verwende ihn z.b. für den funkbutton
 // input Mode 0 = release, 1 set
 void sendBTcommandActionKey(bool inputMode){   
     
@@ -1539,11 +1504,40 @@ void sendBTcommandActionKey(bool inputMode){
     }
 }
 
+void sendBTcommandActionKeySecondKey(bool inputMode){   
+    
+    int8_t useMode = emulationMode;  
+    if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
+    if(inputMode){
+        switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
+            case 1: hid->gamepad->press(BUTTON_2);       gamepadSendReportFlag   = true;  break;  // [verified] quest 
+            case 2: hid->gamepad->press(BUTTON_3);       gamepadSendReportFlag   = true;  break;  // android 5 = (Y)
+            case 3: hid->gamepad->press(BUTTON_1);       gamepadSendReportFlag   = true;  break;  // pc
+            case 4: hid->gamepad->press(BUTTON_1);       gamepadSendReportFlag   = true;  break;  // iphone
+            case 5: hid->keyboard->keyPress(KEY_5);      keyboardSendReportFlag  = true;  break;  // switch
+            case 6: hid->gamepad->press(BUTTON_2);       gamepadSendReportFlag   = true;  break;  // [verified] quest star wars pinball different keymap
+           default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
+        }
+    }
+    else{
+        switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
+            case 1: hid->gamepad->release(BUTTON_2);     gamepadSendReportFlag   = true;  break;  // [release] quest
+            case 2: hid->gamepad->release(BUTTON_3);     gamepadSendReportFlag   = true;  break;  // android 5 = (Y)
+            case 3: hid->gamepad->release(BUTTON_1);     gamepadSendReportFlag   = true;  break;  // pc
+            case 4: hid->gamepad->release(BUTTON_1);     gamepadSendReportFlag   = true;  break;  // iphone
+            case 5: hid->keyboard->keyRelease(KEY_5);    keyboardSendReportFlag  = true;  break;  // pinballFX 2025
+            case 6: hid->gamepad->release(BUTTON_2);     gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
+           default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
+        }
+    }
+}
+
+
 
 // super schnelle funktion zum lesen der manuellen tasten, die alle gepulluped sind. deutlich schneller als digitalRead
-inline bool readPinLow(uint8_t pin) {  // gut lesbare turbo funktion zum lesen der 4 manuellen tasten, die alle gepulluped sind. deutlich schneller als digitalRead
-    return !(GPIO.in & (1 << pin));
-}
+// inline bool readPinLow(uint8_t pin) {  // gut lesbare turbo funktion zum lesen der 4 manuellen tasten, die alle gepulluped sind. deutlich schneller als digitalRead
+//     return !(GPIO.in & (1 << pin));
+// }
 
 
 // ESPNOW foot pedal datareceiver
@@ -1790,7 +1784,9 @@ if (esp_now_add_peer(&peerInfo) != ESP_OK) {
     if(dbglvl>1) Serial.println("Showing intro...");
     ui->intro();  // hier in die warteschleife rgb rainbow animation
     RGBbaseLight();
-    // RGB intro 
+    
+    // TODO:
+    // RGB intro ins UI intro einbauen, statt delay 
     // uint32_t start = millis();
 
     // ~2 Sekunden Animation
@@ -1821,7 +1817,7 @@ if (esp_now_add_peer(&peerInfo) != ESP_OK) {
     if(dbglvl>1) Serial.println("Initializing Gyro Sensor...");
       
       Wire.begin(I2C_SDA, I2C_SCL, 1000000);
-      delay(50);
+      delay(150);
 
       // BMI160 Initialisierung 
       // 1. Hardware-Reset (optional, aber sauber), falls man im programm noch mal neu kalibrieren will, vllt nützlich
@@ -1918,7 +1914,8 @@ if (esp_now_add_peer(&peerInfo) != ESP_OK) {
     pinMode(ioPinSideRight, INPUT_PULLUP); // set internal pullup. if resistor is used, change to "INPUT"
     pinMode(ioPinFrontLeft,  INPUT);       // b-key gpio0 fix! shared with boot mode, easy to flash with
     pinMode(ioPinFrontRight, INPUT);       // a-Key gpio4 theoretisch geht auch INPUT_PULLUP, aber wake up from sleep geht nur mit 47k pull resistor soldered for deep sleep wakeup
-
+    pinMode(ioPinSideX,      INPUT);        // an IO35 muss ein 10k-50k pullup widerstand angelötet werden 3.3v 
+    
     
     // PCB Power management                // Deep Sleep Wake-Up bei fallender Flanke, also wenn linker plunger gedrückt wird.
     // TODO: statt deep sleep 2x die leitung des batterie management chips auf ground ziehen, für endgültige abschaltung
@@ -2236,11 +2233,15 @@ if(secondKeyButtonFlag)
 
 
 
-// better readable and compiler optimzed version hardware key readings, without rtos. 
-if (readPinLow( ioPinSideLeft   )) keyTimerFlagSideLeft   = milliTimeCopy + debounceKey;
-if (readPinLow( ioPinSideRight  )) keyTimerFlagSideRight  = milliTimeCopy + debounceKey;
-if (readPinLow( ioPinFrontLeft  )) keyTimerFlagFrontLeft  = milliTimeCopy + debounceKey;
-if (readPinLow( ioPinFrontRight )) keyTimerFlagFrontRight = milliTimeCopy + debounceKey;
+// highspeed button polling. better readable and compiler optimzed version hardware key readings, without rtos. 
+// poll the hardware buttons
+if (!(GPIO.in      & (1 << ioPinSideLeft)))    keyTimerFlagSideLeft   = milliTimeCopy + debounceKey; 
+if (!(GPIO.in      & (1 << ioPinSideRight)))   keyTimerFlagSideRight  = milliTimeCopy + debounceKey;
+if (!(GPIO.in      & (1 << ioPinFrontLeft)))   keyTimerFlagFrontLeft  = milliTimeCopy + debounceKey;
+if (!(GPIO.in      & (1 << ioPinFrontRight)))  keyTimerFlagFrontRight = milliTimeCopy + debounceKey;
+if (!(GPIO.in1.val & (1 << ioPinSideXbit)))    keyTimerFlagActionKey  = milliTimeCopy + debounceKey;  
+
+
 
 
 
@@ -2375,12 +2376,15 @@ if(keyTimerFlagSideLeft > milliTimeCopy){                                       
                                     ButtonFlipperLeftCounterToday++;
                                     ButtonFlipperLeftCounterAlltime++;
                                     flipFlopFlagSideLeft = 1;
-                                    //strip.SetPixelColor(3, RgbwColor(255, 40, 40, 0));
-                                    //strip.SetPixelColor(4, RgbwColor(255, 40, 40, 0));
-                                    //strip.SetPixelColor(5, RgbwColor(255, 40, 40, 0));
-                                    setPinballLed(3, 255,0,0);  // FL-L
-                                    setPinballLed(4, 255,0,0);  // FRONT-L
-                                    setPinballLed(5, 255,0,0);  // DOT RGBW-L
+                                    strip.SetPixelColor(3, RgbColor(255, 0, 0));          // FL-L
+                                    strip.SetPixelColor(4, RgbColor(255, 0, 0));          // FRONT-L
+                                    strip.SetPixelColor(5, RgbColor(255, 0, 0));          // DOT RGBW-L
+                                    //setPinballLed(3, 255,0,0);  // FL-L
+                                    //setPinballLed(4, 255,0,0);  // FRONT-L
+                                    //setPinballLed(5, 255,0,0);  // DOT RGBW-L
+
+
+
                                     PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0 
                                     }
       }
@@ -2397,13 +2401,16 @@ else
                                     }
                                     flipFlopFlagSideLeft = 0;
                                    
-                                    // strip.SetPixelColor(3, RgbwColor(40, 40, 40, 0));
-                                    // strip.SetPixelColor(4, RgbwColor(40, 40, 40, 0));
-                                    // strip.SetPixelColor(5, RgbwColor(40, 40, 40, 0));
+                                    strip.SetPixelColor(3, RgbColor(40, 40, 40));    // FL-L
+                                    strip.SetPixelColor(4, RgbColor(40,180, 40));    // FRONT-L
+                                    strip.SetPixelColor(5, RgbColor(40, 40, 40));    // DOT RGBW-L
 
-                                    setPinballLed(3, 40,40,40);   // FL-L
-                                    setPinballLed(4, 40,180,40);  // FRONT-L
-                                    setPinballLed(5, 40,40,40);   // DOT RGBW-L
+                                    //setPinballLed(3, 40,40,40);   // FL-L
+                                    //setPinballLed(4, 40,180,40);  // FRONT-L
+                                    //setPinballLed(5, 40,40,40);   // DOT RGBW-L
+
+
+
                                     PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0 
     }
 }
@@ -2428,14 +2435,14 @@ if(keyTimerFlagSideRight > milliTimeCopy){                                      
                                     ButtonFlipperRightCounterToday++;
                                     ButtonFlipperRightCounterAlltime++;
                                     flipFlopFlagSideRight = 1;
-                                    //strip.SetPixelColor(0, RgbColor(40,   0,   0));
-                                    //strip.SetPixelColor(5, RgbColor(40,   0,   0));
-                                    // strip.SetPixelColor(0, RgbwColor(255, 40, 40, 0));
-                                    // strip.SetPixelColor(1, RgbwColor(255, 40, 40, 0));
-                                    // strip.SetPixelColor(2, RgbwColor(255, 40, 40, 0));
-                                    setPinballLed(0, 255,0,0);  // DOT-R
-                                    setPinballLed(1, 255,0,0);  // FL-R
-                                    setPinballLed(2, 255,0,0);  // Front-R
+
+                                    strip.SetPixelColor(0, RgbColor(255,0,0));             // NEOPIXEL-R
+                                    strip.SetPixelColor(1, RgbColor(255,0,0));             // FL-R
+                                    strip.SetPixelColor(2, RgbColor(255,0,0));             // Front-R
+
+                                    //setPinballLed(0, 255,0,0);  // DOT-R
+                                    //setPinballLed(1, 255,0,0);  // FL-R
+                                    //setPinballLed(2, 255,0,0);  // Front-R
                                     PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0 
                                     }
       }
@@ -2451,17 +2458,59 @@ else
                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(4,0);    // TODO: change to flag methode
                                     }
                                     flipFlopFlagSideRight = 0;
-                                    //strip.SetPixelColor(0, RgbColor(0,   40,   0));
-                                    //strip.SetPixelColor(5, RgbColor(0,   40,   0));
-                                    // strip.SetPixelColor(0, RgbwColor(40, 40, 40, 0));
-                                    // strip.SetPixelColor(1, RgbwColor(40, 40, 40, 0));
-                                    // strip.SetPixelColor(2, RgbwColor(40, 40, 40, 0));
-                                    setPinballLed(0, 40,40,40);  // DOT-R
-                                    setPinballLed(1, 40,40,40);  // FL-R
-                                    setPinballLed(2, 255,40,40);  // Front-R
-                                    PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0 
+
+                                    strip.SetPixelColor(0, RgbColor( 40, 40, 40));          // DOT-R
+                                    strip.SetPixelColor(1, RgbColor( 40, 40, 40));          // FL-R
+                                    strip.SetPixelColor(2, RgbColor(255, 40, 40));          // Front-R
+                                    //setPinballLed(0, 40,40,40);   // DOT-R
+                                    //setPinballLed(1, 40,40,40);   // FL-R
+                                    //setPinballLed(2, 255,40,40);  // Front-R
+                                    PixelReadyToSend++;                                     // set trigger, and use counter for what ever. reset to 0 
                                     }
 }
+
+
+
+
+// TODO hier die funkbutton variable als OR implementieren
+// X-Button (physical on gpio35) Darstellung und Sende BT command
+static bool releaseTrickFlagActionKey;
+if(keyTimerFlagActionKey > milliTimeCopy){                                                  // wenn größer, muss timer gesetzt sein und taste aktiv 
+    
+    if (flipFlopFlagActionKey == 0){  
+                                    if(!secondKeyButtonFlag){                               // Standart Key set
+                                        sendBTcommandActionKey(1);
+                                        if(UImenu == 1) ui->espnowButton(2);                // draw x-button pressed // TODO: change to flag methode
+                                        releaseTrickFlagActionKey = 0;                      // stellt 100% zuverlässig ausschließlich den korrekten button nach benutzung zurück
+                                    }
+                                    else{                                                   // virtual "second" key front right set
+                                        sendBTcommandActionKeySecondKey(1);
+                                        if(UImenu == 1) ui->espnowButton(3);                // TODO: erzeuge noch ein viertes icon für die shift+x key funktion. change to flag methode
+                                        releaseTrickFlagActionKey = 1;                      // stellt 100% zuverlässig ausschließlich den korrekten button nach benutzung zurück
+                                    }
+                                    flipFlopFlagActionKey = 1;
+                                    }
+      }
+else
+    {   // zeit ist abgelaufen, setze einmal auf weiß und auf release
+    if (flipFlopFlagActionKey == 1){   
+                                    if(!releaseTrickFlagActionKey){                         // Standart Key release  // 
+                                       sendBTcommandActionKeySecondKey(0); 
+                                       if(UImenu == 1) ui->espnowButton(1);                 // draw white flipper  // TODO: change to flag methode
+                                    }
+                                    else{                                                   // virtual "second" key front right release
+                                       sendBTcommandActionKeySecondKey(0);
+                                       if(UImenu == 1) ui->espnowButton(1);                 // TODO: change to flag methode
+                                    }
+                                    flipFlopFlagActionKey = 0;
+
+                                    }
+}
+
+
+
+
+
 
 
 

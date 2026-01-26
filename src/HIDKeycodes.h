@@ -1,6 +1,6 @@
 #pragma once
 
-
+// HID Usage IDs für Buchstaben A–Z
 #define KEY_A 0x04
 #define KEY_B 0x05
 #define KEY_C 0x06
@@ -28,7 +28,7 @@
 #define KEY_Y 0x1C
 #define KEY_Z 0x1D
 
-
+// HID Usage IDs für Zahlen 0–9
 #define KEY_1 0x1E
 #define KEY_2 0x1F
 #define KEY_3 0x20
@@ -40,53 +40,53 @@
 #define KEY_9 0x26
 #define KEY_0 0x27
 
-
+// Zusatztasten (Standard-HID)
 #define KEY_ENTER     0x28
 #define KEY_ESCAPE    0x29
 #define KEY_BACKSPACE 0x2A
 #define KEY_TAB       0x2B
 #define KEY_SPACE     0x2C
 
+// Optional: Menü / Android-spezifisch (HID Consumer Page oder Android Keycodes)
+// Diese sind nicht im Standard-Keyboard-Usage-Table, müssten ggf. separat gesendet werden
+#define KEY_MENU     0x76  // Beispielwert, je nach Implementierung anpassen
 
+// Gamepad Button Bitmasken
+#define BUTTON_1   0x0001  // Bit 0  BUTTON_A
+#define BUTTON_2   0x0002  // Bit 1  BUTTON_B
+#define BUTTON_3   0x0004  // Bit 2  BUTTON_X
+#define BUTTON_4   0x0008  // Bit 3  BUTTON_Y
+#define BUTTON_5   0x0010  // Bit 4  BUTTON_LB
+#define BUTTON_6   0x0020  // Bit 5  BUTTON_RB
+#define BUTTON_7   0x0040  // Bit 6  BUTTON_BACK
+#define BUTTON_8   0x0080  // Bit 7  BUTTON_START
+#define BUTTON_9   0x0100  // Bit 8  BUTTON_LS
+#define BUTTON_10  0x0200  // Bit 9  BUTTON_RS
+#define BUTTON_11  0x0400  // Bit 10 BUTTON_HOME
+#define BUTTON_12  0x0800  // Bit 11 BUTTON_TOUCH
+#define BUTTON_13  0x1000  // Bit 12 BUTTON_DPAD_UP
+#define BUTTON_14  0x2000  // Bit 13 BUTTON_DPAD_DOWN
+#define BUTTON_15  0x4000  // Bit 14 BUTTON_DPAD_LEFT
+#define BUTTON_16  0x8000  // Bit 15 BUTTON_DPAD_RIGHT
 
-#define KEY_MENU     0x76  
+// Gamepad Button Bitmasken (Xbox-Layout) gleiche wie // Gamepad Button Bitmasken nur mit vernünftigen namen.
+#define BUTTON_A          0x0001  // Bit 0
+#define BUTTON_B          0x0002  // Bit 1
+#define BUTTON_X          0x0004  // Bit 2
+#define BUTTON_Y          0x0008  // Bit 3
 
+#define BUTTON_LB         0x0010  // Bit 4 - Left Bumper
+#define BUTTON_RB         0x0020  // Bit 5 - Right Bumper
+#define BUTTON_BACK       0x0040  // Bit 6 - Back / Select
+#define BUTTON_START      0x0080  // Bit 7 - Start
 
-#define BUTTON_1   0x0001  
-#define BUTTON_2   0x0002  
-#define BUTTON_3   0x0004  
-#define BUTTON_4   0x0008  
-#define BUTTON_5   0x0010  
-#define BUTTON_6   0x0020  
-#define BUTTON_7   0x0040  
-#define BUTTON_8   0x0080  
-#define BUTTON_9   0x0100  
-#define BUTTON_10  0x0200  
-#define BUTTON_11  0x0400  
-#define BUTTON_12  0x0800  
-#define BUTTON_13  0x1000  
-#define BUTTON_14  0x2000  
-#define BUTTON_15  0x4000  
-#define BUTTON_16  0x8000  
+#define BUTTON_LS         0x0100  // Bit 8 - Left Stick (Press)
+#define BUTTON_RS         0x0200  // Bit 9 - Right Stick (Press)
 
+#define BUTTON_HOME       0x0400  // Bit 10 - Guide / Home
+#define BUTTON_TOUCH      0x0800  // Bit 11 - Touchpad / Extra (bei PS-Controllern)
 
-#define BUTTON_A          0x0001  
-#define BUTTON_B          0x0002  
-#define BUTTON_X          0x0004  
-#define BUTTON_Y          0x0008  
-
-#define BUTTON_LB         0x0010  
-#define BUTTON_RB         0x0020  
-#define BUTTON_BACK       0x0040  
-#define BUTTON_START      0x0080  
-
-#define BUTTON_LS         0x0100  
-#define BUTTON_RS         0x0200  
-
-#define BUTTON_HOME       0x0400  
-#define BUTTON_TOUCH      0x0800  
-
-#define BUTTON_DPAD_UP    0x1000  
-#define BUTTON_DPAD_DOWN  0x2000  
-#define BUTTON_DPAD_LEFT  0x4000  
-#define BUTTON_DPAD_RIGHT 0x8000  
+#define BUTTON_DPAD_UP    0x1000  // Bit 12  windows only
+#define BUTTON_DPAD_DOWN  0x2000  // Bit 13  windows only
+#define BUTTON_DPAD_LEFT  0x4000  // Bit 14  windows only
+#define BUTTON_DPAD_RIGHT 0x8000  // Bit 15  windows only
