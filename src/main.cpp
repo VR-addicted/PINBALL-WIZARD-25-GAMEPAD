@@ -272,12 +272,57 @@ int16_t PixelReadyToSend = 0;
 // GRB + RMT
 NeoPixelBus<NeoGrbFeature, NeoEsp32Rmt0800KbpsMethod> strip(PixelCount, PixelPin);    // RGBW, 3 byte pakete. Mischung RGB + RGBW möglich, aber nicht gut. eigene array füllfunktion nutzen
 
-// vereinfachter 3 byte call, machts aber unnötig langsam. nur ein überbleibsel, wenn man wieder auf die rgbw methode umsteigen will. das geht dann durch austauschen der funktion setPinballLed() hier drüber auskommentieren und den kurzen setPinballLed() auskommentieren
-void setPinballLed(uint8_t ledIndex, uint8_t r, uint8_t g, uint8_t b) {
-    // Nutze die Standard-Funktion, sie ist auf dem S3/ESP32 extrem schnell
-    // und verhindert, dass du den internen RMT-Pointer korrumpierst.
-    strip.SetPixelColor(ledIndex, RgbColor(r, g, b));
-}
+
+
+// base colors for my LED chain
+// 0 - NEOPIXEL-R im gedruckten flipper
+// 1 - FLipper-R
+// 2 - FRont-R
+// 3 - FLipper-L
+// 4 - FRont-L
+// 5 - NEOPIXEL-L im gedruckten flipper
+
+struct RGB {
+    u_int8_t R,G,B;
+};
+
+RGB LED_FrontLbase       = { 40, 255,  40};   // leerlauf standart farbe wenn keine animation läuft
+RGB LED_FrontLpressed    = {200, 200, 200};
+RGB LED_FrontLflipped    = {255,   0,   0};   // leuchtet mit den flipper tasten mit
+RGB LED_FrontLshifted    = {  0,   0, 255};   // long pressed shift mode
+RGB LED_FrontLSleepMode  = { 40,  10,  10};   // deepsleep reactivation signal led
+RGB LED_FrontLXbutton    = { 40,  40, 200};   // (Hell Blau) X-Button indicator color
+
+RGB LED_FrontRbase       = {255,  40,  40};   // leerlauf standart farbe wenn keine animation läuft
+RGB LED_FrontRpressed    = {255, 255, 255};   // wenn taste direkt gedrückt wird
+RGB LED_FrontRflipped    = {255,   0,   0};   // leuchtet mit den flipper tasten mit
+RGB LED_FrontRshifted    = { 20,  20, 255};
+RGB LED_FrontRXbutton    = { 40,  40, 200};   // (Hell Blau) X-Button indicator color
+
+RGB LED_NeopxLbase       = { 40,  40,  40};   // leerlauf standart farbe wenn keine animation läuft
+RGB LED_NeopxLflipped    = {255,   0,   0};   // läuft parallel zum flipper L
+RGB LED_NeopxLshifted    = {  0,   0,   0};
+
+RGB LED_NeopxRbase       = { 40,  40,  40};   // leerlauf standart farbe wenn keine animation läuft
+RGB LED_NeopxRflipped    = {255,   0,   0};
+RGB LED_NeopxRshifted    = { 20,  20, 255};
+
+RGB LED_FlipperLbase     = { 40,  40,  40};   // leerlauf standart farbe wenn keine animation läuft
+RGB LED_FlipperLpressed  = {255,   0,   0};   // normal pressed
+RGB LED_FlipperLshifted  = { 20,  20, 255};   // (Hellblau) mit aktiver "shift" taste
+
+RGB LED_FlipperRbase     = { 40,  40,  40};   // (weiß 20%)  leerlauf standart farbe wenn keine animation läuft
+RGB LED_FlipperRpressed  = {255,   0,   0};   // (max red)   ohne "shift" taste
+RGB LED_FlipperRshifted  = { 20,  20, 255};   // (Hell Blau) bei aktiver "shift" taste + flipper rechts
+
+
+
+
+
+// // vereinfachter 3 byte call, machts aber unnötig langsam. nur ein überbleibsel, wenn man wieder auf die rgbw methode umsteigen will. das geht dann durch austauschen der funktion setPinballLed() hier drüber auskommentieren und den kurzen setPinballLed() auskommentieren
+// void setPinballLed(uint8_t ledIndex, uint8_t r, uint8_t g, uint8_t b) {
+//        strip.SetPixelColor(ledIndex, RgbColor(r, g, b));
+// }
 
 
 void RGBall0(){
@@ -305,12 +350,6 @@ void RGBbaseLight(){
     strip.SetPixelColor(3, RgbColor( 40,  40, 40));  // FL-L
     strip.SetPixelColor(4, RgbColor( 40, 180, 40));  // FRONT-L
     strip.SetPixelColor(5, RgbColor( 40,  40, 40));  // DOT RGBW-L
-    // setPinballLed(0,  40,  40, 40);   // DOT-R
-    // setPinballLed(1,  40,  40, 40);   // FL-R
-    // setPinballLed(2, 255,  40, 40);   // Front-R
-    // setPinballLed(3,  40,  40, 40);   // FL-L
-    // setPinballLed(4,  40, 180, 40);   // FRONT-L
-    // setPinballLed(5,  40,  40, 40);   // DOT RGBW-L
     strip.Show();
 }
 
@@ -2263,6 +2302,9 @@ if(keyTimerFlagFrontLeft > milliTimeCopy){ // pressed  // wenn größer, muss ti
                                         secondKeyButtonFlag = 0;  
                                         secondKeyButtonTimeMark = milliTimeCopy;                           // setze feste zeitmarke des erstcontact einmalig, um später die differenz zur aktuellen zeit auswerten zu können
                                         flipFlopFlagFrontLeft = 1;
+
+                     strip.SetPixelColor(4, RgbColor(LED_FrontLpressed.R,  LED_FrontLpressed.G,  LED_FrontLpressed.B));    // FL-L
+                     PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0                    
    }
 }
 else
@@ -2275,7 +2317,9 @@ else
                                         // if(dbglvl)Serial.println("sendBTcommandPlungerLinks(1)");  
                                         secondKeySetLaterRelease = true;                                   // hier muss das release flag gesetzt werden.
                                         secondKeySetLaterReleaseTimerFlag = milliTimeCopy + 100;
-                                        secondKeyButtonFlag = 0;  
+                                        secondKeyButtonFlag = 0; 
+                                        strip.SetPixelColor(4, RgbColor(LED_FrontLbase.R,  LED_FrontLbase.G,  LED_FrontLbase.B));    // FL-L
+                                        PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0    
                                     } 
                                     
                                     hid->gamepad->setHat(8);                                               // release und lösche alle möglichen virtual keys um den kreis nächste code zeile
@@ -2290,7 +2334,9 @@ else
                                                      ui->drawVirtualTiltingJoystickKeys(4,0);              // here is okay, no flags, its not time intense 
                                                     }
                                     flipFlopFlagFrontLeft = 0;
-                                     
+                                    //release long press color to base color
+                                    strip.SetPixelColor(4, RgbColor(LED_FrontLbase.R,  LED_FrontLbase.G,  LED_FrontLbase.B));    // FRont-R
+                                    PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0    
     }
 }
 
@@ -2299,9 +2345,11 @@ if( milliTimeCopy - secondKeyButtonTimeMark >= secondKeyActivationTime && flipFl
     secondKeyButtonFlag = 1;
     if(UImenu == 1) ui->drawPhysicalVirtualKeys(6,1);                                                      // here is okay, no flags, its not time intense
     //if(dbglvl)Serial.println("SHIFT for second keys active");  
+    strip.SetPixelColor(4, RgbColor(LED_FrontLshifted.R,   LED_FrontLshifted.G,   LED_FrontLshifted.B  ));   // Front-R
+    PixelReadyToSend++;                                    // set trigger, and use counter for what ever.  
     }
  else 
-   {secondKeyButtonFlag = 0;}
+   {secondKeyButtonFlag = 0; }
 
 
 
@@ -2319,11 +2367,17 @@ if(keyTimerFlagFrontRight > milliTimeCopy){                                     
                                         }                        
                                         if(UImenu == 1) ui->drawPhysicalVirtualKeys(1,1);  // TODO: change to flag methode
                                         releaseTrickFlagFrontR = 0;                        // stellt 100% zuverlässig ausschließlich den korrekten button nach benutzung zurück
+                                        
+                                        strip.SetPixelColor(2, RgbColor(LED_FrontRpressed.R,  LED_FrontRpressed.G,  LED_FrontRpressed.B));    // FRont-R
+                                        PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0 
                                     }
                                     else{                                                  // virtual "second" key front right set
                                         sendBTcommandPlungerRechtsSecondKey(1);                        
                                         if(UImenu == 1) ui->drawPhysicalVirtualKeys(5,1);  // TODO: change to flag methode
                                         releaseTrickFlagFrontR = 1;                        // stellt 100% zuverlässig ausschließlich den korrekten button nach benutzung zurück
+                                        
+                                        strip.SetPixelColor(2, RgbColor(LED_FrontRshifted.R,  LED_FrontRshifted.G,  LED_FrontRshifted.B));    // FRont-R
+                                        PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0 
                                     }
                                     flipFlopFlagFrontRight = 1;
                                     }
@@ -2344,15 +2398,12 @@ else
                                         if(UImenu == 1) ui->drawPhysicalVirtualKeys(5,0);  // TODO: change to flag methode
                                     }
                                     flipFlopFlagFrontRight = 0;
+
+                                    strip.SetPixelColor(2, RgbColor(LED_FrontRbase.R,  LED_FrontRbase.G,  LED_FrontRbase.B));    // FRont-R
+                                    PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0 
+
     }
 }
-
-
-
-
-
-
-
 
 
 
@@ -2367,25 +2418,24 @@ if(keyTimerFlagSideLeft > milliTimeCopy){                                       
                                         sendBTcommandFlipperLinks(1); 
                                         if(UImenu == 1) ui->drawPhysicalVirtualKeys(7,0);  // TODO: change to flag methode
                                         releaseTrickFlagSideL = 0;                         // stellt 100% zuverlässig ausschließlich den korrekten button nach benutzung zurück
+                                    
+                                        strip.SetPixelColor(3, RgbColor(LED_FlipperLpressed.R, LED_FlipperLpressed.G, LED_FlipperLpressed.B));  // FL-L
+                                        strip.SetPixelColor(4, RgbColor(LED_FrontLflipped.R,   LED_FrontLflipped.G,   LED_FrontLflipped.B  ));  // FRONT-L
+                                        strip.SetPixelColor(5, RgbColor(LED_NeopxLflipped.R,   LED_NeopxLflipped.G,   LED_NeopxLflipped.B  ));  // NEOPIXEL-L
+                                        PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0 
                                     }
                                     else{                                                  // virtual "second" key front left set
                                         sendBTcommandFlipperLinksSecondKey(1); 
                                         if(UImenu == 1) ui->drawPhysicalVirtualKeys(3,1);  // TODO: change to flag methode
                                         releaseTrickFlagSideL = 1;                         // stellt 100% zuverlässig ausschließlich den korrekten button nach benutzung zurück
+                                        
+                                        strip.SetPixelColor(3, RgbColor(LED_FlipperLshifted.R, LED_FlipperLshifted.G, LED_FlipperLshifted.B));  // FL-L
+                                        //strip.SetPixelColor(4, RgbColor(LED_FrontLflipped.R,   LED_FrontLflipped.G,   LED_FrontLflipped.B  ));  // FRONT-L
+                                        strip.SetPixelColor(5, RgbColor(LED_NeopxRshifted.R,   LED_NeopxRshifted.G,   LED_NeopxRshifted.B  ));  // NEOPIXEL-L
                                     }
                                     ButtonFlipperLeftCounterToday++;
                                     ButtonFlipperLeftCounterAlltime++;
                                     flipFlopFlagSideLeft = 1;
-                                    strip.SetPixelColor(3, RgbColor(255, 0, 0));          // FL-L
-                                    strip.SetPixelColor(4, RgbColor(255, 0, 0));          // FRONT-L
-                                    strip.SetPixelColor(5, RgbColor(255, 0, 0));          // DOT RGBW-L
-                                    //setPinballLed(3, 255,0,0);  // FL-L
-                                    //setPinballLed(4, 255,0,0);  // FRONT-L
-                                    //setPinballLed(5, 255,0,0);  // DOT RGBW-L
-
-
-
-                                    PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0 
                                     }
       }
 else
@@ -2394,24 +2444,22 @@ else
                                     if(!releaseTrickFlagSideL){                            // Standart Key release  // 
                                         sendBTcommandFlipperLinks(0); 
                                         if(UImenu == 1) ui->drawPhysicalVirtualKeys(7,1);  // TODO: change to flag methode
+                                        
+                                        strip.SetPixelColor(3, RgbColor(LED_FlipperLbase.R,  LED_FlipperLbase.G,  LED_FlipperLbase.B));    // FL-L
+                                        strip.SetPixelColor(4, RgbColor(LED_FrontLbase.R,    LED_FrontLbase.G,    LED_FrontLbase.B  ));    // FRONT-L
+                                        strip.SetPixelColor(5, RgbColor(LED_NeopxLbase.R,    LED_NeopxLbase.G,    LED_NeopxLbase.B  ));    // NEOPIXEL-L
+                                        PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0 
                                     }
                                     else{                                                  // virtual "second" key front right release
                                         sendBTcommandFlipperLinksSecondKey(0);
                                         if(UImenu == 1) ui->drawPhysicalVirtualKeys(3,0);  // TODO: change to flag methode
+                                        
+                                        strip.SetPixelColor(3, RgbColor(LED_FlipperLbase.R,  LED_FlipperLbase.G,  LED_FlipperLbase.B));    // FL-L
+                                        //strip.SetPixelColor(4, RgbColor(LED_FrontLbase.R,    LED_FrontLbase.G,    LED_FrontLbase.B  ));    // FRONT-L
+                                        strip.SetPixelColor(5, RgbColor(LED_NeopxLbase.R,    LED_NeopxLbase.G,    LED_NeopxLbase.B  ));    // NEOPIXEL-L
+                                        PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0 
                                     }
                                     flipFlopFlagSideLeft = 0;
-                                   
-                                    strip.SetPixelColor(3, RgbColor(40, 40, 40));    // FL-L
-                                    strip.SetPixelColor(4, RgbColor(40,180, 40));    // FRONT-L
-                                    strip.SetPixelColor(5, RgbColor(40, 40, 40));    // DOT RGBW-L
-
-                                    //setPinballLed(3, 40,40,40);   // FL-L
-                                    //setPinballLed(4, 40,180,40);  // FRONT-L
-                                    //setPinballLed(5, 40,40,40);   // DOT RGBW-L
-
-
-
-                                    PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0 
     }
 }
 
@@ -2426,46 +2474,48 @@ if(keyTimerFlagSideRight > milliTimeCopy){                                      
                                         sendBTcommandFlipperRechts(1);                     // bleGamepad.press(BUTTON_8);
                                         if(UImenu == 1) ui->drawPhysicalVirtualKeys(8,0);  // draw red flipper // TODO: change to flag methode
                                         releaseTrickFlagSideR = 0;                         // stellt 100% zuverlässig ausschließlich den korrekten button nach benutzung zurück
+                                        strip.SetPixelColor(0, RgbColor(LED_NeopxRflipped.R,   LED_NeopxRflipped.G,   LED_NeopxRflipped.B  ));   // NEOPIXEL-R
+                                        strip.SetPixelColor(1, RgbColor(LED_FlipperRpressed.R, LED_FlipperRpressed.G, LED_FlipperRpressed.B));   // FL-R
+                                        strip.SetPixelColor(2, RgbColor(LED_FrontRflipped.R,   LED_FrontRflipped.G,   LED_FrontRflipped.B  ));   // Front-R
+                                        PixelReadyToSend++;                                    // set trigger, and use counter for what ever.  
                                     }
                                     else{                                                  // virtual "second" key front right set
                                         sendBTcommandFlipperRechtsSecondKey(1);
                                         if(UImenu == 1) ui->drawPhysicalVirtualKeys(4,1);  // TODO: change to flag methode
                                         releaseTrickFlagSideR = 1;                         // stellt 100% zuverlässig ausschließlich den korrekten button nach benutzung zurück
+                                    
+                                        strip.SetPixelColor(0, RgbColor(LED_NeopxRshifted.R,   LED_NeopxRshifted.G,   LED_NeopxRshifted.B  ));   // NEOPIXEL-R
+                                        strip.SetPixelColor(1, RgbColor(LED_FlipperRshifted.R, LED_FlipperRshifted.G, LED_FlipperRshifted.B));   // FL-R
+                                        //strip.SetPixelColor(2, RgbColor(LED_FrontRflipped.R,   LED_FrontRflipped.G,   LED_FrontRflipped.B  ));   // Front-R
+                                        PixelReadyToSend++;                                    // set trigger, and use counter for what ever.  
                                     }
                                     ButtonFlipperRightCounterToday++;
                                     ButtonFlipperRightCounterAlltime++;
                                     flipFlopFlagSideRight = 1;
-
-                                    strip.SetPixelColor(0, RgbColor(255,0,0));             // NEOPIXEL-R
-                                    strip.SetPixelColor(1, RgbColor(255,0,0));             // FL-R
-                                    strip.SetPixelColor(2, RgbColor(255,0,0));             // Front-R
-
-                                    //setPinballLed(0, 255,0,0);  // DOT-R
-                                    //setPinballLed(1, 255,0,0);  // FL-R
-                                    //setPinballLed(2, 255,0,0);  // Front-R
-                                    PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0 
                                     }
       }
 else
     {   // zeit ist abgelaufen, setze einmal auf weiß und auf release
     if (flipFlopFlagSideRight == 1){   
-                                    if(!releaseTrickFlagSideR){                             // Standart Key release  // 
+                                    if(!releaseTrickFlagSideR){                            // Standart Key release  // 
                                        sendBTcommandFlipperRechts(0); 
-                                       if(UImenu == 1) ui->drawPhysicalVirtualKeys(8,1);    // draw white flipper  // TODO: change to flag methode
+                                       if(UImenu == 1) ui->drawPhysicalVirtualKeys(8,1);   // draw white flipper  // TODO: change to flag methode
+                                       
+                                       strip.SetPixelColor(0, RgbColor(LED_NeopxRbase.R,    LED_NeopxRbase.G,   LED_NeopxRbase.B  ));             // NEOPIXEL-R
+                                       strip.SetPixelColor(1, RgbColor( LED_FlipperRbase.R, LED_FlipperRbase.G, LED_FlipperRbase.B));           // FL-R
+                                       strip.SetPixelColor(2, RgbColor(LED_FrontRbase.R,    LED_FrontRbase.G,   LED_FrontRbase.B  ));             // Front-R
+                                       PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0 
                                     }
-                                    else{                                                   // virtual "second" key front right release
+                                    else{                                                  // virtual "second" key front right release
                                        sendBTcommandFlipperRechtsSecondKey(0);
-                                       if(UImenu == 1) ui->drawPhysicalVirtualKeys(4,0);    // TODO: change to flag methode
+                                       if(UImenu == 1) ui->drawPhysicalVirtualKeys(4,0);   // TODO: change to flag methode
+                                       
+                                       strip.SetPixelColor(0, RgbColor(LED_NeopxRbase.R,    LED_NeopxRbase.G,   LED_NeopxRbase.B  ));             // NEOPIXEL-R
+                                       strip.SetPixelColor(1, RgbColor( LED_FlipperRbase.R, LED_FlipperRbase.G, LED_FlipperRbase.B));           // FL-R
+                                       //strip.SetPixelColor(2, RgbColor(LED_FrontRbase.R,    LED_FrontRbase.G,   LED_FrontRbase.B  ));             // Front-R
+                                       PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0 
                                     }
                                     flipFlopFlagSideRight = 0;
-
-                                    strip.SetPixelColor(0, RgbColor( 40, 40, 40));          // DOT-R
-                                    strip.SetPixelColor(1, RgbColor( 40, 40, 40));          // FL-R
-                                    strip.SetPixelColor(2, RgbColor(255, 40, 40));          // Front-R
-                                    //setPinballLed(0, 40,40,40);   // DOT-R
-                                    //setPinballLed(1, 40,40,40);   // FL-R
-                                    //setPinballLed(2, 255,40,40);  // Front-R
-                                    PixelReadyToSend++;                                     // set trigger, and use counter for what ever. reset to 0 
                                     }
 }
 
@@ -2482,13 +2532,22 @@ if(keyTimerFlagActionKey > milliTimeCopy){                                      
                                         sendBTcommandActionKey(1);
                                         if(UImenu == 1) ui->espnowButton(2);                // draw x-button pressed // TODO: change to flag methode
                                         releaseTrickFlagActionKey = 0;                      // stellt 100% zuverlässig ausschließlich den korrekten button nach benutzung zurück
+              
+                                        strip.SetPixelColor(4, RgbColor(LED_FrontLXbutton.R, LED_FrontLXbutton.G, LED_FrontLXbutton.B));     // FRONT-L
+                                        strip.SetPixelColor(2, RgbColor(LED_FrontRXbutton.R, LED_FrontRXbutton.G, LED_FrontRXbutton.B));     // FRONT-R
+                                        PixelReadyToSend++;
                                     }
                                     else{                                                   // virtual "second" key front right set
                                         sendBTcommandActionKeySecondKey(1);
                                         if(UImenu == 1) ui->espnowButton(3);                // TODO: erzeuge noch ein viertes icon für die shift+x key funktion. change to flag methode
                                         releaseTrickFlagActionKey = 1;                      // stellt 100% zuverlässig ausschließlich den korrekten button nach benutzung zurück
+                                        
+                                        strip.SetPixelColor(4, RgbColor(LED_FrontLshifted.R, LED_FrontLXbutton.G, LED_FrontLXbutton.B));     // FRONT-L
+                                        strip.SetPixelColor(2, RgbColor(LED_FrontRshifted.R, LED_FrontRXbutton.G, LED_FrontRXbutton.B));     // FRONT-R
+                                        PixelReadyToSend++;
                                     }
                                     flipFlopFlagActionKey = 1;
+
                                     }
       }
 else
@@ -2497,21 +2556,24 @@ else
                                     if(!releaseTrickFlagActionKey){                         // Standart Key release  // 
                                        sendBTcommandActionKeySecondKey(0); 
                                        if(UImenu == 1) ui->espnowButton(1);                 // draw white flipper  // TODO: change to flag methode
+
+                                       //strip.SetPixelColor(4, RgbColor( LED_FrontLbase.R, LED_FrontLbase.G, LED_FrontLbase.B));      // FRONT-L  (front-l base color preset)
+                                       strip.SetPixelColor(4, RgbColor( LED_FrontLbase.R, LED_FrontLbase.G, LED_FrontLbase.B));
+                                       strip.SetPixelColor(2, RgbColor( LED_FrontRbase.R, LED_FrontRbase.G, LED_FrontRbase.B));      // FRONT-R  (front-l base color preset)
+                                       PixelReadyToSend++;
+
                                     }
                                     else{                                                   // virtual "second" key front right release
                                        sendBTcommandActionKeySecondKey(0);
                                        if(UImenu == 1) ui->espnowButton(1);                 // TODO: change to flag methode
+
+                                       strip.SetPixelColor(4, RgbColor( LED_FrontLbase.R, LED_FrontLbase.G, LED_FrontLbase.B));      // FRONT-L  (front-l base color preset)
+                                       strip.SetPixelColor(2, RgbColor( LED_FrontRbase.R, LED_FrontRbase.G, LED_FrontRbase.B));      // FRONT-R  (front-l base color preset)
+                                       PixelReadyToSend++;
                                     }
                                     flipFlopFlagActionKey = 0;
-
                                     }
 }
-
-
-
-
-
-
 
 
 
