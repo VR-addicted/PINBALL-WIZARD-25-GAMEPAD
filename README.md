@@ -77,6 +77,7 @@ Future Ideas without any warranty:
 + Analog Plunger (depends on the game)
 
 You can find All 3d CAD files and the BOM on Printables.
+## **[BOM (Bill of materials)](https://github.com/VR-addicted/PINBALL-WIZARD-25-GAMEPAD/blob/main/DOCS/BOM_and_Schematic_Infos.pdf)**
 
 Check all 4 Project Repos for all optional components! 
 
