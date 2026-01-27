@@ -76,8 +76,8 @@ Future Ideas without any warranty:
 + UART over bluetooth to configure it via APK tool on the Quest
 + Analog Plunger (depends on the game)
 
-You can find All 3d CAD files and the BOM on Printables.
-## **[BOM (Bill of materials)](https://github.com/VR-addicted/PINBALL-WIZARD-25-GAMEPAD/blob/main/DOCS/BOM_and_Schematic_Infos.pdf)**
+You can find All 3d CAD files and the BOM on Printables as well.
+## **[BOM (Bill of materials)](https://github.com/VR-addicted/PINBALL-WIZARD-25-GAMEPAD/blob/main/DOCS/BOM_and_Schematic_Infos_PBWZ25.pdf)**
 
 Check all 4 Project Repos for all optional components! 
 
@@ -93,6 +93,7 @@ Can you use the ESP32 Cheap Yellow Display Board for your own projects, without 
 Yes, absolutely. But order one with same Touch controller, Same Display and same Display Resolution.
 Exakt type: ESP-Display,ESP Modul WiFi Bluetooth 3.2" Zoll 240 * 320 ESP Display TFT Modul ESP-2432S032C-I capacitive Touchscreen with GT911 touch Controller.
 https://www.amazon.de/dp/B0D3WDQ6FJ
+(Or stay tuned, i am working on the PBWZ26 and PBWZ27 as well. PBWZ26 with Waveshare Esp32 s3 3.5 Display Module and PBWZ27 with 4.3 inch display, P4+C6 CPU the beast...)
 
 
 You can flash, config and debug the device with an usb cable and your browser. 
@@ -105,13 +106,27 @@ Don`t install nightly builds if you are not envolved or instructed.
 Nightlys are realtime snapshots with bugs and/or unfinished functions!
 
 
-If you beginn the project, feel free to get in contact with me on printables, meta, discord or here.
-You can ask me any question about this project. You are wellcome.
+If you begin the project, feel free to get in contact with me on printables, meta, discord or here.
+You can ask me any question about this project. You are welcome.
 Discord: vraddicted
 Meta: VR-addicted
 
-HINT, small manual: If the device goes to sleep, or you powered it off via menu, press the left front button to re-start the device. I write a manual, if some people are interested in the project.
-And press the bluetooth icon in the BT menu, to be ready to connect to a device.
+HINT, small manual: If the device goes to sleep, or you powered it off via menu, press the left front button to re-start the device.
+I write a manual, if some people are interested in the project.
+
+TO CONNECT TO A BLUETOOTH DEVICE PRESS THAT BLUETOOTH ICON IN THE BLUTETOOTH MENU. (Its not selfexplaining for some people. :-) )
+IF YOU HAVE PROBLEMS CONNECTING, BE SURE YOU ALREADY DELETED THE OLD CONNECTION.
+
+THERE ARE TWO BUTTONS TO CLEAN OLD CONNECTIONS. USE IT.
+IF AN OLD PAIRED DEVICE TAKES OVER THE PAIRING IN LESS THEN A SECOND, DISABLE THE OTHER DEVICE TEMPORARELY.
+SOME BLUETOOTH DEVICES ARE CACHING OLD CONNECTIONS AND THE ESP32 REMEMBERS AND CONNECTS IT IMMEDEATELY.
+IF THE QUEST LOSE BT CONNECTION, IN WHAT CASE EVER, ITS FASTER TO SIMPLE RESTART THE PBWZ25.
+AFTER RESTART, ITS PAIRED AND CONNECTED. IF YOU TRY TO REPAIR THE PBWZ25, YOU CAN DO THAT; BUT THIS 
+PROCEDURE WILL RESTART THE PBWZ25 AS WELL AND COSTS MORE STEPS TO REPAIR.
+
+THIS SOUNDS HORRIBLE? NOPE. ABSOLUTELY NOT
+This happens very rarely, and possibly because I test so much, I provoke it more often than necessary.
+The system runs very stably, quickly, and reliably. I just wanted to point out this last possibility. 
 
 
 Stay stable, and the force will be with you. 
