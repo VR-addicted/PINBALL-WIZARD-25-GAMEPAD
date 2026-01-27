@@ -287,7 +287,7 @@ struct RGB {
 };
 
 RGB LED_FrontLbase       = { 40, 255,  40};   // leerlauf standart farbe wenn keine animation läuft
-RGB LED_FrontLpressed    = {200, 200, 200};
+RGB LED_FrontLpressed    = {255, 255, 255};
 RGB LED_FrontLflipped    = {255,   0,   0};   // leuchtet mit den flipper tasten mit
 RGB LED_FrontLshifted    = {  0,   0, 255};   // long pressed shift mode
 RGB LED_FrontLSleepMode  = { 40,  10,  10};   // deepsleep reactivation signal led
@@ -301,19 +301,19 @@ RGB LED_FrontRXbutton    = { 40,  40, 200};   // (Hell Blau) X-Button indicator 
 
 RGB LED_NeopxLbase       = { 40,  40,  40};   // leerlauf standart farbe wenn keine animation läuft
 RGB LED_NeopxLflipped    = {255,   0,   0};   // läuft parallel zum flipper L
-RGB LED_NeopxLshifted    = {  0,   0,   0};
+RGB LED_NeopxLshifted    = {  5,   5, 255};
 
 RGB LED_NeopxRbase       = { 40,  40,  40};   // leerlauf standart farbe wenn keine animation läuft
 RGB LED_NeopxRflipped    = {255,   0,   0};
-RGB LED_NeopxRshifted    = { 20,  20, 255};
+RGB LED_NeopxRshifted    = {  5,   5, 255};
 
 RGB LED_FlipperLbase     = { 40,  40,  40};   // leerlauf standart farbe wenn keine animation läuft
 RGB LED_FlipperLpressed  = {255,   0,   0};   // normal pressed
-RGB LED_FlipperLshifted  = { 20,  20, 255};   // (Hellblau) mit aktiver "shift" taste
+RGB LED_FlipperLshifted  = {  0,   0, 255};   // (Hellblau) mit aktiver "shift" taste
 
 RGB LED_FlipperRbase     = { 40,  40,  40};   // (weiß 20%)  leerlauf standart farbe wenn keine animation läuft
 RGB LED_FlipperRpressed  = {255,   0,   0};   // (max red)   ohne "shift" taste
-RGB LED_FlipperRshifted  = { 20,  20, 255};   // (Hell Blau) bei aktiver "shift" taste + flipper rechts
+RGB LED_FlipperRshifted  = {  0,   0, 255};   // (Hell Blau) bei aktiver "shift" taste + flipper rechts
 
 
 
@@ -2290,6 +2290,10 @@ if(secondKeySetLaterRelease && secondKeySetLaterReleaseTimerFlag < milliTimeCopy
     sendBTcommandPlungerLinks(0);      // release front left key
     secondKeySetLaterRelease = false;  // reset flag
     // if(dbglvl > 1)Serial.println("secondKeySetLaterRelease versucht release zu senden -> sendBTcommandPlungerLinks(0)");
+
+    //release long press color to base color
+    //strip.SetPixelColor(4, RgbColor(LED_FrontLbase.R,  LED_FrontLbase.G,  LED_FrontLbase.B));    // FRont-R
+    //PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0    
 }
 
 
@@ -2303,8 +2307,8 @@ if(keyTimerFlagFrontLeft > milliTimeCopy){ // pressed  // wenn größer, muss ti
                                         secondKeyButtonTimeMark = milliTimeCopy;                           // setze feste zeitmarke des erstcontact einmalig, um später die differenz zur aktuellen zeit auswerten zu können
                                         flipFlopFlagFrontLeft = 1;
 
-                     strip.SetPixelColor(4, RgbColor(LED_FrontLpressed.R,  LED_FrontLpressed.G,  LED_FrontLpressed.B));    // FL-L
-                     PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0                    
+                                        strip.SetPixelColor(4, RgbColor(LED_FrontLpressed.R,  LED_FrontLpressed.G,  LED_FrontLpressed.B));    // FL-L
+                                        PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0                    
    }
 }
 else
@@ -2318,9 +2322,10 @@ else
                                         secondKeySetLaterRelease = true;                                   // hier muss das release flag gesetzt werden.
                                         secondKeySetLaterReleaseTimerFlag = milliTimeCopy + 100;
                                         secondKeyButtonFlag = 0; 
+                                        
                                         strip.SetPixelColor(4, RgbColor(LED_FrontLbase.R,  LED_FrontLbase.G,  LED_FrontLbase.B));    // FL-L
                                         PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0    
-                                    } 
+                                        } 
                                     
                                     hid->gamepad->setHat(8);                                               // release und lösche alle möglichen virtual keys um den kreis nächste code zeile
                                     gamepadSendReportFlag = 1;  
@@ -2431,7 +2436,7 @@ if(keyTimerFlagSideLeft > milliTimeCopy){                                       
                                         
                                         strip.SetPixelColor(3, RgbColor(LED_FlipperLshifted.R, LED_FlipperLshifted.G, LED_FlipperLshifted.B));  // FL-L
                                         //strip.SetPixelColor(4, RgbColor(LED_FrontLflipped.R,   LED_FrontLflipped.G,   LED_FrontLflipped.B  ));  // FRONT-L
-                                        strip.SetPixelColor(5, RgbColor(LED_NeopxRshifted.R,   LED_NeopxRshifted.G,   LED_NeopxRshifted.B  ));  // NEOPIXEL-L
+                                        strip.SetPixelColor(5, RgbColor(LED_NeopxLshifted.R,   LED_NeopxLshifted.G,   LED_NeopxLshifted.B  ));  // NEOPIXEL-L
                                     }
                                     ButtonFlipperLeftCounterToday++;
                                     ButtonFlipperLeftCounterAlltime++;
