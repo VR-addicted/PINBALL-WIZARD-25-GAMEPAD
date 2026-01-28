@@ -30,7 +30,7 @@
 
 !! Update 28.01.2026 the winners for the new CPU/DISPLAY CONTEST are:  
 !!  
-!! for the PBWZ26: Waveshare S3, 3.5" with housing (the model with cam + QSPI !)  
+!! for the PBWZ26: Waveshare S3, 3.5" with housing (the model with cam + QSPI [quad spi])  
 !! ATTENTION only this model has the faster QSPI interface with faster drivers ~30$  
 !! exact model name: ESP32-S3-Touch-LCD-3.5B-C  ("B-C" at the end!!!)  
 !! https://www.aliexpress.com/item/1005009056920045.html  
@@ -56,7 +56,7 @@
 !! soundcard with microphone onboard, S3 better cpu, P4 much better CPU, bigger displays,  
 !! faster display busses, newer Bluetooth standarts with more bandwidth and responsiveness,  
 !! easy reachable usb ports with usb host function to play via usb-cable connection as well,  
-!! cameras. (btw. on the p4, the cam works fluidly 30fps in the demo. sop much power...)  
+!! cameras. (btw. on the p4, the cam works fluidly 30fps in the demo. so much power...)  
 !! the waveshare has a better gyro/acceleration sensor type QMI8658 onboard, then the old BMI160.   
 !! on the p4 we can connect the same 2 dollar gyro sensor with 4/5 pin jst.  
 !! they have battery connectors and battery management chips, with different voltmeters.  
