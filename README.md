@@ -26,14 +26,6 @@
 !! That makes reproducing the pinball wizard not easier. So i decided to pay 5-10 bucks more,    
 !! for a good seller like Waveshare with a good supply chain and good documentation.    
 !! On top we become better hardware in all cases.     
-!! I think a good Candidate is a Waveshare ESP32 S3 the 3.5" version with integrated gyro/acc.    
-!! Some Displays are on the way and we will see what display wins.    
-!! There are some candidates in the 25$ to 40$ range.    
-!! The new display will have bigger screen, better display resolution, extensa7 insteead of intensa6 mcu,     
-!! newer & faster Bluetooth and USB-HOST as well, for extra extra low latency.    
-!! Working power button, inbuild volt meter for the battery, better gyro/acc sensor,     
-!! and some other goodies like stereo speaker connector,     
-!! and a 16 pin header in 2.54 size where we easy connect the flipper buttons and what ever es needed.    
 
 
 !! Update 28.01.2026 the winners for the new CPU/DISPLAY CONTEST are:  
@@ -59,7 +51,20 @@
 !! no pcb hacking, no trace cutting, less soldering and much much easier soldering. just cables.   
 !! for easy use, i recommend to buy the model with case. maybe thats part of   
 !! my future design. i dont know at this point. better you get the case for cents.  
-  
+!!
+!! new features on the boards:  
+!! soundcard with microphone onboard, S3 better cpu, P4 much better CPU, bigger displays,  
+!! faster display busses, newer Bluetooth standarts with more bandwidth and responsiveness,  
+!! easy reachable usb ports with usb host function to play via usb-cable connection as well,  
+!! cameras. (btw. on the p4, the cam works fluidly 30fps in the demo. sop much power...)  
+!! the waveshare has a better gyro/acceleration sensor type QMI8658 onboard, then the old BMI160.   
+!! on the p4 we can connect the same 2 dollar gyro sensor with 4/5 pin jst.  
+!! they have battery connectors and battery management chips, with different voltmeters.  
+!! full power ON/OFF controll by buttons and by software. onboard stereo amplifier + speaker,  
+!! the waveshare 3.5" has 480x320 px (double pixel density then the cheap yellow crap)    
+!! the P4 4.3" has 480X800 (4 times pixel then the cheap yellow crap, with MIPI DSI/CSI 2 highspeed   interface, h264 video decoder,jpg onboard, separate WIFI/BLUETOOTH chip the new esp c6)   
+!! much more Sram/PSram and much more i forgot.  
+
 -----------------------------------------------------------------------------------------
 
 Central firmware for the great Pinball Wizard 2025 with Blutooth BLE + ESP NOW. 
