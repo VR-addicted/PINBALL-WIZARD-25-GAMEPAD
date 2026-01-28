@@ -63,10 +63,10 @@ Based on ESP32 "CHEAP YELLOW PCB" from China/Amazon (20€-30€).
 
 
 Optional:
-+ Optional RGB Led Qanba keys support in future. work in progress
++ Optional RGB Led Qanba keys support in future. finished
 + Optional Docking Station. work in progress
-+ Optional Battery Meter (Voltage divider). works
-+ Optional "X" Button next to the flipper button. work in progress
++ Optional Battery Meter (Voltage divider). finished
++ Optional "X" Button next to the flipper button. finished
 + Optional 2 addon batterys 18650. work in progress
 
 Future Ideas without any warranty:
@@ -101,6 +101,7 @@ You can flash, config and debug the device with an usb cable and your browser.
 Dont mind this wired URL. Its free webspace for developers.
 
 https://pinball-wizard-25.netlify.app/
+## **[FLASH FIRMWARE ONLINE IN YOUR BROWSER](https://pinball-wizard-25.netlify.app/)**
 
 Don`t install nightly builds if you are not envolved or instructed. 
 Nightlys are realtime snapshots with bugs and/or unfinished functions!
