@@ -19,7 +19,7 @@
 !!  
 !! 1.1.2026 Developement of the next great pinball controller PBWZ-26 has begun.  
 !!  
-!! Unfortunely the Cheap Yellow Display esp32 from China has changing PCB. Thats annoying.  
+!! Unfortunely the Cheap Yellow Display esp32 from China has changing PCBs. Thats annoying.  
 !! Specially the Power Off function makes trouble and i dont want to use a sliding power switch.  
 !! The device will work, but if you get a wrong board, you have to install a switch, instead of the button.  
 !! For me its inaceptable, its not a big deal, but it shows that future pcb could do more trouble.  
@@ -34,8 +34,34 @@
 !! Working power button, inbuild volt meter for the battery, better gyro/acc sensor,   
 !! and some other goodies like stereo speaker connector,   
 !! and a 16 pin header in 2.54 size where we easy connect the flipper buttons and what ever es needed.  
+
+
+!! Update 28.01.2026 the winners for the new CPU/DISPLAY CONTEST are:
+!!
+!! for the PBWZ26: Waveshare S3, 3.5" with housing (the model with cam + QSPI !)
+!! ATTENTION only this model has the faster QSPI interface with faster drivers ~30$
+!! exact model name: ESP32-S3-Touch-LCD-3.5B-C  ("B-C" at the end!!!)
+!! https://www.aliexpress.com/item/1005009056920045.html
+!!
+!! for the PBWZ27: SpotPear Electronics P4+C6, 4,3" with housing, 2x 400mhz. A BEAST for ~30$
+!! https://www.aliexpress.com/item/1005009673625472.html
+!!
+!! i think some parts of the firmware needs some polish for the new P4 cpu features...
+!! the cpu has so much more power and new features, it may take a time to write a new
+!! firmware. do not expect a P4 firmware before xmas 2026. 
+!! the S3 firmware is in the work, because it needs different QSPI compatible drivers.
+!! do not order the new devices, before i release something, except you like the devices.
+!! meanwhile you can use it as touch+voice remote for home assistant 
+!! or as usb-desktop extender, or what ever project you can find on github. 
+!! both devices has sound cards + mic onboard, and costs 5 bucks more then the 
+!! fucking cheap yellow crap, but they has so much more to offer.  
+!! easy reachable pin headers and a dozend more features. they are better in every case.
+!! no pcb hacking, no trace cutting, less soldering and much much easier soldering. just cables. 
+!! for easy use, i recommend to buy the model with case. maybe thats part of 
+!! my future design. i dont know at this point. better you get the case for cents.
   
-  
+-----------------------------------------------------------------------------------------
+
 Central firmware for the great Pinball Wizard 2025 with Blutooth BLE + ESP NOW. 
 Based on ESP32 "CHEAP YELLOW PCB" from China/Amazon (20€-30€). 
 + 3.2 Inch Ips Display 
