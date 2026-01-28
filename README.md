@@ -126,48 +126,49 @@ You can flash, config and debug the device with an usb cable and your browser.
 (Testet with Edge/Chrome. Check your browser for USB support enabled.)
 Dont mind this wired URL. Its free webspace for developers.
 
-https://pinball-wizard-25.netlify.app/
+
 ## **[FLASH FIRMWARE ONLINE IN YOUR BROWSER](https://pinball-wizard-25.netlify.app/)**
+https://pinball-wizard-25.netlify.app/
 
 Don`t install nightly builds if you are not envolved or instructed. 
 Nightlys are realtime snapshots with bugs and/or unfinished functions!
 
 
-If you begin the project, feel free to get in contact with me on printables, meta, discord or here.
-You can ask me any question about this project. You are welcome.
-Discord: vraddicted
-Meta: VR-addicted
+If you begin the project, feel free to get in contact with me on printables, meta, discord or here.  
+You can ask me any question about this project. You are welcome.  
+Discord: vraddicted  
+Meta: VR-addicted  
 
 HINT, small manual: If the device goes to sleep, or you powered it off via menu, press the left front button to re-start the device.
-I write a manual, if some people are interested in the project.
-
-TO CONNECT TO A BLUETOOTH DEVICE PRESS THAT BLUETOOTH ICON IN THE BLUTETOOTH MENU. (Its not selfexplaining for some people. :-) )
-IF YOU HAVE PROBLEMS CONNECTING, BE SURE YOU ALREADY DELETED THE OLD CONNECTION.
-
-THERE ARE TWO BUTTONS TO CLEAN OLD CONNECTIONS. USE IT.
-IF AN OLD PAIRED DEVICE TAKES OVER THE PAIRING IN LESS THEN A SECOND, DISABLE THE OTHER DEVICE TEMPORARELY.
-SOME BLUETOOTH DEVICES ARE CACHING OLD CONNECTIONS AND THE ESP32 REMEMBERS AND CONNECTS IT IMMEDEATELY.
-IF THE QUEST LOSE BT CONNECTION, IN WHAT CASE EVER, ITS FASTER TO SIMPLE RESTART THE PBWZ25.
+I write a manual, if some people are interested in the project.  
+  
+TO CONNECT TO A BLUETOOTH DEVICE PRESS THAT BLUETOOTH ICON IN THE BLUTETOOTH MENU. (Its not selfexplaining for some people. :-) )  
+IF YOU HAVE PROBLEMS CONNECTING, BE SURE YOU ALREADY DELETED THE OLD CONNECTION.  
+  
+THERE ARE TWO BUTTONS TO CLEAN OLD CONNECTIONS. USE IT.  
+IF AN OLD PAIRED DEVICE TAKES OVER THE PAIRING IN LESS THEN A SECOND, DISABLE THE OTHER DEVICE TEMPORARELY.  
+SOME BLUETOOTH DEVICES ARE CACHING OLD CONNECTIONS AND THE ESP32 REMEMBERS AND CONNECTS IT IMMEDEATELY.  
+IF THE QUEST LOSE BT CONNECTION, IN WHAT CASE EVER, ITS FASTER TO SIMPLE RESTART THE PBWZ25.  
 AFTER RESTART, ITS PAIRED AND CONNECTED. IF YOU TRY TO REPAIR THE PBWZ25, YOU CAN DO THAT; BUT THIS 
-PROCEDURE WILL RESTART THE PBWZ25 AS WELL AND COSTS MORE STEPS TO REPAIR.
+PROCEDURE WILL RESTART THE PBWZ25 AS WELL AND COSTS MORE STEPS TO REPAIR.  
+  
+THIS SOUNDS HORRIBLE? NOPE. ABSOLUTELY NOT  
+This happens very rarely, and possibly because I test so much, I provoke it more often than necessary.  
+The system runs very stably, quickly, and reliably. I just wanted to point out this last possibility.   
 
-THIS SOUNDS HORRIBLE? NOPE. ABSOLUTELY NOT
-This happens very rarely, and possibly because I test so much, I provoke it more often than necessary.
-The system runs very stably, quickly, and reliably. I just wanted to point out this last possibility. 
-
-
-Stay stable, and the force will be with you. 
-
-More project links:
-
-https://github.com/VR-addicted/PINBALL-WIZARD-25-WEB-TOOL
-
-https://github.com/VR-addicted/PINBALL-WIZARD-25-PEDAL
-
-CAD:
-
-https://github.com/VR-addicted/PINBALL-WIZARD-25-CAD
-
-https://www.thingiverse.com/thing:7241122
-
-https://www.printables.com/model/1516410-pinball-wizard-25-bluetooth-controller-with-gyro-t
+  
+Stay stable, and the force will be with you.   
+  
+More project links:  
+  
+https://github.com/VR-addicted/PINBALL-WIZARD-25-WEB-TOOL  
+  
+https://github.com/VR-addicted/PINBALL-WIZARD-25-PEDAL  
+   
+CAD:  
+  
+https://github.com/VR-addicted/PINBALL-WIZARD-25-CAD  
+  
+https://www.thingiverse.com/thing:7241122  
+  
+https://www.printables.com/model/1516410-pinball-wizard-25-bluetooth-controller-with-gyro-t  
