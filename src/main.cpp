@@ -3,8 +3,12 @@
 //!   MAYBE SOME COMPONETS ARE NOT FULLY INTEGRATED
 //!   TRY IT AT YOUR OWN RISK
 
-// xmas
-// 2025
+// 31.1.2026
+// VALENTINES UPDATE. RGB ANIMATONS, NEW KEY SAMPLE METHODE WITH EMV SHIELD AGAINST RGB LED INTEREFERENCES
+// 
+// SET serial debug level allways to 0 if you dont want to debug, that increases speed to 295000 rounds per secound
+//
+// I CHANGED THE IO PINS FOR THE 
 
 
 // 1.1.2026 the developement of the PBWZ26 has begun.
@@ -265,7 +269,7 @@ int     dbglvlOSD   = DBGLVLOSD_DEFAULT ; // only a small blue sprite with minim
 #include <NeoPixelBus.h>                        // rgb led driver rmt based
 
 const uint16_t PixelCount = 6;                  // normal 6px, aber wenn man rgb mit rgbw mischt, mischt man 3 mit 4 byte sequenzen. notlösung eigene array füllfunktion.
-const uint8_t PixelPin = 5;
+const uint8_t PixelPin = 18;
 int16_t PixelReadyToSend = 0;
 
 
@@ -286,7 +290,7 @@ struct RGB {
     u_int8_t R,G,B;
 };
 
-RGB LED_FrontLbase       = { 40, 255,  40};   // leerlauf standart farbe wenn keine animation läuft
+RGB LED_FrontLbase       = {255, 255,  20};   // leerlauf standart farbe wenn keine animation läuft
 RGB LED_FrontLpressed    = {255, 255, 255};
 RGB LED_FrontLflipped    = {255,   0,   0};   // leuchtet mit den flipper tasten mit
 RGB LED_FrontLshifted    = {  0,   0, 255};   // long pressed shift mode
@@ -317,44 +321,34 @@ RGB LED_FlipperRshifted  = {  0,   0, 255};   // (Hell Blau) bei aktiver "shift"
 
 
 
-
+unsigned long RGBanimationFutureTimeFlag = 0;
 
 // // vereinfachter 3 byte call, machts aber unnötig langsam. nur ein überbleibsel, wenn man wieder auf die rgbw methode umsteigen will. das geht dann durch austauschen der funktion setPinballLed() hier drüber auskommentieren und den kurzen setPinballLed() auskommentieren
 // void setPinballLed(uint8_t ledIndex, uint8_t r, uint8_t g, uint8_t b) {
 //        strip.SetPixelColor(ledIndex, RgbColor(r, g, b));
 // }
-
-
-void RGBall0(){
-    for (uint16_t i = 0; i < PixelCount ; i++) {   // wegen hotfix -1
-        //setPinballLed(i, 0, 0, 0);   // same command but 1 api call more
-        strip.SetPixelColor(i, RgbColor(0, 0, 0));
+void RGBall(uint8_t input = 0){
+    for (uint16_t i = 0; i < PixelCount ; i++) {  
+        strip.SetPixelColor(i, RgbColor(input, input, input));
     }
     strip.Show();
 }
 
-void RGBall40(){
-    for (uint16_t i = 0; i < PixelCount ; i++) {   // wegen hotfix -1
-        //setPinballLed(i, 40, 40, 40);
-        strip.SetPixelColor(i, RgbColor(40, 40, 40));
-    }
-    strip.Show();
-}
 
 
 void RGBbaseLight(){
     // base light config
-    strip.SetPixelColor(0, RgbColor( 40,  40, 40));  // DOT-R
-    strip.SetPixelColor(1, RgbColor( 40,  40, 40));  // FL-R
-    strip.SetPixelColor(2, RgbColor(255,  40, 40));  // Front-R
-    strip.SetPixelColor(3, RgbColor( 40,  40, 40));  // FL-L
-    strip.SetPixelColor(4, RgbColor( 40, 180, 40));  // FRONT-L
-    strip.SetPixelColor(5, RgbColor( 40,  40, 40));  // DOT RGBW-L
+    strip.SetPixelColor(0, RgbColor( LED_NeopxRbase.R,    LED_NeopxRbase.G,   LED_NeopxRbase.B  ));  // NEOPIXEL-R
+    strip.SetPixelColor(1, RgbColor( LED_FlipperRbase.R,  LED_FlipperRbase.G, LED_FlipperRbase.B));  // FL-R
+    strip.SetPixelColor(2, RgbColor( LED_FrontRbase.R,    LED_FrontRbase.G,   LED_FrontRbase.B  ));  // Front-R
+    strip.SetPixelColor(3, RgbColor( LED_FlipperLbase.R,  LED_FlipperLbase.G, LED_FlipperLbase.B));  // FL-L
+    strip.SetPixelColor(4, RgbColor( LED_FrontLbase.R,    LED_FrontLbase.G,   LED_FrontLbase.B  ));  // FRONT-L
+    strip.SetPixelColor(5, RgbColor( LED_NeopxLbase.R,    LED_NeopxLbase.G,   LED_NeopxLbase.B  ));  // NEOPIXEL RGBW-L
     strip.Show();
 }
 
 
-void RGBshutDownSequence(){
+void RGBshutDownSequence(){  // funktion darf ohne time trap in sich geschlossen laufen, da der controller so oder so danach aus geht
 
 for (int i = 0; i < 60; i++) {
     float t = (float)i / 60.0f;       // 0.0 → 1.0
@@ -363,7 +357,7 @@ for (int i = 0; i < 60; i++) {
     int d1 = 10 + speed * 80;         // 10–90 ms
     int d2 = 5  + speed * 40;         // 5–45 ms
 
-    RGBall0();
+    RGBall(0);
     strip.Show();
     delay(d1);
 
@@ -407,39 +401,6 @@ RgbColor wheel(uint8_t pos, uint8_t brightness)
     }
 }  
 
-// einfache Rainbow-Funktion (HSV → RGBW)
-// W bleibt bewusst 0 für RGB-LEDs
-// RgbwColor wheel(uint8_t pos, uint8_t brightness)
-// {
-//     pos = 255 - pos;
-
-//     if (pos < 85) {
-//         return RgbwColor(
-//             (255 - pos * 3) * brightness / 255, // R
-//             0,                                  // G
-//             (pos * 3) * brightness / 255,       // B
-//             0                                   // W
-//         );
-//     } 
-//     else if (pos < 170) {
-//         pos -= 85;
-//         return RgbwColor(
-//             0,
-//             (pos * 3) * brightness / 255,
-//             (255 - pos * 3) * brightness / 255,
-//             0
-//         );
-//     } 
-//     else {
-//         pos -= 170;
-//         return RgbwColor(
-//             (pos * 3) * brightness / 255,
-//             (255 - pos * 3) * brightness / 255,
-//             0,
-//             0
-//         );
-//     }
-// }
 
 
 
@@ -789,14 +750,14 @@ int8_t emulationModeOverride = 0;        // 0 automatic mode in emulationMode,
 
 
 #define debounceKey 10                   // 10 ms
-
+uint32_t milliTimeCopy           = 0;
 uint8_t UIinterval  =   40;              // sets every x ms screenrefresh. costs power. 30 to 50 is very good. 50 makes display minimal slower, but reaction is at 50 ms 4 times higher. 
 long unsigned UIintervalTimerFlag = 0;
 uint16_t processTouchInterval = 200;     //200ms also 5x in der sekunde testen
 unsigned long processTouchTimeFlag = 0;
 unsigned long timeTrapOneSecond = 0;
 uint8_t UImenu      =    0;              // Startmenü-Index (auch in klasse lese und schreibbar?) // später über filesystem oder in rtc speichern
-int     sleepTimer  =   60;              // 60 Minuten nach letztem tastendruck deep sleep shutdown. später über filesystem oder in rtc speichern
+int     sleepTimer  =   10;              // 60 Minuten nach letztem tastendruck deep sleep shutdown. später über filesystem oder in rtc speichern
 int     ledTimeOff  =   60;              // 60 Sekunden = 1 minuten bis die leds zum stromsparen ausgehen. jede taste/touch reaktiviert timer
 bool    drawOnce    =    1; 
 uint8_t stdMenu     =    4;              // fallback menu, next variable defines timeout time
@@ -805,8 +766,16 @@ int     tiltCounterGlob= 0;
 int     dbgGamePad     = 0;              // um die richtigen tasten codes mit rechter flipper taste raus zu bekommen.
 unsigned long UIpreviousMillis  = 0;     // Letzter Zeitpunkt, zu dem der Code ausgeführt wurde
 unsigned long ledTimeOffMillis  = millis() + ledTimeOff  * 1000;      // 90 seKunden bis die LEDs ausgehen
-unsigned long sleepTimerMillis  = millis() + sleepTimer  * 1000 * 60; // 10 Minuten deep sleep timer
+unsigned long sleepTimerMillis  = millis() + sleepTimer  * 60000;      // 10 Minuten deep sleep timer
 unsigned long stdMenuTimeMillis = millis() + stdMenuTime * 1000;      // 20 Sekunden bis zum nächsten Menü
+// Optische Reihenfolge für K.I.T.T. effekt straight von links nach rechts: SideL, FrontL, NeoL, NeoR, FrontR, SideR
+const uint8_t LED_Order[6] = {3, 4, 5, 0, 2, 1};
+bool AnimationIsRunning = false;         // flag sorgt dafür das der AnimationRunningStep counter auch bei durchlauf über 0 nicht unterbrochen wird.
+int AnimationIsRunningStep = 0;          // hoch bis animation step max, dann wieder ab 0. kein flag. timemmark als flag
+uint16_t AnimationActivationTime = 15000;// 15 sekunden
+unsigned long AnimationDurationEndTimerFlag = 0;          // eigentlich internes paramter und gelocked durch AnimationIsRunning
+uint8_t  animationNumber     = 0;
+static uint8_t  animationSpeed  = 100;
 unsigned long gyroUpdateTimeTrapTimerFlag = 0;
 int8_t gyroTimeTrapTimerCycle = 30;      // z.b. 20 ms also 50x die sekunde mit dem per separtem parallel task gesampelten daten synchen
 bool     gamepadSendReportFlag  = false; // wenn true, wird am ende der schleife ein gamepad report gesendet. so können mehrere tasten in einem report gesendet werden.
@@ -815,6 +784,241 @@ int      skillShotMillisSend    = 426 ;  // ms
 unsigned long skillShotMillisStartTime = 0;
 int8_t CheatLockRecordMode = 1;    // 1 standart mode alles wie immer aber samplet immer press-release zeitdifferenz, 2 skillshot->A taste bei release triggert sendTimedPlungerButtonA 
 unsigned long keyAbenchmarkTimeMark = 0; // speicher bei drücken von A den timestamp und bei release ziehen wir millis() ab. differenz = benchmark
+
+/* global timer vars */                     // tastenabfrage variablen timemarks and flipflop flags
+
+
+
+uint32_t keyTimerFlagSideLeft    = 0;       // Flipper links debounce Timemark
+int flipFlopFlagSideLeft         = 0;
+
+uint32_t keyTimerFlagSideRight   = 0;       // Flipper rechts debounce Timemark
+int flipFlopFlagSideRight        = 0;
+
+uint32_t keyTimerFlagFrontLeft   = 0;       // Front Taste links
+int flipFlopFlagFrontLeft        = 0;
+
+uint32_t keyTimerFlagFrontRight  = 0;       // Plunger
+int flipFlopFlagFrontRight       = 0;
+
+uint32_t keyTimerFlagTwoButton   = 0;       // spezial keys durch 2 front tasten kombo ausgelöst
+int flipFlopFlagTwoButton        = 0;
+
+uint32_t keyTimerFlagFourButton  = 0;       // spezial keys durch 4 tasten kombo ausgelöst
+int flipFlopFlagFourButtons      = 0;
+
+uint32_t keyTimerFlagTilt        = 0;       // Timer Flag, wenn sich dieser ändert in größer als aktuelle zeit, setze auch direction, dann wird "flipFlopFlagTilt" high, bis debounce zuende ist
+int flipFlopFlagTilt             = 0;       // änderung eines neuen timers wird das hier high
+int keyTimerFlagTiltDirection    = 0;       // 0 = nicht zeichnen (überspringen), 1 = links, 2 = rechts, 3 = hoch, 4 = reset hintergrund
+
+uint32_t secondKeyButtonTimeMark = 0;       // Merke Timestamp sobald die taste antriggert, um später simple die differenz zu 400ms normal to multi function button schnell berechnen zu können.
+bool secondKeyButtonFlag         = false;   // wenn dieser true ist, dann wird die zweite taste gedrückt, und die erste taste wird nicht mehr abgefragt.
+int  secondKeyActivationTime     = 800;     // 400 ms bis der zweite button erkannt wird.
+bool secondKeySetLaterRelease    = 0;
+unsigned long secondKeySetLaterReleaseTimerFlag = 0;
+bool sendTimedPlungerButtonA     = false;
+unsigned long sendTimedPlungerButtonATimerReleaseFlag = 0;
+uint32_t keyTimerFlagActionKey   = 0;       // Flipper rechts debounce Timemark
+int flipFlopFlagActionKey        = 0;
+bool releaseTrickFlagActionKey;
+
+// sendet nach debouncetilt ca 100 ms die padX (0)message
+#define debounceTilt 100 
+
+// clean display circle with arrow after 500ms     
+int circleTimeToDisplay          = 500; 
+
+
+uint32_t keyTimerFlagAngleLeft   = 0;
+int flipFlopFlagAngleLeft        = 0;    
+
+uint32_t keyTimerFlagAngleRight  = 0;
+int flipFlopFlagAngleRight       = 0;    
+
+int keyTimerFlagAngleUp          = 0;
+int flipFlopFlagAngleUp          = 0;
+
+int keyTimerFlagAngleDown        = 0;
+int flipFlopFlagAngleDown        = 0;
+
+int potiEinsTimerFlag            = 0;
+
+//float accelerationTriggerG      = 1.9;          // 1.8g  G-Force value to trigger the Tilt Key  ACHTUNG, ES MUSS EINE KOMMA ZAHL SEIN. z.b. 1.8 , 2.0 oder 2.3 etc.
+
+int angleTrigger                = 12;             // Bei Neigung mehr als .. Grad, aktiviere Spezial tasten. Z.b. rechter joystick, d-pad
+
+int benchmarkTimerFlag          = 0;
+int benchmarkRoundValue         = 0;
+
+int counterKeysPressedOverall   = 1337;           // TODO: load/save to lokal storage for overall pressed and session pressed keys  
+int counterKeysPressedToday     = 0;
+
+
+
+// RGB
+
+// 1. Rainbow: Nutzt deine vorhandene wheel() Funktion
+void effect_rainbow(unsigned long t) {
+    for (uint16_t i = 0; i < PixelCount; i++) {
+        // i * 42 versetzt die Farben auf den 6 LEDs (255 / 6)
+        uint8_t hue = (uint8_t)((t / 10) + (i * 42)) & 255; 
+        strip.SetPixelColor(i, wheel(hue, 200));
+    }
+}
+
+// 2. Heartbeat: Pulsierendes Rot (Sinus-Welle)
+void effect_heartbeat(unsigned long t) {
+    // Phase berechnen: t * 0.003f steuert die Frequenz
+    float pulse = (sinf(t * 0.003f) + 1.0f) / 2.0f; 
+    uint8_t r = (uint8_t)(255 * pulse);
+    for (uint16_t i = 0; i < PixelCount; i++) {
+        strip.SetPixelColor(i, RgbColor(r, 0, 0));
+    }
+}
+
+// 3. Glitter: Zufällige Pixel faden aus (Random Color per Pixel)
+void effect_glitter(unsigned long t) {
+    static unsigned long lastSparkle = 0;
+    // Alle LEDs ein Stück abdunkeln für den Fade-Effekt
+    for (uint16_t i = 0; i < PixelCount; i++) {
+        RgbColor col = strip.GetPixelColor(i);
+        col.Darken(5); 
+        strip.SetPixelColor(i, col);
+    }
+    // Alle 60ms ein neues zufälliges Pixel zünden
+    if (t - lastSparkle > 60) {
+        strip.SetPixelColor(random(PixelCount), wheel(random(255), 255));
+        lastSparkle = t;
+    }
+}
+
+// 4. Scanner: Der klassische K.I.T.T. / Cylon Effekt
+void effect_comet(unsigned long t) {
+    // Wandelt Zeit in eine Position 0-10 um (für Hin- und Her-Lauf)
+    int pos = (t / 120) % 10; 
+    int activeLED = (pos > 5) ? (10 - pos) : pos; 
+
+    for (uint16_t i = 0; i < PixelCount; i++) {
+        if (i == activeLED) {
+            strip.SetPixelColor(i, RgbColor(255, 255, 255)); // Kopf des Kometen
+        } else {
+            RgbColor col = strip.GetPixelColor(i);
+            col.Darken(30); // Schweif-Effekt
+            strip.SetPixelColor(i, col);
+        }
+    }
+}
+
+
+
+
+
+
+
+void RGB_animation(uint8_t IN_animationNumber = 0, uint16_t IN_animationDurationMS = 1000, uint8_t IN_animationSpeed = 100)
+{
+    static unsigned long animationStartTime = 0;
+    static uint16_t effectiveDuration = 0; // Lokaler Puffer für die berechnete Zeit
+
+    if(AnimationIsRunning){
+        if(milliTimeCopy > AnimationDurationEndTimerFlag) {
+            AnimationIsRunning = false;
+            RGBbaseLight();
+
+            
+            
+            return;
+        }
+
+        // Speed-Skalierung (128 = 1.0x)
+        float speedFactor;
+        if (animationSpeed <= 128) speedFactor = 0.2f + (animationSpeed / 128.0f) * 0.8f;
+        else speedFactor = 1.0f + ((animationSpeed - 128) / 127.0f) * 9.0f;
+
+        unsigned long elapsed = (unsigned long)((milliTimeCopy - animationStartTime) * speedFactor);
+
+        switch(animationNumber) {
+            case 1: effect_rainbow(elapsed); break;
+            case 2: effect_heartbeat(elapsed); break; 
+            case 3: effect_glitter(elapsed); break;
+            case 4: effect_comet(elapsed); break;
+        }
+        
+        // Performance-Trick: strip.Show() nur hier zentral
+        //strip.Show();
+        PixelReadyToSend++; 
+    }
+    else {  
+        if(IN_animationNumber == 0) return;
+        
+        animationNumber = IN_animationNumber;
+        animationSpeed = IN_animationSpeed;
+        animationStartTime = milliTimeCopy;
+        
+        // MINDESTZEIT-LOGIK:
+        uint16_t minTime = 1000; // Globales Minimum
+        
+        switch(animationNumber) {
+            case 1: minTime = 3000; break; // Rainbow braucht Zeit zum Fließen
+            case 2: minTime = 4000; break; // Heartbeat braucht mind. 2-3 Schläge
+            case 3: minTime = 5000; break; // Glitter muss langsam ausglühen
+            case 4: minTime = 2500; break; // Scanner sollte paar mal pendeln
+        }
+        
+        // Wir nehmen den höheren Wert: Entweder API-Wunsch oder unser Minimum
+        effectiveDuration = (IN_animationDurationMS > minTime) ? IN_animationDurationMS : minTime;
+        AnimationDurationEndTimerFlag = milliTimeCopy + effectiveDuration;
+        
+        AnimationIsRunning = true;
+
+    // --- KOMPLETTER LOGIK-RESET ---
+    keyTimerFlagFrontLeft = 0;   // Timer auf 0 setzen, damit keine Zeitdifferenz berechnet wird
+    flipFlopFlagFrontLeft = 0;   // Flag auf 0, damit der Release-Zweig blockiert ist
+    secondKeyButtonTimeMark = 0; // Zeitmarke löschen
+    secondKeySetLaterRelease = false; // Geplante Releases abbrechen
+    //AnimationIsRunning = 0;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Einstellungen & Makros für den BMI160-Sensor
 #define MAX_VOLATILE(a, b) ((a) > (b) ? (a) : (b))
@@ -920,7 +1124,7 @@ volatile struct {
 //Touch Sensor & display
 #define TOUCH_SDA 33                                  // I2C SDA-Pin
 #define TOUCH_SCL 32                                  // I2C SCL-Pin
-#define TOUCH_INT 0                                   // Interrupt-Pin (falls nicht verwendet, auf -1 setzen)
+#define TOUCH_INT -1                                   // Interrupt-Pin (falls nicht verwendet, auf -1 setzen)
 #define TOUCH_RST 25                                  // Reset-Pin
 #define GT911_I2C_ADDR 0x5D                           // Standard-Adresse des GT911
 #define SCREEN_WIDTH  240                             // Korrekte Breite des Touchscreens
@@ -949,14 +1153,21 @@ uint32_t ButtonFlipperRightCounterToday   = 0;        // 0 = nicht gedrückt, 1 
 uint32_t ButtonFlipperLeftCounterAlltime  = 100;      // 0 = nicht gedrückt, 1 = gedrückt 
 uint32_t ButtonFlipperRightCounterAlltime = 100;      // 0 = nicht gedrückt, 1 = gedrückt
 
+// alte pinbelegung
+// const uint8_t ioPinSideLeft   =   4 ;                 // cut pcb trace
+// const uint8_t ioPinSideRight  =  17 ;                 // cut pcb trace
+// const uint8_t ioPinFrontLeft  =   0 ;                 // only scratch pcb trace GPIO0 shared with boot mode, easy to flash with (FRONT LEFT) pullup resistor
+// const uint8_t ioPinFrontRight =  16 ;                 // cut pcb trace
+// const uint8_t ioPinSideX      =  35 ;                 // solder 10k pullup to 3.3v. button left+right shares 1 line. (same function). liegt auf anderer speicherbank. pin35 - 32 = 3. das gleiche geht mit mod
+// const uint8_t ioPinSideXbit   = ioPinSideX %32;
 
-const uint8_t ioPinSideLeft   =   4 ;                 // cut pcb trace
-const uint8_t ioPinSideRight  =  17 ;                 // cut pcb trace
+// neue pinbelegung test 1
+const uint8_t ioPinSideLeft   =  23 ;                 // hardware pullup onboard - // cut pcb trace
+const uint8_t ioPinSideRight  =  19 ;                 // hardware pullup onboard - //cut pcb trace
 const uint8_t ioPinFrontLeft  =   0 ;                 // only scratch pcb trace GPIO0 shared with boot mode, easy to flash with (FRONT LEFT) pullup resistor
-const uint8_t ioPinFrontRight =  16 ;                 // cut pcb trace
-const uint8_t ioPinSideX      =  35 ;                 // solder 10k pullup to 3.3v. button left+right shares 1 line. (same function). liegt auf anderer speicherbank. pin35 - 32 = 3. das gleiche geht mit mod
+const uint8_t ioPinFrontRight =   5 ;                 // hardware pullup onboard - //cut pcb trace
+const uint8_t ioPinSideX      =  16 ;                 // solder 10k pullup to 3.3v. button left+right shares 1 line. (same function). liegt auf anderer speicherbank. pin35 - 32 = 3. das gleiche geht mit mod
 const uint8_t ioPinSideXbit   = ioPinSideX %32;
-
 
 
 int  gamepadXfinal             = 0;
@@ -981,80 +1192,18 @@ bool isGT911Connected() {
 }
 
 
-/* global timer vars */                     // tastenabfrage variablen timemarks and flipflop flags
-
-uint32_t milliTimeCopy           = 0;
-
-uint32_t keyTimerFlagSideLeft    = 0;       // Flipper links debounce Timemark
-int flipFlopFlagSideLeft         = 0;
-
-uint32_t keyTimerFlagSideRight   = 0;       // Flipper rechts debounce Timemark
-int flipFlopFlagSideRight        = 0;
-
-uint32_t keyTimerFlagFrontLeft   = 0;       // Front Taste links
-int flipFlopFlagFrontLeft        = 0;
-
-uint32_t keyTimerFlagFrontRight  = 0;       // Plunger
-int flipFlopFlagFrontRight       = 0;
-
-uint32_t keyTimerFlagTwoButton   = 0;       // spezial keys durch 2 front tasten kombo ausgelöst
-int flipFlopFlagTwoButton        = 0;
-
-uint32_t keyTimerFlagFourButton  = 0;       // spezial keys durch 4 tasten kombo ausgelöst
-int flipFlopFlagFourButtons      = 0;
-
-uint32_t keyTimerFlagTilt        = 0;       // Timer Flag, wenn sich dieser ändert in größer als aktuelle zeit, setze auch direction, dann wird "flipFlopFlagTilt" high, bis debounce zuende ist
-int flipFlopFlagTilt             = 0;       // änderung eines neuen timers wird das hier high
-int keyTimerFlagTiltDirection    = 0;       // 0 = nicht zeichnen (überspringen), 1 = links, 2 = rechts, 3 = hoch, 4 = reset hintergrund
-
-uint32_t secondKeyButtonTimeMark = 0;       // Merke Timestamp sobald die taste antriggert, um später simple die differenz zu 400ms normal to multi function button schnell berechnen zu können.
-bool secondKeyButtonFlag         = false;   // wenn dieser true ist, dann wird die zweite taste gedrückt, und die erste taste wird nicht mehr abgefragt.
-int  secondKeyActivationTime     = 800;     // 400 ms bis der zweite button erkannt wird.
-bool secondKeySetLaterRelease    = 0;
-unsigned long secondKeySetLaterReleaseTimerFlag = 0;
-bool sendTimedPlungerButtonA     = false;
-unsigned long sendTimedPlungerButtonATimerReleaseFlag = 0;
-uint32_t keyTimerFlagActionKey   = 0;       // Flipper rechts debounce Timemark
-int flipFlopFlagActionKey        = 0;
 
 
-// sendet nach debouncetilt ca 100 ms die padX (0)message
-#define debounceTilt 100 
-
-// clean display circle with arrow after 500ms     
-int circleTimeToDisplay          = 500; 
 
 
-uint32_t keyTimerFlagAngleLeft   = 0;
-int flipFlopFlagAngleLeft        = 0;    
 
-uint32_t keyTimerFlagAngleRight  = 0;
-int flipFlopFlagAngleRight       = 0;    
-
-int keyTimerFlagAngleUp          = 0;
-int flipFlopFlagAngleUp          = 0;
-
-int keyTimerFlagAngleDown        = 0;
-int flipFlopFlagAngleDown        = 0;
-
-int potiEinsTimerFlag            = 0;
-
-//float accelerationTriggerG      = 1.9;          // 1.8g  G-Force value to trigger the Tilt Key  ACHTUNG, ES MUSS EINE KOMMA ZAHL SEIN. z.b. 1.8 , 2.0 oder 2.3 etc.
-
-int angleTrigger                = 12;             // Bei Neigung mehr als .. Grad, aktiviere Spezial tasten. Z.b. rechter joystick, d-pad
-
-int benchmarkTimerFlag          = 0;
-int benchmarkRoundValue         = 0;
-
-int counterKeysPressedOverall   = 1337;           // TODO: load/save to lokal storage for overall pressed and session pressed keys  
-int counterKeysPressedToday     = 0;
 
 
 
 // Plunger links (meta taste B)
 // input Mode 0 = release, 1 set
 void sendBTcommandPlungerLinks(bool inputMode){   // diese taste zuerst abfragen für multi button 500ms trick
-
+    if(dbglvl) Serial.printf("[%lu.%03lu] sendBTcommandPlungerLinks(bool inputMode) called- set report flag =true\n", milliTimeCopy/1000,milliTimeCopy%1000);         // debug
     int8_t useMode = emulationMode;  
     if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
     if(inputMode){
@@ -1118,7 +1267,7 @@ void sendBTcommandPlungerRechts(bool inputMode){
 
 // 0 = release, 1 set
 void sendBTcommandPlungerRechtsSecondKey(bool inputMode){   
-    
+    if(dbglvl) Serial.printf("[%lu.%03lu] sendBTcommandPlungerRechtsSecondKey called- set report flag =true\n", milliTimeCopy/1000,milliTimeCopy%1000);         // debug
     int8_t useMode = emulationMode;  
     if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
     if(inputMode){
@@ -1388,7 +1537,7 @@ void sendBTcommandAngleTiltButtonLeft(bool inputMode, int analogValue = 0){
         
         int8_t useMode = emulationMode;  
         if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
-        //if(dbglvl  > 0 )Serial.printf("sendBTcommandAngleTiltButtonLeft(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
+        if(dbglvl  > 0 )Serial.printf("sendBTcommandAngleTiltButtonLeft(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
         
         if(inputMode){
             switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
@@ -1423,7 +1572,7 @@ void sendBTcommandAngleTiltButtonRight(bool inputMode, int analogValue = 0){
     
     int8_t useMode = emulationMode;  
     if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
-    //if(dbglvl  > 0 )Serial.printf("sendBTcommandAngleTiltButtonRight(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
+    if(dbglvl  > 0 )Serial.printf("sendBTcommandAngleTiltButtonRight(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
     if(inputMode){
         switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
             case 1: hid->gamepad->setHat(2);                          gamepadSendReportFlag   = true;  break;  // [verified] android
@@ -1516,7 +1665,7 @@ void sendBTcommandAngleTiltButtonDown(bool inputMode, int analogValue = 0){ // 4
 // Action Key (ist normal X-Key auf dem meta controller) ich verwende ihn z.b. für den funkbutton
 // input Mode 0 = release, 1 set
 void sendBTcommandActionKey(bool inputMode){   
-    
+    if(dbglvl) Serial.printf("[%lu.%03lu] sendBTcommandActionKey called- set report flag =true\n", milliTimeCopy/1000,milliTimeCopy%1000);         // debug
     int8_t useMode = emulationMode;  
     if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
     if(inputMode){
@@ -1544,7 +1693,7 @@ void sendBTcommandActionKey(bool inputMode){
 }
 
 void sendBTcommandActionKeySecondKey(bool inputMode){   
-    
+    if(dbglvl) Serial.printf("[%lu.%03lu] sendBTcommandActionKeySecondKey called- set report flag =true\n", milliTimeCopy/1000,milliTimeCopy%1000);         // debug
     int8_t useMode = emulationMode;  
     if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
     if(inputMode){
@@ -1638,7 +1787,7 @@ void setup() {
 
     if(dbglvl) Serial.println("RGB strip.Begin()");
     strip.Begin(); 
-    RGBall40();                                                     // setze rgb leds auf schwaches weiß
+    RGBall(40);                                                     // setze rgb leds auf schwaches weiß
  
 
 
@@ -1811,7 +1960,7 @@ if (esp_now_add_peer(&peerInfo) != ESP_OK) {
     ui->begin();           // Jetzt ist ui initialisiert
     ui->setTouch(&touch);  
 
-   // ui->setGamepad(gamepad);
+    // ui->setGamepad(gamepad);
      ui->setGamepad(hid->gamepad);
 
 
@@ -1822,33 +1971,8 @@ if (esp_now_add_peer(&peerInfo) != ESP_OK) {
     // Backlight einschalten  (macht intro() mit einem softstart sonnenaufgang)
     if(dbglvl>1) Serial.println("Showing intro...");
     ui->intro();  // hier in die warteschleife rgb rainbow animation
-    RGBbaseLight();
     
-    // TODO:
-    // RGB intro ins UI intro einbauen, statt delay 
-    // uint32_t start = millis();
-
-    // ~2 Sekunden Animation
-    // while (millis() - start < 2000) {
-    //     uint32_t t = millis() - start;
-
-    //     for (uint16_t i = 0; i < PixelCount; i++) {
-    //         uint8_t hue = (t / 8 + i * 40) & 0xFF;
-
-    //         // individuelle Helligkeit pro LED
-    //         uint8_t brightness = 80 + i * 60; // LED0 dunkler, LED2 heller
-    //         //setPinballLed(i, hue,40,40,0);
-    //         setPinballLed(i, wheel(hue, brightness));
-    //         // strip.SetPixelColor(i, wheel(hue, brightness));
-
-    //     }
-
-    //     strip.Show();
-    //     }
-    //delay(200);
-
-
-
+    
 
 
 
@@ -1856,7 +1980,19 @@ if (esp_now_add_peer(&peerInfo) != ESP_OK) {
     if(dbglvl>1) Serial.println("Initializing Gyro Sensor...");
       
       Wire.begin(I2C_SDA, I2C_SCL, 1000000);
-      delay(150);
+      //delay(150);  
+
+// TEST Anstatt delay Starte die Animation mit den gewünschten Parametern
+RGB_animation(1, 1000, 150); 
+// Halte das Setup hier fest, bis die Animation durchgelaufen ist, lass aber die andere cpu ihren dienst machen. deshalb kein delay
+
+while(AnimationIsRunning) {
+    milliTimeCopy = millis(); // WICHTIG: Zeit für die Logik aktualisieren
+    RGB_animation();          // Frame berechnen und strip.Show() ausführen
+    delay(1);                 // Kleines Delay für den Watchdog-Timer (WDT)
+}
+
+
 
       // BMI160 Initialisierung 
       // 1. Hardware-Reset (optional, aber sauber), falls man im programm noch mal neu kalibrieren will, vllt nützlich
@@ -1949,11 +2085,18 @@ if (esp_now_add_peer(&peerInfo) != ESP_OK) {
 // ========================================================================== //
    
     // Mechanical Switches soldered to IO0,IO4,IO16,IO17 
-    pinMode(ioPinSideLeft,  INPUT_PULLUP); // set internal pullup. if resistor is used, change to "INPUT"
-    pinMode(ioPinSideRight, INPUT_PULLUP); // set internal pullup. if resistor is used, change to "INPUT"
-    pinMode(ioPinFrontLeft,  INPUT);       // b-key gpio0 fix! shared with boot mode, easy to flash with
-    pinMode(ioPinFrontRight, INPUT);       // a-Key gpio4 theoretisch geht auch INPUT_PULLUP, aber wake up from sleep geht nur mit 47k pull resistor soldered for deep sleep wakeup
-    pinMode(ioPinSideX,      INPUT);        // an IO35 muss ein 10k-50k pullup widerstand angelötet werden 3.3v 
+    // pinMode(ioPinSideLeft,  INPUT_PULLUP); // set internal pullup. if resistor is used, change to "INPUT"
+    // pinMode(ioPinSideRight, INPUT_PULLUP); // set internal pullup. if resistor is used, change to "INPUT"
+    // pinMode(ioPinFrontLeft,  INPUT_PULLUP);       // b-key gpio0 fix! shared with boot mode, easy to flash with
+    // pinMode(ioPinFrontRight, INPUT);       // a-Key gpio4 theoretisch geht auch INPUT_PULLUP, aber wake up from sleep geht nur mit 47k pull resistor soldered for deep sleep wakeup
+    // pinMode(ioPinSideX,      INPUT);        // an IO35 muss ein 10k-50k pullup widerstand angelötet werden 3.3v 
+    
+     // Mechanical Switches soldered to                                OLD: IO0,IO4,IO16,IO17 
+    pinMode(ioPinSideLeft,   INPUT_PULLUP); // set internal pullup. if resistor is used, change to "INPUT"
+    pinMode(ioPinSideRight,  INPUT_PULLUP); // set internal pullup. if resistor is used, change to "INPUT"
+    pinMode(ioPinFrontLeft,  INPUT_PULLUP);       // b-key gpio0 fix! shared with boot mode, easy to flash with
+    pinMode(ioPinFrontRight, INPUT_PULLUP);       // a-Key gpio4 theoretisch geht auch INPUT_PULLUP, aber wake up from sleep geht nur mit 47k pull resistor soldered for deep sleep wakeup
+    pinMode(ioPinSideX,      INPUT_PULLUP);        // an IO35 muss ein 10k-50k pullup widerstand angelötet werden 3.3v 
     
     
     // PCB Power management                // Deep Sleep Wake-Up bei fallender Flanke, also wenn linker plunger gedrückt wird.
@@ -1990,11 +2133,14 @@ void loop() {
     keyboardSendReportFlag  = false;    // damit nur ein report pro schleife gesendet wird, auch wenn mehrere änderungen auftreten
 
 
+
+
  
-//>>>>>> time trap 20-100 ms [ UIupdate() ] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+//>>>>>> time trap 20-100 ms [ UIupdate() ] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         if (UIintervalTimerFlag <= milliTimeCopy) {               // UI update Timetrap
         UIintervalTimerFlag  = milliTimeCopy + UIinterval;
         ui->UIupdate(loopsPerSecond, milliTimeCopy);              // refresh actual GUI menu, with time trap
+
 }  // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
    
 
@@ -2024,6 +2170,30 @@ void loop() {
                 // drawOnce = 1;
                 stdMenuTimeMillis = milliTimeCopy + stdMenuTime * 1000;    // verlängere den menu auto switch timeout
             }
+   
+    // Check sekündlich differenz ledsleeptimer und _millis. als trigger wenn differenz >5000 (5 sek) ist. (set only led flags and send leds at end of loop)
+    // wenn animation nicht läuft, starte eine neu, bis sie abgelaufen ist und AnimationIsRunning wieder 0, nach beenden der animation in der animation gesetzt.
+if((60000*sleepTimer)-(sleepTimerMillis - milliTimeCopy) > AnimationActivationTime && !AnimationIsRunning){
+
+    if(dbglvl)Serial.println("idle, check ob animation läuft, wenn nicht, starte eine neue");
+    
+    // --- DER LOGIK-EXORZISMUS ---
+    // Wir nullen die Flags, die sendBTcommandActionKey steuern
+    keyTimerFlagActionKey = 0; 
+    flipFlopFlagActionKey = 0;
+    releaseTrickFlagActionKey = false; // Das ist der Übeltäter, wenn er static ist!
+    
+    // Auch für die Front-Tasten zur Sicherheit
+    keyTimerFlagFrontLeft = 0;
+    flipFlopFlagFrontLeft = 0;
+    
+    if(!AnimationIsRunning){
+    
+    RGB_animation(random(1, 5), random(3000, 6000), random(80, 150));
+    if(dbglvl) Serial.println("start new RGB animation");
+    }
+}
+
 }  //<<<< end 1000ms time trap <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     
 
@@ -2272,13 +2442,60 @@ if(secondKeyButtonFlag)
 
 
 
-// highspeed button polling. better readable and compiler optimzed version hardware key readings, without rtos. 
-// poll the hardware buttons
-if (!(GPIO.in      & (1 << ioPinSideLeft)))    keyTimerFlagSideLeft   = milliTimeCopy + debounceKey; 
-if (!(GPIO.in      & (1 << ioPinSideRight)))   keyTimerFlagSideRight  = milliTimeCopy + debounceKey;
-if (!(GPIO.in      & (1 << ioPinFrontLeft)))   keyTimerFlagFrontLeft  = milliTimeCopy + debounceKey;
-if (!(GPIO.in      & (1 << ioPinFrontRight)))  keyTimerFlagFrontRight = milliTimeCopy + debounceKey;
-if (!(GPIO.in1.val & (1 << ioPinSideXbit)))    keyTimerFlagActionKey  = milliTimeCopy + debounceKey;  
+
+// special ultra fast keyreading with rgb led emv prevention, while animation.
+// 1. Die Sammel-Maske für alle 5 physikalischen Buttons
+// (Stelle sicher, dass alle Pins in Bank 0 liegen, also < 32)
+const uint32_t buttonMask = (1 << ioPinSideLeft) | 
+                            (1 << ioPinSideRight) | 
+                            (1 << ioPinFrontLeft) | 
+                            (1 << ioPinFrontRight) | 
+                            (1 << ioPinSideX);
+
+// 2. Erster Snapshot vom Hardware-Register
+uint32_t currentGPIO = GPIO.in;
+
+// 3. Grober Check: Wurde IRGENDEINER dieser Pins auf LOW gezogen?
+if ((currentGPIO & buttonMask) != buttonMask) {
+    
+    // RGB LED EMV BUG FIX: Nur verzögern, wenn die Animation wirklich funkt
+    if (AnimationIsRunning) {
+        delayMicroseconds(200); 
+        currentGPIO = GPIO.in; // Snapshot mit zweiter lesung, also sicherem Wert überschreiben
+    }
+
+    // --- AB HIER DIE GEFILTERTE AUSWERTUNG ---
+
+    // Side Left
+    if (!(currentGPIO & (1 << ioPinSideLeft))) {
+        keyTimerFlagSideLeft = milliTimeCopy + debounceKey;
+        if(dbglvl > 10) Serial.println("side L taster physikalisch ausgelöst, gpio ausgelesen");
+    } 
+
+    // Side Right
+    if (!(currentGPIO & (1 << ioPinSideRight))) {
+        keyTimerFlagSideRight = milliTimeCopy + debounceKey;
+        if(dbglvl > 10) Serial.println("side R taster physikalisch ausgelöst, gpio ausgelesen");
+    }
+
+    // Front Left
+    if (!(currentGPIO & (1 << ioPinFrontLeft))) {
+        keyTimerFlagFrontLeft = milliTimeCopy + debounceKey; 
+        if(dbglvl > 10) Serial.println("front L taster physikalisch ausgelöst, gpio ausgelesen");
+    }
+
+    // Front Right
+    if (!(currentGPIO & (1 << ioPinFrontRight))) {
+        keyTimerFlagFrontRight = milliTimeCopy + debounceKey;
+        if(dbglvl > 10) Serial.println("front R taster physikalisch ausgelöst, gpio ausgelesen");
+    }
+
+    // Action Key (X)
+    if (!(currentGPIO & (1 << ioPinSideX))) {
+        keyTimerFlagActionKey = milliTimeCopy + 50; // Deine speziellen 50ms
+        if(dbglvl > 10) Serial.println("action key taster physikalisch ausgelöst, gpio ausgelesen");
+    }
+}    // END RGB
 
 
 
@@ -2289,43 +2506,44 @@ if (!(GPIO.in1.val & (1 << ioPinSideXbit)))    keyTimerFlagActionKey  = milliTim
 if(secondKeySetLaterRelease && secondKeySetLaterReleaseTimerFlag < milliTimeCopy){// notwendig um den release nächstes loop sicherzustellen. TODO: evtl mit 100 ms timemarken flag arbeiten
     sendBTcommandPlungerLinks(0);      // release front left key
     secondKeySetLaterRelease = false;  // reset flag
-    // if(dbglvl > 1)Serial.println("secondKeySetLaterRelease versucht release zu senden -> sendBTcommandPlungerLinks(0)");
+    if(dbglvl)Serial.println("secondKeySetLaterRelease versucht release zu senden -> sendBTcommandPlungerLinks(0)");
 
-    //release long press color to base color
-    //strip.SetPixelColor(4, RgbColor(LED_FrontLbase.R,  LED_FrontLbase.G,  LED_FrontLbase.B));    // FRont-R
-    //PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0    
 }
 
 
 if(keyTimerFlagFrontLeft > milliTimeCopy){ // pressed  // wenn größer, muss timer gesetzt sein und taste aktiv 
-    
+    //if(dbglvl)Serial.println("fotze");
     if (flipFlopFlagFrontLeft == 0){    // run only once by flip flop flag
                                         if(UImenu == 1) {ui->drawPhysicalVirtualKeys(2,1);                 // here is okay, no flags, its not time intense
                                                          ui->drawPhysicalVirtualKeys(6,0);}                // here is okay, no flags, its not time intense
-                                        // if(dbglvl>1)Serial.println("button front left triggered set time stamp");
+                                        if(dbglvl>1)Serial.println("ff flag ==0, button front left triggered set time stamp");
                                         secondKeyButtonFlag = 0;  
                                         secondKeyButtonTimeMark = milliTimeCopy;                           // setze feste zeitmarke des erstcontact einmalig, um später die differenz zur aktuellen zeit auswerten zu können
                                         flipFlopFlagFrontLeft = 1;
-
-                                        strip.SetPixelColor(4, RgbColor(LED_FrontLpressed.R,  LED_FrontLpressed.G,  LED_FrontLpressed.B));    // FL-L
-                                        PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0                    
-   }
+                                        // RGB set front left to PRESSED-short (white)
+                                        strip.SetPixelColor(4, RgbColor(LED_FrontLpressed.R, LED_FrontLpressed.G, LED_FrontLpressed.B));    // FL-L
+                                        PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0
+                                        AnimationIsRunning = 0; // TODO: kann wohl weg, da am ende der mainschleife beim tasten druck dieses flag gesetzt wird
+                                    if(dbglvl)Serial.println("anus");
+                                    }
 }
 else
     {                                   
     if (flipFlopFlagFrontLeft == 1){    // released  // taste losgelassen
+                                    //if(dbglvl)Serial.println("titten");
                                     //check <500 ms, dann soll taste als B taste interpretiert werden // 
                                     if( milliTimeCopy - secondKeyButtonTimeMark < secondKeyActivationTime )  
-                                      { 
+                                      { if(dbglvl)Serial.println("schlitten");
                                         sendBTcommandPlungerLinks(1);  
-                                        // if(dbglvl)Serial.println("sendBTcommandPlungerLinks(1)");  
+                                        if(dbglvl)Serial.println("ff flag == 1 , sendBTcommandPlungerLinks(1)");  
                                         secondKeySetLaterRelease = true;                                   // hier muss das release flag gesetzt werden.
-                                        secondKeySetLaterReleaseTimerFlag = milliTimeCopy + 100;
-                                        secondKeyButtonFlag = 0; 
-                                        
-                                        strip.SetPixelColor(4, RgbColor(LED_FrontLbase.R,  LED_FrontLbase.G,  LED_FrontLbase.B));    // FL-L
-                                        PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0    
-                                        } 
+                                        secondKeySetLaterReleaseTimerFlag = milliTimeCopy + 100;      // setze future trigger
+                                        secondKeyButtonFlag = 0;
+                                        // RGB set front left to RELEASED-short (base color)  
+                                        strip.SetPixelColor(4, RgbColor(LED_FrontLbase.R,  LED_FrontLbase.G,  LED_FrontLbase.B));    // FR-L
+                                        PixelReadyToSend++;                                                // set trigger, and use counter for what ever. reset to 0
+                                        AnimationIsRunning = 0; // TODO: kann wohl weg, da am ende der mainschleife beim tasten druck dieses flag gesetzt wird
+                                    } 
                                     
                                     hid->gamepad->setHat(8);                                               // release und lösche alle möglichen virtual keys um den kreis nächste code zeile
                                     gamepadSendReportFlag = 1;  
@@ -2339,22 +2557,28 @@ else
                                                      ui->drawVirtualTiltingJoystickKeys(4,0);              // here is okay, no flags, its not time intense 
                                                     }
                                     flipFlopFlagFrontLeft = 0;
-                                    //release long press color to base color
-                                    strip.SetPixelColor(4, RgbColor(LED_FrontLbase.R,  LED_FrontLbase.G,  LED_FrontLbase.B));    // FRont-R
-                                    PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0    
+                                    if(dbglvl)Serial.println("muschifurz");
+                                    // RGB set front left to RELEASE-LONG & SHORT(shift)(base color)
+                                    strip.SetPixelColor(4, RgbColor(LED_FrontLbase.R,  LED_FrontLbase.G,  LED_FrontLbase.B));    // FR-L
+                                    //strip.SetPixelColor(4, RgbColor(255,  255,  20));    // FR-L
+                                    PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0
+                                    AnimationIsRunning = 0; // TODO: kann wohl weg, da am ende der mainschleife beim tasten druck dieses flag gesetzt wird
     }
 }
 
 // Enable [virtual] [second key] , if time is over 500ms (secondKeyActivationTime) and first key is pressed. like a shift key on a keyboard
-if( milliTimeCopy - secondKeyButtonTimeMark >= secondKeyActivationTime && flipFlopFlagFrontLeft == 1){
+if( milliTimeCopy - secondKeyButtonTimeMark >= secondKeyActivationTime && flipFlopFlagFrontLeft == 1 ){  // && flipFlopFlagFrontLeft == 1
     secondKeyButtonFlag = 1;
     if(UImenu == 1) ui->drawPhysicalVirtualKeys(6,1);                                                      // here is okay, no flags, its not time intense
-    //if(dbglvl)Serial.println("SHIFT for second keys active");  
-    strip.SetPixelColor(4, RgbColor(LED_FrontLshifted.R,   LED_FrontLshifted.G,   LED_FrontLshifted.B  ));   // Front-R
+    // RGB set front left to PRESS-LONG (shift)(blue)
+    strip.SetPixelColor(4, RgbColor(LED_FrontLshifted.R,   LED_FrontLshifted.G,   LED_FrontLshifted.B  ));   // Front-L
     PixelReadyToSend++;                                    // set trigger, and use counter for what ever.  
-    }
+    // AnimationIsRunning = 0; // TODO: kann wohl weg, da am ende der mainschleife beim tasten druck dieses flag gesetzt wird
+if(dbglvl)Serial.println("milliTimeCopy - secondKeyButtonTimeMark >= secondKeyActivationTime && flipFlopFlagFrontLeft == 1 && !secondKeyButtonFlag");    
+}
  else 
-   {secondKeyButtonFlag = 0; }
+   {secondKeyButtonFlag = 0;  // hier nix weiter einfügen, läuft ständig durch. eigentlich setzt er es viel zu oft.
+   }
 
 
 
@@ -2526,10 +2750,10 @@ else
 
 
 
+//HIER LIEGT DER TEUFEL
+//TODO hier die funkbutton variable als OR implementieren
+//X-Button (physical on gpio35 oder neu 16) Darstellung und Sende BT command
 
-// TODO hier die funkbutton variable als OR implementieren
-// X-Button (physical on gpio35) Darstellung und Sende BT command
-static bool releaseTrickFlagActionKey;
 if(keyTimerFlagActionKey > milliTimeCopy){                                                  // wenn größer, muss timer gesetzt sein und taste aktiv 
     
     if (flipFlopFlagActionKey == 0){  
@@ -2611,26 +2835,38 @@ if(sendTimedPlungerButtonATimerReleaseFlag != 0 && sendTimedPlungerButtonATimerR
 // sende report, falls taste oder gamepad gedrückt wurde und gerät verfügbar.
 if(gamepadSendReportFlag){
    gamepadSendReportFlag = false;
-   if(dbglvl) Serial.printf("[%lu.%03lu] milliTimeCopy (round start time)\n", milliTimeCopy/1000,milliTimeCopy%1000);        // debug
+   if(dbglvl) Serial.printf("[%lu.%03lu] gamepad report milliTimeCopy (round start time)\n", milliTimeCopy/1000,milliTimeCopy%1000);        // debug
 //ms = millis();if(dbglvl) Serial.printf("[%lu.%03lu] realtime millis() vor gamepad report senden\n", ms/1000,ms%1000);      // debug    
    hid->gamepad->sendGamepadReport();     // ? SEND: manueller Report
    sleepTimerMillis  = milliTimeCopy + sleepTimer  * 60000; // verlängere sleeptimer um x minuten bei tastendruck am pad. bei so vielen sekunden zeitunkritisch. hier reicht millitimecopy um cpu zu schonen
    if(dbglvl){ ms = millis();Serial.printf("[%lu.%03lu] realtime millis() nach gamepad report senden\n", ms/1000,ms%1000); } // debug 
+AnimationIsRunning = 0;
 }
 
 if(keyboardSendReportFlag) {
    keyboardSendReportFlag = false; 
-   if(dbglvl) Serial.printf("[%lu.%03lu] milliTimeCopy (round start time)\n", milliTimeCopy/1000,milliTimeCopy%1000);         // debug
+   if(dbglvl) Serial.printf("[%lu.%03lu] keyboard report milliTimeCopy (round start time)\n", milliTimeCopy/1000,milliTimeCopy%1000);         // debug
 //ms = millis();if(dbglvl) Serial.printf("[%lu.%03lu] realtime millis() vor keyboard report senden\n", ms/1000,ms%1000);      // debug                    
    hid->keyboard->sendKeyReport();        // ? SEND: manueller Report
    sleepTimerMillis  = milliTimeCopy + sleepTimer  * 60000; // verlängere sleeptimer um x minuten bei tastendruck am keyboard
    if(dbglvl){ms = millis(); Serial.printf("[%lu.%03lu] realtime millis() nach keyboard report senden\n", ms/1000,ms%1000); } // debug 
+AnimationIsRunning = 0;
 }
 
-if(PixelReadyToSend){
-   PixelReadyToSend = 0;  // clear counter flag
-   strip.Show();
-}
+
+
+//>>>>>> time trap 10 ms [ RGB_animation() ] in die IDLE STRUKTUR DIREKT EINBAUEN>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        if (RGBanimationFutureTimeFlag <= milliTimeCopy) {               // UI update Timetrap
+            RGBanimationFutureTimeFlag  = RGBanimationFutureTimeFlag + 10;
+            // RGB animation frame update
+            if(AnimationIsRunning)RGB_animation();     // next frame rgb animation, if animation is running
+            if(PixelReadyToSend){
+                                PixelReadyToSend = 0;  // clear counter flag
+                                strip.Show();
+                                }
+}  // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
 
 //    GGGGGG    AAAAA     MM    MM   EEEEEEE      OOOOOO    VV     VV   EEEEEEE   RRRRRR
 //   GG        AA   AA    MMM  MMM   EE          OO    OO   VV     VV   EE        RR    RR
@@ -2648,4 +2884,5 @@ if(PixelReadyToSend){
 
 
 }
+
 

@@ -13,8 +13,15 @@
 
 **Video:** https://www.youtube.com/watch?v=zgfT5R-a2N8
 
-
-
+// 31.1.2026  
+// VALENTINES UPDATE. RGB ANIMATONS, NEW KEY SAMPLE METHODE WITH EMV SHIELD AGAINST RGB LED INTEREFERENCES.  
+//   
+// SET serial debug level allways to 0 if you dont want to debug, that increases speed to 295000 rounds per secound  
+//  
+// I CHANGED THE IO PINS FOR THE BUTTONS. YOU CAN USE THE OLD BUTTON PINS, BUT THEN YOU HAVE TO CHANGE IT IN THE SOURCE  
+// Now i solder the FLIPPER L+R, RGB LED, FRONT RIGHT PINS to the removed TF CARD READER PINS. PICTURE WILL FOLLOW.  
+// That minimises the traces to cut to only 1, and we can freely use the onboard pull up resistors for for the card   
+  
 
 !!    
 !! 1.1.2026 Developement of the next great pinball controller PBWZ-26 has begun.    
@@ -35,7 +42,7 @@
 !! exact model name: ESP32-S3-Touch-LCD-3.5B-C  ("B-C" at the end!!!)  
 !! https://www.aliexpress.com/item/1005009056920045.html  
 !!  
-!! for the PBWZ27: SpotPear Electronics P4+C6, 4,3" with housing, 2x 400mhz. A BEAST for ~30$  
+!! for the PBWZ27: GUITION P4+C6, 4,3" with housing, 2x 400mhz. A BEAST for ~30$  
 !! https://www.aliexpress.com/item/1005009673625472.html  
 !!  
 !! i think some parts of the firmware needs some polish for the new P4 cpu features...  
