@@ -784,7 +784,7 @@ int8_t emulationModeOverride = 0;         // 0 automatic mode in emulationMode,
 uint32_t milliTimeCopy           = 0;
 
 uint8_t UImenu      =    0;               // Startmenü-Index (auch in klasse lese und schreibbar?) // später über filesystem oder in rtc speichern
-int     sleepTimer  =   1;                // 10-300 Minuten nach letztem tastendruck deep sleep shutdown. display einbrennen verhindern. akku schonen. später über filesystem oder in rtc speichern
+int     sleepTimer  =   15;               // 10-300 Minuten nach letztem tastendruck deep sleep shutdown. display einbrennen verhindern. akku schonen. später über filesystem oder in rtc speichern
 int     ledTimeOff  =   60;               // 60 Sekunden = 1 minuten bis die leds zum stromsparen ausgehen. jede taste/touch reaktiviert timer
 bool    drawOnce    =    1; 
 uint8_t stdMenu     =    4;               // fallback menu, next variable defines timeout time
