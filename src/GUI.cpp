@@ -97,6 +97,8 @@ extern unsigned long processTouchTimeFlag;
 extern int processTouchRepeatBlockerPerMenu;
 extern int dbglvOSDldState;
 
+extern void RGBFrontBasecolorsSetter(int8_t mode = 0);
+
 MenuItem::MenuItem(const char* text, int min, int max, int initial, bool mod) {
     strncpy(label, text, sizeof(label) - 1);           // Maximal 14 Zeichen + 1 Nullterminator
     label[sizeof(label) - 1] = '\0';                   // Nullterminator sicherstellen
@@ -1358,12 +1360,14 @@ void GUI::UIupdate(int loopsPerSecond, int loopTimeMs) {
         if(espnowAirButtonCurrentStateSend == 0) { 
                 sendBTcommandActionKey(0);
                 if(UImenu == 1) espnowButton(3);            // icon nur updaten in menu 1 // TODO nur flag setzen und menu 1 da drauf triggenr lassen.
-                uiButtonESPnowResetviewTimeFlag = milliTimeCopy + 1000;      // set flag in future time mark  
+                uiButtonESPnowResetviewTimeFlag = milliTimeCopy + 1000;      // set flag in future time mark
+                RGBFrontBasecolorsSetter();                 // restore front base colors
             }
         if(espnowAirButtonCurrentStateSend == 1) {          // send bt command and update ui
                 sendBTcommandActionKey(1);
                 if(UImenu == 1) espnowButton(2);            // icon nur updaten in menu 1
                 uiButtonESPnowResetviewTimeFlag=0;
+                RGBFrontBasecolorsSetter(1);                // front buttons hellblau
             } 
     }
   

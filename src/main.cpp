@@ -383,10 +383,24 @@ for (int i = 0; i < 60; i++) {
 }
 
 //setPinballLed(4, 40, 10, 10);
-strip.SetPixelColor(4, RgbColor( 40, 10, 10));  // FRONT-L
+strip.SetPixelColor(4, RgbColor( 40, 10, 10));       // FRONT-L
 strip.Show();
 }
 
+
+// setter um aus gui pixel zu setzen, ohne das komplette objekt in der ui zu nutzen.
+void RGBFrontBasecolorsSetter(int8_t mode = 0){
+    if( mode == 0 ){
+                strip.SetPixelColor(4, RgbColor( LED_FrontLbase.R, LED_FrontLbase.G, LED_FrontLbase.B));             // FR-L
+                strip.SetPixelColor(2, RgbColor( LED_FrontRbase.R, LED_FrontRbase.G, LED_FrontRbase.B));             // FR-R
+                PixelReadyToSend++;
+    }
+    else{
+                strip.SetPixelColor(4, RgbColor( LED_FrontLXbutton.R, LED_FrontLXbutton.G, LED_FrontLXbutton.B));    // FR-L
+                strip.SetPixelColor(2, RgbColor( LED_FrontLXbutton.R, LED_FrontLXbutton.G, LED_FrontLXbutton.B));    // FR-R
+                PixelReadyToSend++;
+    }
+}
 
 // einfache Rainbow-Funktion (HSV → RGB)
 RgbColor wheel(uint8_t pos, uint8_t brightness)
@@ -424,9 +438,9 @@ RgbColor wheel(uint8_t pos, uint8_t brightness)
 
 
 unsigned long ms = 0;                           // decorative for millis to 22.493 format
-int8_t batteryESP32Status  = 100;                 // nach 8 runden ist wert stabil.this esp32  0-100%  3.3-4.2 V
+int8_t batteryESP32Status  = 100;               // nach 8 runden ist wert stabil.this esp32  0-100%  3.3-4.2 V
 int8_t batteryESPNOWstatus = 0;                 // external esp foot controller
-int8_t batteryESP32StatusLastround = 100;  // -1 
+int8_t batteryESP32StatusLastround = 100;       // 
 
 // local battery check without MOSFET. TODO: mosfet einbauen um strom zu sparen. benutze einen pin, der so oder so auf high liegt. spart io pins
 
@@ -489,10 +503,6 @@ pct = (int)(num / denom); // integer, aber völlig ausreichend }
 if (dbglvl) { Serial.print("ungefiltert. Prozent: "); Serial.println(pct);}
 return pct;
   }
-
-
-
-// return -1337;
 }
 
 
@@ -951,9 +961,6 @@ void RGB_animation(uint8_t IN_animationNumber = 0, uint16_t IN_animationDuration
         if(milliTimeCopy > AnimationDurationEndTimerFlag) {
             AnimationIsRunning = false;
             RGBbaseLight();
-
-            
-            
             return;
         }
 
@@ -1992,13 +1999,14 @@ if (esp_now_add_peer(&peerInfo) != ESP_OK) {
 
 // TEST Anstatt delay Starte die Animation mit den gewünschten Parametern
 RGB_animation(1, 1000, 150); 
+delay(2000);
 // Halte das Setup hier fest, bis die Animation durchgelaufen ist, lass aber die andere cpu ihren dienst machen. deshalb kein delay
 
-while(AnimationIsRunning) {
-    milliTimeCopy = millis(); // WICHTIG: Zeit für die Logik aktualisieren
-    RGB_animation();          // Frame berechnen und strip.Show() ausführen
-    delay(1);                 // Kleines Delay für den Watchdog-Timer (WDT)
-}
+// while(AnimationIsRunning) {
+//     milliTimeCopy = millis(); // WICHTIG: Zeit für die Logik aktualisieren
+//     RGB_animation();          // Frame berechnen und strip.Show() ausführen
+//     delay(1);                 // Kleines Delay für den Watchdog-Timer (WDT)
+// }
 
 
 
@@ -2558,7 +2566,6 @@ if(keyTimerFlagFrontLeft > milliTimeCopy){ // pressed  // wenn größer, muss ti
                                         strip.SetPixelColor(4, RgbColor(LED_FrontLpressed.R, LED_FrontLpressed.G, LED_FrontLpressed.B));    // FL-L
                                         PixelReadyToSend++;                                    // set trigger, and use counter for what ever. reset to 0
                                         AnimationIsRunning = 0; // TODO: kann wohl weg, da am ende der mainschleife beim tasten druck dieses flag gesetzt wird
-                                    if(dbglvl)Serial.println("anus");
                                     }
 }
 else
@@ -2783,7 +2790,7 @@ else
 
 
 
-//HIER LIEGT DER TEUFEL
+
 //TODO hier die funkbutton variable als OR implementieren
 //X-Button (physical on gpio35 oder neu 16) Darstellung und Sende BT command
 
@@ -2809,7 +2816,6 @@ if(keyTimerFlagActionKey > milliTimeCopy){                                      
                                         PixelReadyToSend++;
                                     }
                                     flipFlopFlagActionKey = 1;
-
                                     }
       }
 else
