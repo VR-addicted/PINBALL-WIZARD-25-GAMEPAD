@@ -66,7 +66,7 @@
 
 int     dbglvl      = DBGLVL_DEFAULT    ; // Globale Debug-Variable over Serial0 UART, zentral in main.cpp 1 only benchmark on screen, >1 to 10 goes to serial // später über filesystem oder in rtc speichern
 int     dbglvlOSD   = DBGLVLOSD_DEFAULT ; // only a small blue sprite with minimal info + benchmark results onscreen
-
+int     dbglvOSDldState = dbglvlOSD;
 /*!
 
 
@@ -76,7 +76,7 @@ int     dbglvlOSD   = DBGLVLOSD_DEFAULT ; // only a small blue sprite with minim
  
  Todo: Checken on NimBLE irgend welche Nachrichten received, z.b. Force Feedback/Rumpble, falls ja --> serial.print() it
 
- Todo: Spiffs/NVS filesystem um Tastenclicks und Gameprofile zu speichern.
+ Todo: Spiffs filesystem um Tastenclicks und Gameprofile zu speichern.
 
  Todo: limiter als grauen kreis im kreis visualisieren
 
@@ -84,7 +84,7 @@ int     dbglvlOSD   = DBGLVLOSD_DEFAULT ; // only a small blue sprite with minim
 
  Todo: Tiefpassfilter via software auf dem acc/gyro aktivieren. ich denke 50-200 hz max oder so müssten eigentlich reichen.
  
- Todo: Qanba Gravity RGB LEDs einbauen
+ Todo: akku low level <10% automatic shutdown.
 
 
  // Action Key for pinballFX arcade mode, via food padel? ALMOST DONE
@@ -758,90 +758,94 @@ bool isBleConnected() {
 
 
 // BT END =====================
-uint8_t UIinterval  =   40;              // sets every x ms screenrefresh. costs power. 30 to 50 is very good. 50 makes display minimal slower, but reaction is at 50 ms 4 times higher. 
+uint8_t UIinterval  =   40;               // sets every x ms screenrefresh. costs power. 30 to 50 is very good. 50 makes display minimal slower, but reaction is at 50 ms 4 times higher. 
 long unsigned UIintervalTimerFlag = 0;
-uint16_t processTouchInterval = 100;     //10ms-199ms für gute reactivität 10-40ms, 
+uint16_t processTouchInterval = 100;      //10ms-199ms für gute reactivität 10-40ms, 
 unsigned long processTouchTimeFlag = 0;
 unsigned long timeTrapOneSecond = 0;
 bool _touchDetected = false;             
 int _lastTouchX = 0;
 int _lastTouchY = 0;
-uint16_t processTouchNextKeyDelay = 200; // repeat geschwindigkeit zwischen den tasten abfragen
+uint16_t processTouchNextKeyDelay = 300;  // repeat geschwindigkeit zwischen den tasten abfragen
 unsigned long processTouchNextKeyTimeFlag = 0;
 int _cachedTouchX = -1;
 int _cachedTouchY = -1;
-uint16_t touchHysteresis = 5; // Toleranz in Pixeln (falls der Finger zittert)
+uint16_t touchHysteresis = 1;             // Toleranz in Pixeln ([1-5] falls der Finger zittert. lustiges feature. wenn man den butten reibt, gehts schnell)
+uint32_t lastTouchActivity = 0;           // Speichert den Zeitpunkt der letzten Berührung
+uint32_t touchThrottleTimeout = 5000;     // Die 10 Sekunden als feste Vorgabe
+int processTouchRepeatBlockerPerMenu = 0;  // kann auch mit initialisiert werden.
+    
 
-int8_t emulationMode = 1;                //bluetooth HID profiles 1 = Quest, 2 = PC, 3 = Android , 4 = Iphone, 5 = Switch (per funktion und if/case rutsche) 
-int8_t emulationModeOverride = 0;        // 0 automatic mode in emulationMode, 
+int8_t emulationMode = 1;                 // bluetooth HID profiles 1 = Quest, 2 = PC, 3 = Android , 4 = Iphone, 5 = Switch (per funktion und if/case rutsche) 
+int8_t emulationModeOverride = 0;         // 0 automatic mode in emulationMode, 
 
 
-#define debounceKey 10                   // 10 ms
+#define debounceKey 10                    // 10 ms
 uint32_t milliTimeCopy           = 0;
 
-uint8_t UImenu      =    0;              // Startmenü-Index (auch in klasse lese und schreibbar?) // später über filesystem oder in rtc speichern
-int     sleepTimer  =   10;              // 60 Minuten nach letztem tastendruck deep sleep shutdown. später über filesystem oder in rtc speichern
-int     ledTimeOff  =   60;              // 60 Sekunden = 1 minuten bis die leds zum stromsparen ausgehen. jede taste/touch reaktiviert timer
+uint8_t UImenu      =    0;               // Startmenü-Index (auch in klasse lese und schreibbar?) // später über filesystem oder in rtc speichern
+int     sleepTimer  =   1;                // 10-300 Minuten nach letztem tastendruck deep sleep shutdown. display einbrennen verhindern. akku schonen. später über filesystem oder in rtc speichern
+int     ledTimeOff  =   60;               // 60 Sekunden = 1 minuten bis die leds zum stromsparen ausgehen. jede taste/touch reaktiviert timer
 bool    drawOnce    =    1; 
-uint8_t stdMenu     =    4;              // fallback menu, next variable defines timeout time
-int     stdMenuTime =   20;              // springt danach zurück in stdMenu
+uint8_t stdMenu     =    4;               // fallback menu, next variable defines timeout time
+int     stdMenuTime =   20;               // springt danach zurück in stdMenu
 int     tiltCounterGlob= 0;
-int     dbgGamePad     = 0;              // um die richtigen tasten codes mit rechter flipper taste raus zu bekommen.
-unsigned long UIpreviousMillis  = 0;     // Letzter Zeitpunkt, zu dem der Code ausgeführt wurde
+int     dbgGamePad     = 0;               // um die richtigen tasten codes mit rechter flipper taste raus zu bekommen.
+unsigned long UIpreviousMillis  = 0;      // Letzter Zeitpunkt, zu dem der Code ausgeführt wurde
 unsigned long ledTimeOffMillis  = millis() + ledTimeOff  * 1000;      // 90 seKunden bis die LEDs ausgehen
 unsigned long sleepTimerMillis  = millis() + sleepTimer  * 60000;      // 10 Minuten deep sleep timer
 unsigned long stdMenuTimeMillis = millis() + stdMenuTime * 1000;      // 20 Sekunden bis zum nächsten Menü
 // Optische Reihenfolge für K.I.T.T. effekt straight von links nach rechts: SideL, FrontL, NeoL, NeoR, FrontR, SideR
 const uint8_t LED_Order[6] = {3, 4, 5, 0, 2, 1};
-bool AnimationIsRunning = false;         // flag sorgt dafür das der AnimationRunningStep counter auch bei durchlauf über 0 nicht unterbrochen wird.
-int AnimationIsRunningStep = 0;          // hoch bis animation step max, dann wieder ab 0. kein flag. timemmark als flag
-uint16_t AnimationActivationTime = 15000;// 15 sekunden
+bool AnimationIsRunning = false;          // flag sorgt dafür das der AnimationRunningStep counter auch bei durchlauf über 0 nicht unterbrochen wird.
+int AnimationIsRunningStep = 0;           // hoch bis animation step max, dann wieder ab 0. kein flag. timemmark als flag
+uint16_t AnimationActivationTime = 15000; // 15 sekunden
 unsigned long AnimationDurationEndTimerFlag = 0;          // eigentlich internes paramter und gelocked durch AnimationIsRunning
 uint8_t  animationNumber     = 0;
 static uint8_t  animationSpeed  = 100;
 unsigned long gyroUpdateTimeTrapTimerFlag = 0;
-int8_t gyroTimeTrapTimerCycle = 30;      // z.b. 20 ms also 50x die sekunde mit dem per separtem parallel task gesampelten daten synchen
-bool     gamepadSendReportFlag  = false; // wenn true, wird am ende der schleife ein gamepad report gesendet. so können mehrere tasten in einem report gesendet werden.
-bool     keyboardSendReportFlag = false; // wenn true, wird am ende der schleife ein keyboard report gesendet. so können mehrere tasten in einem report gesendet werden.
-int      skillShotMillisSend    = 426 ;  // ms
+int8_t gyroTimeTrapTimerCycle = 30;       // z.b. 20 ms also 50x die sekunde mit dem per separtem parallel task gesampelten daten synchen
+bool     gamepadSendReportFlag  = false;  // wenn true, wird am ende der schleife ein gamepad report gesendet. so können mehrere tasten in einem report gesendet werden.
+bool     keyboardSendReportFlag = false;  // wenn true, wird am ende der schleife ein keyboard report gesendet. so können mehrere tasten in einem report gesendet werden.
+int      skillShotMillisSend    = 426 ;   // ms
 unsigned long skillShotMillisStartTime = 0;
-int8_t CheatLockRecordMode = 1;    // 1 standart mode alles wie immer aber samplet immer press-release zeitdifferenz, 2 skillshot->A taste bei release triggert sendTimedPlungerButtonA 
-unsigned long keyAbenchmarkTimeMark = 0; // speicher bei drücken von A den timestamp und bei release ziehen wir millis() ab. differenz = benchmark
+int8_t CheatLockRecordMode = 1;           // 1 standart mode alles wie immer aber samplet immer press-release zeitdifferenz, 2 skillshot->A taste bei release triggert sendTimedPlungerButtonA 
+unsigned long keyAbenchmarkTimeMark = 0;  // speicher bei drücken von A den timestamp und bei release ziehen wir millis() ab. differenz = benchmark
 
-/* global timer vars */                     // tastenabfrage variablen timemarks and flipflop flags
+/* global timer vars */                   // tastenabfrage variablen timemarks and flipflop flags
 
 
 
-uint32_t keyTimerFlagSideLeft    = 0;       // Flipper links debounce Timemark
+uint32_t keyTimerFlagSideLeft    = 0;     // Flipper links debounce Timemark
 int flipFlopFlagSideLeft         = 0;
 
-uint32_t keyTimerFlagSideRight   = 0;       // Flipper rechts debounce Timemark
+uint32_t keyTimerFlagSideRight   = 0;     // Flipper rechts debounce Timemark
 int flipFlopFlagSideRight        = 0;
 
-uint32_t keyTimerFlagFrontLeft   = 0;       // Front Taste links
+uint32_t keyTimerFlagFrontLeft   = 0;     // Front Taste links
 int flipFlopFlagFrontLeft        = 0;
 
-uint32_t keyTimerFlagFrontRight  = 0;       // Plunger
+uint32_t keyTimerFlagFrontRight  = 0;     // Plunger
 int flipFlopFlagFrontRight       = 0;
 
-uint32_t keyTimerFlagTwoButton   = 0;       // spezial keys durch 2 front tasten kombo ausgelöst
+uint32_t keyTimerFlagTwoButton   = 0;     // spezial keys durch 2 front tasten kombo ausgelöst
 int flipFlopFlagTwoButton        = 0;
 
-uint32_t keyTimerFlagFourButton  = 0;       // spezial keys durch 4 tasten kombo ausgelöst
+uint32_t keyTimerFlagFourButton  = 0;     // spezial keys durch 4 tasten kombo ausgelöst
 int flipFlopFlagFourButtons      = 0;
 
-uint32_t keyTimerFlagTilt        = 0;       // Timer Flag, wenn sich dieser ändert in größer als aktuelle zeit, setze auch direction, dann wird "flipFlopFlagTilt" high, bis debounce zuende ist
-int flipFlopFlagTilt             = 0;       // änderung eines neuen timers wird das hier high
-int keyTimerFlagTiltDirection    = 0;       // 0 = nicht zeichnen (überspringen), 1 = links, 2 = rechts, 3 = hoch, 4 = reset hintergrund
+uint32_t keyTimerFlagTilt        = 0;     // Timer Flag, wenn sich dieser ändert in größer als aktuelle zeit, setze auch direction, dann wird "flipFlopFlagTilt" high, bis debounce zuende ist
+int flipFlopFlagTilt             = 0;     // änderung eines neuen timers wird das hier high
+int keyTimerFlagTiltDirection    = 0;     // 0 = nicht zeichnen (überspringen), 1 = links, 2 = rechts, 3 = hoch, 4 = reset hintergrund
 
-uint32_t secondKeyButtonTimeMark = 0;       // Merke Timestamp sobald die taste antriggert, um später simple die differenz zu 400ms normal to multi function button schnell berechnen zu können.
-bool secondKeyButtonFlag         = false;   // wenn dieser true ist, dann wird die zweite taste gedrückt, und die erste taste wird nicht mehr abgefragt.
-int  secondKeyActivationTime     = 800;     // 400 ms bis der zweite button erkannt wird.
+uint32_t secondKeyButtonTimeMark = 0;     // Merke Timestamp sobald die taste antriggert, um später simple die differenz zu 400ms normal to multi function button schnell berechnen zu können.
+bool secondKeyButtonFlag         = false; // wenn dieser true ist, dann wird die zweite taste gedrückt, und die erste taste wird nicht mehr abgefragt.
+int  secondKeyActivationTime     = 800;   // 400 ms bis der zweite button erkannt wird.
 bool secondKeySetLaterRelease    = 0;
 unsigned long secondKeySetLaterReleaseTimerFlag = 0;
 bool sendTimedPlungerButtonA     = false;
 unsigned long sendTimedPlungerButtonATimerReleaseFlag = 0;
-uint32_t keyTimerFlagActionKey   = 0;       // Flipper rechts debounce Timemark
+uint32_t keyTimerFlagActionKey   = 0;     // Flipper rechts debounce Timemark
 int flipFlopFlagActionKey        = 0;
 bool releaseTrickFlagActionKey;
 
@@ -866,14 +870,14 @@ int flipFlopFlagAngleDown        = 0;
 
 int potiEinsTimerFlag            = 0;
 
-//float accelerationTriggerG      = 1.9;          // 1.8g  G-Force value to trigger the Tilt Key  ACHTUNG, ES MUSS EINE KOMMA ZAHL SEIN. z.b. 1.8 , 2.0 oder 2.3 etc.
+//float accelerationTriggerG      = 1.9;    // 1.8g  G-Force value to trigger the Tilt Key  ACHTUNG, ES MUSS EINE KOMMA ZAHL SEIN. z.b. 1.8 , 2.0 oder 2.3 etc.
 
-int angleTrigger                = 12;             // Bei Neigung mehr als .. Grad, aktiviere Spezial tasten. Z.b. rechter joystick, d-pad
+int angleTrigger                = 12;       // Bei Neigung mehr als .. Grad, aktiviere Spezial tasten. Z.b. rechter joystick, d-pad
 
 int benchmarkTimerFlag          = 0;
 int benchmarkRoundValue         = 0;
 
-int counterKeysPressedOverall   = 1337;           // TODO: load/save to lokal storage for overall pressed and session pressed keys  
+int counterKeysPressedOverall   = 1337;     // TODO: load/save to lokal storage for overall pressed and session pressed keys  
 int counterKeysPressedToday     = 0;
 
 
@@ -1147,7 +1151,7 @@ volatile struct {
 //Touch Sensor & display
 #define TOUCH_SDA 33                                  // I2C SDA-Pin
 #define TOUCH_SCL 32                                  // I2C SCL-Pin
-#define TOUCH_INT -1                                   // Interrupt-Pin (falls nicht verwendet, auf -1 setzen)
+#define TOUCH_INT -1                                  // Interrupt-Pin (falls nicht verwendet, auf -1 setzen)
 #define TOUCH_RST 25                                  // Reset-Pin
 #define GT911_I2C_ADDR 0x5D                           // Standard-Adresse des GT911
 #define SCREEN_WIDTH  240                             // Korrekte Breite des Touchscreens
@@ -1199,13 +1203,6 @@ bool isGT911Connected() {
     I2C_1.beginTransmission(GT911_I2C_ADDR);
     return (I2C_1.endTransmission() == 0);
 }
-
-
-
-
-
-
-
 
 
 
@@ -1851,9 +1848,6 @@ WiFi.disconnect();
   lastPacketTime = millis();
 
 
-
-
-
 // Beispiel: Peer hinzufügen (nur nötig, wenn Empfänger auch senden soll)
 // im setup(), nach esp_now_init() und vor dem Ende:
 esp_now_peer_info_t peerInfo = {};
@@ -1868,8 +1862,6 @@ if (esp_now_add_peer(&peerInfo) != ESP_OK) {
   if(dbglvl) Serial.println("Peer hinzugefügt (Sender)");
 
 }
-
-
 
 
 
@@ -2070,34 +2062,6 @@ while(AnimationIsRunning) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ========================================================================== //
    
     // Mechanical Switches soldered to IO0,IO4,IO16,IO17 
@@ -2150,46 +2114,50 @@ void loop() {
 
 
 // touch time trap evtl komplett mit ins ins ui timetrap. touch ist eh immer kleiner als ui intervall. spart zyklen im main loop. testen. benchmark 
-// >>>>> Time Trap 20-200 ms  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>      
+// >>>>> Time Trap 20-200 ms  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    
+// mit throttle   
+
+
 if (processTouchTimeFlag <= milliTimeCopy) {
-    processTouchTimeFlag = milliTimeCopy + processTouchInterval;
-    // processTouchTimeFlag = milliTimeCopy + (isDimmed ? 200 : processTouchInterval);  // bessere variante. bei gedimmten display geht i2c traffic runter. somit loop speed 250k-->289K 
+    
+    // Wenn die Zeit seit dem letzten Touch > 10 Sek ist -> 500ms, sonst 20ms
+    uint16_t nextInterval = (milliTimeCopy - lastTouchActivity > touchThrottleTimeout) ? 500 : processTouchInterval;
+    processTouchTimeFlag = milliTimeCopy + nextInterval + processTouchRepeatBlockerPerMenu ;  // so kann man easy 0-1000 ms in submenus aktivieren um bouncen zu reduzieren ohne zu tief in die logik rein zu gehen. 
 
-    int detectedPoints = touch.touched(GT911_MODE_POLLING);
-
-    if (detectedPoints > 0) {
+    if (touch.touched(GT911_MODE_POLLING) > 0) {
         GTPoint point = touch.getPoint(0);
         
-        // Prüfen, ob der Finger sich signifikant bewegt hat oder neu ist
         bool hasMoved = (abs(point.x - _cachedTouchX) > touchHysteresis) || 
                         (abs(point.y - _cachedTouchY) > touchHysteresis);
 
-        // Wenn bewegt ODER die Sperrzeit abgelaufen ist
         if (hasMoved || processTouchNextKeyTimeFlag <= milliTimeCopy) {
-            
             _lastTouchX = point.x;
             _lastTouchY = point.y;
             _cachedTouchX = point.x;
             _cachedTouchY = point.y;
             _touchDetected = true;
 
-            // Sperrzeit für "Draufhalten" setzen (z.B. 500ms)
-            processTouchNextKeyTimeFlag = milliTimeCopy + processTouchNextKeyDelay;
-
-            if(dbglvl) Serial.printf("[TOUCH] %s | X: %d | Y: %d\n", hasMoved ? "NEW/MOVE" : "REPEAT", _lastTouchX, _lastTouchY);
+            processTouchNextKeyTimeFlag = milliTimeCopy + 500;
             
-            // Timer-Resets...
-            ledTimeOffMillis  = milliTimeCopy + ledTimeOff  * 1000;      
-            stdMenuTimeMillis = milliTimeCopy + stdMenuTime * 1000;          
-            sleepTimerMillis  = milliTimeCopy + sleepTimer  * 60000;
+            // NUR HIER setzen wir den Aktivitäts-Timer zurück
+            lastTouchActivity = milliTimeCopy;
+
+            if(dbglvl) Serial.printf("[TOUCH] X:%d Y:%d | Mode: HighSpeed\n", _lastTouchX, _lastTouchY);
+            
+            // Deine originalen Timer-Resets (die bleiben natürlich!)
+            ledTimeOffMillis  = milliTimeCopy + (uint32_t)ledTimeOff  * 1000;
+            stdMenuTimeMillis = milliTimeCopy + (uint32_t)stdMenuTime * 1000;
+            sleepTimerMillis  = milliTimeCopy + (uint32_t)sleepTimer  * 60000;
         }
     } else {
-        // KEIN Touch mehr: Cache löschen, damit der nächste Tap sofort zählt
         _cachedTouchX = -1;
         _cachedTouchY = -1;
-        processTouchNextKeyTimeFlag = 0; // Sperre sofort aufheben
+        processTouchNextKeyTimeFlag = 0; 
     }
 }
+
+
+
 
 
 
@@ -2222,9 +2190,20 @@ if (UIintervalTimerFlag <= milliTimeCopy) {               // UI update Timetrap
         if (dbglvl) { Serial.print("batteryESP32Status: "); Serial.println(batteryESP32Status);}
     }
     
-    // Display dimmer timer, sleep timer react on underflow 
+    // Display dimmer timer //  sleep timer react on underflow 
         
-    if(milliTimeCopy > sleepTimerMillis){esp_deep_sleep_start();}  // wenn millis wieder größer als die gesetzte future zeitmarke wird...
+    if(milliTimeCopy > sleepTimerMillis){
+        ui->DeepSleepShutDownDisplayAnimation();
+        RGBshutDownSequence();
+        delay(2000);
+        RGBshutDownSequence();
+        delay(2000);
+        ui->DisplayAnimationPixelDestroy();
+        if(dbglvl>1) Serial.println("esp_deep_sleep_start()");
+        tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, TFT_BLACK);   // clear screen  
+        ledcWrite(0, 0);                                              // display beleuchtung aus
+        esp_deep_sleep_start();
+    }  // wenn millis wieder größer als die gesetzte future zeitmarke wird...
     
     if(milliTimeCopy > stdMenuTimeMillis && stdMenu != UImenu)
             {
@@ -2267,12 +2246,8 @@ if((60000*sleepTimer)-(sleepTimerMillis - milliTimeCopy) > AnimationActivationTi
 
     // BMI160 Sensor aus Task1 von CPU0 holen auf sicherem weg. incl. Gyro und Accel
     int powerCalculatedLeft = 0, powerCalculatedRight = 0, powerCalculatedUp = 0;
-    
-    
-    
-    
-    
-   xSemaphoreTake(power_mutex, portMAX_DELAY);
+        
+    xSemaphoreTake(power_mutex, portMAX_DELAY);
 
 
 // // Statt portMAX_DELAY (was alles einfriert)
@@ -2282,10 +2257,6 @@ if((60000*sleepTimer)-(sleepTimerMillis - milliTimeCopy) > AnimationActivationTi
 // } else {
 //     // Sensor war beschäftigt oder blockiert - überspringen für Performance
 // }
-
-
-
-
 
 
 
@@ -2929,12 +2900,6 @@ AnimationIsRunning = 0;
 }  // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
  
-
-
-// _touchDetected = false; 
-
-
-
 
 
 

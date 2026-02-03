@@ -93,6 +93,9 @@ struct HostDevice {
 extern bool _touchDetected;
 extern int  _lastTouchX ;
 extern int  _lastTouchY;
+extern unsigned long processTouchTimeFlag;
+extern int processTouchRepeatBlockerPerMenu;
+extern int dbglvOSDldState;
 
 MenuItem::MenuItem(const char* text, int min, int max, int initial, bool mod) {
     strncpy(label, text, sizeof(label) - 1);           // Maximal 14 Zeichen + 1 Nullterminator
@@ -1258,33 +1261,36 @@ void GUI::menu6() {
                                 _tft.print("INSERT COIN");
                             
                     _touchDetected = 0;           // ausnahmsweise um eine runde auszusetzen
-                    delay(500);                   // touch pad entprellen
-                    // TODO: clean touchBuffer in klasse
+                    _lastTouchX    = 0;
+                    _lastTouchY    = 0;
+                    processTouchRepeatBlockerPerMenu = 300; // versetze nächste eingabe, um bounce auf insert coin menu zu verhindern.
+                    dbglvlOSD = 0;   // ausblenden damit der endscreen und endanimation nicht gestört werden.
                     }
-                    dbglvlOSD = 0;                // macht das störende blaue fenster während abschluss animation weg. reine optik
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
     
                 if(_touchDetected){
                    _touchDetected = 0;
-                    if(_lastTouchY < 240)     
+                    if(_lastTouchY > 0 && _lastTouchY < 240)  // >0 verhindert bouncen, weil wir die coordinaten zu 0 cleanen   
                         {   // oberer teil des displays angeklickt. also final in sleep fahren, ohne gnade.
                         DeepSleepShutDownDisplayAnimation();
                         RGBshutDownSequence();
                         delay(2000);
                         DisplayAnimationPixelDestroy();
                         if(dbglvl>1) Serial.println("esp_deep_sleep_start()");
-                        _tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, TFT_RED);   // clear screen  
+                        _tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, TFT_BLACK);   // clear screen  
                         ledcWrite(0, 0);                                             // display beleuchtung aus
                         esp_deep_sleep_start(); 
-                }
-            else {         // "insert coin" wurde getouched, also zurück ins start menu
-                    UImenu = 0;        // zurück ins hauptmenu und cleane einige flags
-                    UIclearScreen = 1;
-                    flagUImenu6drawMenuOnce = 1;
-                    UIclearScreen = 1;
-                    flagUImenu0DrawRowCells = true;
-                    flagUImenu1SpriteDown = false; 
-            }
+                    }
+                    if(_lastTouchY >= 240) {         // "insert coin" wurde getouched, also zurück ins start menu
+                            UImenu = 0;        // zurück ins hauptmenu und cleane einige flags
+                            UIclearScreen = 1;
+                            flagUImenu6drawMenuOnce = 1;
+                            UIclearScreen = 1;
+                            flagUImenu0DrawRowCells = true;
+                            flagUImenu1SpriteDown = false; 
+                            dbglvlOSD = dbglvOSDldState;   // debug osd wieder einschalten, falls es in der config aktiv war...               // macht das störende blaue fenster während abschluss animation weg. reine optik
+                            processTouchRepeatBlockerPerMenu = 0;  // touch responsiveness wieder auf voll speed
+                    }
          }
 }
 
