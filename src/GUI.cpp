@@ -17,7 +17,7 @@ ui->setGamepad(hid->gamepad);
 ui->setKeyboard(hid->keyboard);
 */
 
-// #define DEVICE_NAME         "PW25"
+
 
 extern int8_t emulationMode; 
 extern int8_t emulationModeOverride;                  // bluetooth manual override. 0 ignorieren, zahlen größer 0 ersetzen die orignal 
@@ -49,8 +49,6 @@ extern int dbgGamePad;
 extern int flipFlopFlagSideLeft;
 extern int THRESHOLD_X, THRESHOLD_Y, THRESHOLD_Z;     // Thresholds for tilt detection
 extern bool secondKeyButtonFlag;
-extern bool animationFlag = 0;
-//extern float accX,accY;
 extern float pitch, roll;
 extern uint32_t ButtonFlipperLeftCounterToday;
 extern uint32_t ButtonFlipperLeftCounterAlltime;
@@ -64,11 +62,8 @@ extern uint8_t myMAC[6];
 extern const char* DEVICE_NAME;
 extern const char* DEVICE_MANUFACTURER;
 
-
 extern bool isBleConnected();
-extern void setPinballLed(uint8_t ledIndex, uint8_t r, uint8_t g, uint8_t b);
 
-extern void RGBall0();                               // alle leds auf 0
 extern void RGBshutDownSequence();                   // alle leds aus, front left flashen, dann front left soft red als standby und reaktivation hinweis leuchte
 extern void formatNVS();
 extern void sendBTcommandActionKey(bool inputMode);
@@ -82,21 +77,22 @@ extern volatile uint8_t espnowAirButtonCurrentState;
 extern volatile uint8_t espnowAirButtonCurrentStateSend;
 
 extern volatile uint16_t g_lastConnHandle;  // kommt aus main.cpp (siehe unten)
-
+extern void serialWelcomeMessage(); 
 
 
 uint32_t _oldButtonFlipperLeftCounterToday    = 0 ;   //ButtonFlipperLeftCounterToday;    
 uint32_t _oldButtonFlipperRightCounterToday   = 0 ;   //ButtonFlipperRightCounterToday;   
 uint32_t _oldButtonFlipperLeftCounterAlltime  = 0 ;   //ButtonFlipperLeftCounterAlltime;   
 uint32_t _oldButtonFlipperRightCounterAlltime = 0 ;   //ButtonFlipperRightCounterAlltime; 
-// uint32_t _oldButtonFlipperRightCounterAlltime = 0 ;  // wird doch eh nur errechnet 
 
 struct HostDevice {
     const char* mac;
     const char* name;
 };
 
-
+extern bool _touchDetected;
+extern int  _lastTouchX ;
+extern int  _lastTouchY;
 
 MenuItem::MenuItem(const char* text, int min, int max, int initial, bool mod) {
     strncpy(label, text, sizeof(label) - 1);           // Maximal 14 Zeichen + 1 Nullterminator
@@ -194,13 +190,9 @@ int touchX, touchY;                                // oberhalb der funktionen an
 
 
 
-
-
-
 GUI::GUI(TFT_eSPI& display, GamepadHID* gp, KeyboardHID* kb)
     : _tft(display), _gamepad(gp), _keyboard(kb)
 {}
-
 
 
 
@@ -208,10 +200,11 @@ void GUI::setGamepad(GamepadHID* gp) {
     _gamepad = gp;
 }
 
+
+
 void GUI::setKeyboard(KeyboardHID* kb) {
     _keyboard = kb;
 }
-
 
 
 
@@ -332,9 +325,6 @@ void GUI::intro() {
 // ESP-Button for menu1 top middle position
 
 
-
-
-
 // mode=0 checks touch field area and returns bool 1/0 if touched.
 // mode=1 darkgrey base button, mode=2 green gedrückt, mode=3 lightgrey released, mode=4 red error connection
 
@@ -373,16 +363,8 @@ bool GUI::espnowButton(int8_t mode){
                     return 0;
             }
     }
-
     return 0;
-
     }
-
-
-
-
-
-
 
 
 
@@ -440,6 +422,8 @@ bool GUI::cheatButton(int8_t mode){
     }
 }
 
+
+
 // 0 bzw leer() gibt true false touch zone zurück, wenn touch in zone
 // 1 zeichnet button mit text, 2 grüner rand, 3 grauer rand (clean the green, geht schneller als kompletten button neu zu rendern)
 bool GUI::drawSkillShotButton(int8_t mode){
@@ -468,28 +452,7 @@ bool GUI::drawSkillShotButton(int8_t mode){
                     return 0;
     }
     else return 0;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
-
-
-
-
-
 
 
 
@@ -608,50 +571,6 @@ static uint8_t batteryESP32StatusOld = 0;   // TODO: war schon draußen. checken
        }
        drawOnce = 0;
     }  // ------------------------
-    
-
-
-
-
-
-
-
-
-    // static uint32_t uiButtonESPnowResetviewTimeFlag      = 0;                // loop session übergreifend deklarieren
-    // if(espnowAirButtonCurrentState != espnowAirButtonCurrentStateSend)
-    // {
-    //     espnowAirButtonCurrentStateSend =  espnowAirButtonCurrentState;
-    //     if(espnowAirButtonCurrentStateSend == 0) { 
-    //             sendBTcommandActionKey(0);
-    //             espnowButton(3); 
-    //             uiButtonESPnowResetviewTimeFlag = milliTimeCopy + 1000;      // set flag in future time mark  
-    //         }
-    //     if(espnowAirButtonCurrentStateSend == 1) { // send bt command and update ui
-    //             sendBTcommandActionKey(1);
-    //             espnowButton(2);
-    //             uiButtonESPnowResetviewTimeFlag=0;
-    //         } 
-    // }
-  
-    // if(uiButtonESPnowResetviewTimeFlag){  // muss größer als 0 sein
-    //   if(uiButtonESPnowResetviewTimeFlag < milliTimeCopy){  // wenn es jetzt wieder kleiner als die future mark ist, aktion und flag cleanen
-    //         espnowButton(1);                       // update ui
-    //         uiButtonESPnowResetviewTimeFlag = 0;   // clean flag
-    //     }
-    // }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -705,14 +624,6 @@ static uint8_t batteryESP32StatusOld = 0;   // TODO: war schon draußen. checken
     
     drawButtonTilt(tiltCounterGlob);
 }
-
-
-// TODO ACHTUNG DAS WAR SCHON RAUSGESCHMISSEN. EVTL WIEDER RAUS SCHMEIßEN!
-    // if(batteryESP32Status != batteryESP32StatusOld) {
-    //     batteryESP32StatusOld = batteryESP32Status;
-    //     drawBatteryLocal(batteryESP32Status);
-    // }
-
 
 
 
@@ -1035,12 +946,8 @@ void GUI::menu3() {
    
 
     // Touch-Eingabe verarbeiten
-    // TODO: miese lösung. das muss wie in den anderen menus entprellt werden.
-    static int8_t countTrap = 0;  // einmalig in die funktion laden
-    countTrap++; // hochzählen und in der if abfrage nur jede 3 bis 8te runde rein spart recourcen und entprellt touch zähler
-    if (_touchDetected && countTrap > 1) {  //  // menu abhängiges reagieren auf touches . wenn zentrales processTouch() true zurück gab, liegen die coordinaten in touchX, touchY
-        _touchDetected=0 ;  // zurücksetzen. 
-        countTrap     =0 ;  
+   if (_touchDetected) { // menu abhängiges reagieren auf touches . wenn zentrales processTouch() true zurück gab, liegen die coordinaten in touchX, touchY
+       _touchDetected=0 ;  // zurücksetzen. 
     
         int deltaBright      = brightnessItem .checkTouch(_lastTouchX, _lastTouchY);
         int deltaSleep       = sleepTimerItem .checkTouch(_lastTouchX, _lastTouchY);
@@ -1193,7 +1100,7 @@ void GUI::menu5() {
         drawOnce = 0;
     }
 
-static unsigned long timeTrap = 0;              // 
+static unsigned long timeTrap = 0;             
 
         if (_touchDetected ) {
             _touchDetected = 0;                 // menu abhängiges reagieren auf touches . wenn zentrales processTouch() true zurück gab, liegen die coordinaten in touchX, touchY
@@ -1218,8 +1125,13 @@ static unsigned long timeTrap = 0;              //
                 if (deltadbglvl != 0) {    // Serial0 debug Level std
                     dbglvl = dbglvlItem.updateValue(deltadbglvl);  
                     dbglvlItem.draw(_tft);
-                    if(dbglvl>0 && !Serial) Serial.begin(115200);
-                }
+                    if(dbglvl && !Serial) {Serial.begin(115200); delay(500); serialWelcomeMessage(); }
+                    }
+                    else{
+                        Serial.println("closing serial connection. you can reactivate it in debug menu any time.");
+                        delay(500);
+                        Serial.end();
+                    }
 
                 if (deltaUIinterval != 0) {
                     UIinterval = uiInterval.updateValue(deltaUIinterval);  // globale variable
@@ -1256,67 +1168,7 @@ static unsigned long timeTrap = 0;              //
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Menu Gameover deepsleep/power off
-void GUI::menu6() {               
-    
-                    int startX = 0;
-                    int startY = 40;
-            
-                    if(drawOnce){              // draw once 
-                       drawOnce = 0;              // clear flag
-                                _tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bgColor);   // clean background
-                                _tft.drawRect(startX, startY , 240, 170, TFT_WHITE);
-                                _tft.setTextFont(2);         
-                                _tft.setTextSize(6);
-                                _tft.setTextColor(0x2000);    // 0x3186  // 0x4208  // todo: orange leuchten lassen
-                                _tft.setCursor(startX + 20, startY );
-                                _tft.print("GAME");        
-                                _tft.setCursor(startX + 22, startY + 80);
-                                _tft.print  ("OVER");        
-                                _tft.setTextColor(0xFC00);    //TFT_WHITE
-                                _tft.setCursor(startX + 45, startY + 185);
-                                _tft.setTextSize(2);
-                                _tft.println("SHUT DOWN");
-                                _tft.setCursor(startX + 43, startY + 230);
-                                _tft.print("INSERT COIN");
-                            
-                    _touchDetected = 0;           // ausnahmsweise um eine runde auszusetzen
-                    delay(500);                   // touch pad entprellen
-                    // TODO: clean touchBuffer in klasse
-                    }
-                    dbglvlOSD = 0;             // macht das störende blaue fenster während abschluss animation weg. reine optik
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
-    
-                if(_touchDetected){
-                   _touchDetected = 0;
-                    if(_lastTouchY < 240)      //animationFlag = true;
-                        {
+void GUI::DeepSleepShutDownDisplayAnimation(){
                         ledcWrite(0, 200); // display noch mal richtig hell machen für die reaktivierungs message im shutdown screen 
                         _tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bgColor);   // clear screen   
                         _tft.setTextColor(0xFFFF);
@@ -1341,10 +1193,11 @@ void GUI::menu6() {
                         _tft.drawLine(197, 195, 197, 144, 0x73AE);
                         _tft.setTextColor(0x24BE);
                         _tft.drawString("bye bye", 41, 84);
-                        RGBshutDownSequence();
-                        delay(2000);
+}
 
-                        // play destroy animation
+
+void GUI::DisplayAnimationPixelDestroy(){   // play destroy animation
+                        // clear screen to black with random but not too random blocks. :-)
                         int totalBlocks = (SCREEN_WIDTH / 8) * (SCREEN_HEIGHT / 8);
                         //int16_t blockPositions[1200][2]; // 30x40 = 1200 Blöcke
                         int16_t blockPositions[totalBlocks][2]; // 30x40 = 1200 Blöcke mit X,Y coordinaten
@@ -1376,12 +1229,55 @@ void GUI::menu6() {
                             );
                             delay(2); // Kleine Verzögerung für sichtbare Animation
                             }
-                        ledcWrite(0, 0);
+}
+
+
+
+// Menu Gameover deepsleep/power off
+void GUI::menu6() {               
+    
+                    int startX = 0;
+                    int startY = 40;
+            
+                    if(drawOnce){              // draw once 
+                       drawOnce = 0;              // clear flag
+                                _tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bgColor);   // clean background
+                                _tft.drawRect(startX, startY , 240, 170, TFT_WHITE);
+                                _tft.setTextFont(2);         
+                                _tft.setTextSize(6);
+                                _tft.setTextColor(0x2000);    // 0x3186  // 0x4208  // todo: orange leuchten lassen
+                                _tft.setCursor(startX + 20, startY );
+                                _tft.print("GAME");        
+                                _tft.setCursor(startX + 22, startY + 80);
+                                _tft.print  ("OVER");        
+                                _tft.setTextColor(0xFC00);    //TFT_WHITE
+                                _tft.setCursor(startX + 45, startY + 185);
+                                _tft.setTextSize(2);
+                                _tft.println("SHUT DOWN");
+                                _tft.setCursor(startX + 43, startY + 230);
+                                _tft.print("INSERT COIN");
+                            
+                    _touchDetected = 0;           // ausnahmsweise um eine runde auszusetzen
+                    delay(500);                   // touch pad entprellen
+                    // TODO: clean touchBuffer in klasse
+                    }
+                    dbglvlOSD = 0;                // macht das störende blaue fenster während abschluss animation weg. reine optik
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+    
+                if(_touchDetected){
+                   _touchDetected = 0;
+                    if(_lastTouchY < 240)     
+                        {   // oberer teil des displays angeklickt. also final in sleep fahren, ohne gnade.
+                        DeepSleepShutDownDisplayAnimation();
+                        RGBshutDownSequence();
+                        delay(2000);
+                        DisplayAnimationPixelDestroy();
                         if(dbglvl>1) Serial.println("esp_deep_sleep_start()");
                         _tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, TFT_RED);   // clear screen  
+                        ledcWrite(0, 0);                                             // display beleuchtung aus
                         esp_deep_sleep_start(); 
                 }
-            else {
+            else {         // "insert coin" wurde getouched, also zurück ins start menu
                     UImenu = 0;        // zurück ins hauptmenu und cleane einige flags
                     UIclearScreen = 1;
                     flagUImenu6drawMenuOnce = 1;
@@ -1394,64 +1290,12 @@ void GUI::menu6() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void GUI::drawText(int x, int y, const char* text) {
-        _tft.setCursor(x, y);
-        _tft.setTextColor(TFT_WHITE);
-        _tft.setTextSize(2);
-        _tft.print(text);
-}
-
-
-
 void GUI::drawRectangle(int x, int y, int w, int h, uint32_t color) {
         _tft.fillRect(x, y, w, h, color);
 }
 
 
 
-// Neuer Setter für die Touch-Instanz
-void GUI::setTouch(GT911* touch) {
-        _touch = touch;
-}
-
-
-extern uint16_t processTouchInterval;
-extern unsigned long processTouchTimeFlag;
 void GUI::UIupdate(int loopsPerSecond, int loopTimeMs) {
 
         // ESP-NOW
@@ -1463,19 +1307,6 @@ void GUI::UIupdate(int loopsPerSecond, int loopTimeMs) {
 
 
         static uint8_t oldUImenu = 0;
-        // Touch-Abfrage nur hier und nur einmal pro Zyklus
-
-
-// >>>>> Time Trap 20-1000 ms  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>        
-        if(processTouchTimeFlag < milliTimeCopy){
-           processTouchTimeFlag = milliTimeCopy + processTouchInterval;    
-          _touchDetected = processTouch(&_lastTouchX, &_lastTouchY);  // methode gibt true/false in die var _touchDetected zurück
-          // die Variablen _lastTouchX/Y sind in der kompletten klasse verfügbar. -touchDetected Flag löschen, nach touch benutzung.
-        }
-// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
-
-
 
         // kleine logik, damit nicht bei jedem frame unnötig einen ledcwrite auslöst
         static uint8_t PWM_POWER_OUT = PWM_POWER ;                  // einmalig übernehmen.    // um veränderungen einmalig zu machen. 
@@ -1538,56 +1369,14 @@ void GUI::UIupdate(int loopsPerSecond, int loopTimeMs) {
     }
 
 
-
-
-
-
-
-
-
-
-
-    // Timetrap 2:  0-1000  die auch schneller oder langsamer als 30fps (wie der screen) laufen kann.
+    // OSD DBG Timetrap 2:  0-1000  die auch schneller oder langsamer als 30fps (wie der screen) laufen kann.
     if(timeMarkUIdrawDebug <= milliTimeCopy){                        
        timeMarkUIdrawDebug  = milliTimeCopy + UIintervalDBG;         // setze nächste trap
-
-            if(dbglvlOSD){ 
-                drawDebug(loopsPerSecond, loopTimeMs);               // UI dbg overlay layer
-            // hier kann noch etwas rein das sich sekündlich updated
-
-            }
-        }
-}
-
-
-
-bool GUI::processTouch(int* x, int* y) {                              // war bis jetzt gut
-
-    if (_touch != nullptr) {
-        // Aktualisiere die Touch-Daten mit der öffentlichen Methode `touched()`
-        uint8_t contacts = _touch->touched(GT911_MODE_POLLING);       // Polling-Modus 
-
-        if (contacts > 0) {
-            GTPoint point = _touch->getPoint(0);                      // Ersten Touch-Punkt holen
-            *x = point.x;     // global verfügbar machen
-            *y = point.y;     // global verfügbar machen
-            // bei tastendruck alle sleep timer wieder neu setzen
-            ledTimeOffMillis  = milliTimeCopy + ledTimeOff  * 1000;      
-            stdMenuTimeMillis = milliTimeCopy + stdMenuTime * 1000;          
-            sleepTimerMillis  = milliTimeCopy + sleepTimer  * 60000; 
-
-            if (dbglvl > 4) {
-                if(dbglvl>1) Serial.printf("Touch detected: X=%d, Y=%d\n", point.x, point.y);
-                _tft.fillCircle(point.x, point.y, 3, TFT_RED);
-                
-            }
-            return true;
+       if(dbglvlOSD){ 
+        drawDebug(loopsPerSecond, loopTimeMs);               // UI dbg overlay layer
+        // hier kann noch etwas rein das sich sekündlich updated
         }
     }
-    return false;
-
-
-
 }
 
 
@@ -1603,14 +1392,6 @@ void GUI::draw7SegmentNumberSmall(uint32_t number, int segmentPosX, int segmentP
     }
 }
 
-
-
-
-//void GUI::drawBatteryLocal(uint8_t pixel){    
-//    _tft.drawRect(70,  9, 10, 27, TFT_WHITE);                                
-//    _tft.fillRect(71, 10, 8 , 25, bgColor);                                  
-//    if(pixel) _tft.fillRect(71 , 35 - pixel, 8, pixel, TFT_DARKGREY);        
-//}
 
 
 // 0-25 px its pretty fast because we do not use cpu expensive calculations
@@ -1674,6 +1455,7 @@ bool GUI::drawButtonCheatStoreProfile(int8_t mode){
 }
 
 
+
 bool GUI::drawButtonCheatLockRecord(int8_t mode){
     if(mode == 0) if(_lastTouchX > 129 && _lastTouchX < 171 && _lastTouchY > 3 && _lastTouchY < 50){return 1;} 
     if(mode == 1){
@@ -1694,6 +1476,7 @@ bool GUI::drawButtonCheatLockRecord(int8_t mode){
     }
 
 
+
 bool GUI::buttonCheatBackToPlay(int8_t mode){
     if(mode == 0) if(_lastTouchX > 189 && _lastTouchX < 240 && _lastTouchY > 5 && _lastTouchY < 50){return 1;}    
     if(mode == 1){
@@ -1703,6 +1486,7 @@ bool GUI::buttonCheatBackToPlay(int8_t mode){
     }
     return 0;
 }
+
 
 
 // only on change show new BIG LCD number
@@ -1717,6 +1501,7 @@ void GUI::draw7SegmentNumberBig() {
         _tft.drawString(buffer, 23, 51);  //
     
 }
+
 
 
 // 0 checkt touch und gibt wert für addition +-10 zurück
@@ -1749,6 +1534,8 @@ int8_t GUI::drawButtonCheatPlusMinus(int8_t mode){
     return 0;
 }
 
+
+
 void GUI::drawTextCheatProfileName(int8_t profileNumber){
         _tft.drawRect(5, 110, 234, 26, 0xFFFF);
         _tft.fillRect(6, 111, 198, 24, bgColor);
@@ -1759,6 +1546,8 @@ void GUI::drawTextCheatProfileName(int8_t profileNumber){
         _tft.drawString("The Adams Family", 8, 113);
         
 }
+
+
 
 void GUI::drawCheatProfileSelector(){
         _tft.fillRoundRect(3, 55, 233, 50, 10, 0xFFFF);
@@ -1778,20 +1567,15 @@ void GUI::drawCheatProfileSelector(){
         _tft.drawString(buffer, 99, 66);     
         _tft.drawString("-",  29, 61);
         _tft.drawString("+", 191, 64);
-
 }
 
 
 
-
-
 void GUI::drawButtonTilt(int value){
-    
 static int oldValue = 0;                                                   // lade einmalig den stand
-
 value=value%100;                                                           // max 99, min 0    
 if(value != oldValue && value > 0){                                        // baue icon nur auf, wenn unterschied besteht und min 1 oder größer
-        oldValue = value;
+            oldValue = value;
     
             _tft.fillRect(35, 270, 170, 45, TFT_BLACK);                    // clear field with background color
             
@@ -1884,10 +1668,6 @@ void GUI::drawWaterBubble() {
     const int centerX = 120;                           // Mittelpunkt X
     const int centerY = 200;                           // Mittelpunkt Y
     
-    // Initialisiere die Position der Blase
-    // const int centerY = 200;                           
-    
-    
     int posX = centerX;
     int posY = centerY;
     
@@ -1929,7 +1709,6 @@ void GUI::drawWaterBubble() {
         _tft.fillCircle(posX, posY, 24, 0xBBD6);        // Innere Kreisfläche (grau)
 
     }
-
 }
 
 
@@ -2024,40 +1803,28 @@ return 0;
 // =====================================================================================
 // BT methoden
 
-
-
-// extern void setupAdvertising();
-
-
-
-
 void GUI::clearActiveBluetoothPairing() {
-  btPairingActive = true;
+        btPairingActive = true;
 
-  NimBLEServer* srv = NimBLEDevice::getServer();
-  if (srv && srv->getConnectedCount() > 0) {
-    for (auto h : srv->getPeerDevices()) srv->disconnect(h);
-    unsigned long t = millis() + 1500;
-    while (srv->getConnectedCount() > 0 && millis() < t) delay(50);
-  }
+        NimBLEServer* srv = NimBLEDevice::getServer();
+        if (srv && srv->getConnectedCount() > 0) {
+            for (auto h : srv->getPeerDevices()) srv->disconnect(h);
+            unsigned long t = millis() + 1500;
+            while (srv->getConnectedCount() > 0 && millis() < t) delay(50);
+        }
 
-  NimBLEAdvertising* adv = NimBLEDevice::getAdvertising();
-  if (adv && adv->isAdvertising()) adv->stop();
+        NimBLEAdvertising* adv = NimBLEDevice::getAdvertising();
+        if (adv && adv->isAdvertising()) adv->stop();
 
-  NimBLEDevice::deleteAllBonds();
-  macAdress = "00:00:00:00:00:00";
-  g_lastConnHandle = 0xFFFF;
+        NimBLEDevice::deleteAllBonds();
+        macAdress = "00:00:00:00:00:00";
+        g_lastConnHandle = 0xFFFF;
 
-  delay(200);
-  if (adv) adv->start(0);
+        delay(200);
+        if (adv) adv->start(0);
 
-  btPairingActive = false;
+        btPairingActive = false;
 }
-
-
-
-
-
 
 
 
@@ -2091,8 +1858,6 @@ void GUI::clearBluetoothPairings() {
     
     btPairingActive = false;
     macAdress = "00:00:00:00:00:00";
-
-
 }
 
 
@@ -2110,7 +1875,6 @@ static bool parseMac(const String& macStr, uint8_t out[6]) {
     return true;
 }
  
-
 
 
 void GUI::startFreshPairing() {
@@ -2132,10 +1896,8 @@ void GUI::startFreshPairing() {
     delay(1400);
     _tft.print(".");
   }
-
-  btPairingActive = false;
+ btPairingActive = false;
 }
-
 
 
 
@@ -2164,7 +1926,6 @@ String GUI::getDeviceName(const String& macAddress) {
             return "ASUS PC";
         }
     }
-    
     return "GENERIC";
 }
 

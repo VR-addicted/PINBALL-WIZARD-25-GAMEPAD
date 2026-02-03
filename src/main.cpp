@@ -1,14 +1,16 @@
 
 //!   THIS IS A STABLE NIGHTLY BUILD
 //!   MAYBE SOME COMPONETS ARE NOT FULLY INTEGRATED
-//!   TRY IT AT YOUR OWN RISK
+//!   
 
 // 31.1.2026
-// VALENTINES UPDATE. RGB ANIMATONS, NEW KEY SAMPLE METHODE WITH EMV SHIELD AGAINST RGB LED INTEREFERENCES
+// VALENTINES UPDATE. RGB ANIMATONS, NEW KEY SAMPLE METHODE WITH EMV SHIELD AGAINST RGB LED INTEREFERENCES.
 // 
 // SET serial debug level allways to 0 if you dont want to debug, that increases speed to 295000 rounds per secound
 //
-// I CHANGED THE IO PINS FOR THE 
+// I CHANGED THE IO PINS FOR THE BUTTONS. YOU CAN USE THE OLD BUTTON PINS, BUT THE YOU HAVE TO CHANGE IT IN THE SOURCE
+// Now i solder the FLIPPER L+R, RGB LED, FRONT RIGHT to the removed TF CARD READER PINS. PICTURE WILL FOLLOW.
+// That minimises the traces to cut to only 1, and we can freely use the onboard pull up resistors for for the card 
 
 
 // 1.1.2026 the developement of the PBWZ26 has begun.
@@ -268,23 +270,36 @@ int     dbglvlOSD   = DBGLVLOSD_DEFAULT ; // only a small blue sprite with minim
 #include <driver/adc.h>                         // for reading voltage
 #include <NeoPixelBus.h>                        // rgb led driver rmt based
 
-const uint16_t PixelCount = 6;                  // normal 6px, aber wenn man rgb mit rgbw mischt, mischt man 3 mit 4 byte sequenzen. notlösung eigene array füllfunktion.
-const uint8_t PixelPin = 18;
-int16_t PixelReadyToSend = 0;
+// alte pinbelegung
+// const uint8_t ioPinSideLeft   =   4 ;                 // cut pcb trace
+// const uint8_t ioPinSideRight  =  17 ;                 // cut pcb trace
+// const uint8_t ioPinFrontLeft  =   0 ;                 // only scratch pcb trace GPIO0 shared with boot mode, easy to flash with (FRONT LEFT) pullup resistor
+// const uint8_t ioPinFrontRight =  16 ;                 // cut pcb trace
+// const uint8_t ioPinSideX      =  35 ;                 // solder 10k pullup to 3.3v. button left+right shares 1 line. (same function). liegt auf anderer speicherbank. pin35 - 32 = 3. das gleiche geht mit mod
+// const uint8_t ioPinSideXbit   = ioPinSideX %32;
 
+// IO PINS
+// neue pinbelegung test 1
+const uint8_t ioPinSideLeft   =  23 ;                 // hardware pullup onboard
+const uint8_t ioPinSideRight  =  19 ;                 // hardware pullup onboard
+const uint8_t ioPinFrontLeft  =   0 ;                 // only scratch pcb trace GPIO0 shared with boot mode, easy to flash with (FRONT LEFT) pullup resistor
+const uint8_t ioPinFrontRight =   5 ;                 // hardware pullup onboard 
+const uint8_t ioPinSideX      =  18 ; //-->18  pullup dran löten       // solder 10k pullup to 3.3v. button left+right shares 1 line. (same function). liegt auf anderer speicherbank. pin35 - 32 = 3. das gleiche geht mit mod
+const uint8_t ioPinRGBleds    =  16 ; //-->16  100-330ohm serien widerstand und ein kondensator vom pin zu gnd 4.7 bis 10nf
+
+const uint16_t PixelCount     =   6 ;                  
+int16_t PixelReadyToSend      =   0 ;
 
 // GRB + RMT
-NeoPixelBus<NeoGrbFeature, NeoEsp32Rmt0800KbpsMethod> strip(PixelCount, PixelPin);    // RGBW, 3 byte pakete. Mischung RGB + RGBW möglich, aber nicht gut. eigene array füllfunktion nutzen
-
-
+NeoPixelBus<NeoGrbFeature, NeoEsp32Rmt0800KbpsMethod> strip(PixelCount, ioPinRGBleds);    // RGBW, 3 byte pakete. Mischung RGB + RGBW möglich, aber nicht gut. eigene array füllfunktion nutzen
 
 // base colors for my LED chain
-// 0 - NEOPIXEL-R im gedruckten flipper
+// 0 - NEOPIXEL-R im gedruckten flipper oben auf spielfläche
 // 1 - FLipper-R
 // 2 - FRont-R
 // 3 - FLipper-L
 // 4 - FRont-L
-// 5 - NEOPIXEL-L im gedruckten flipper
+// 5 - NEOPIXEL-L im gedruckten flipper oben auf spielfläche
 
 struct RGB {
     u_int8_t R,G,B;
@@ -477,7 +492,7 @@ return pct;
 
 
 
-
+// return -1337;
 }
 
 
@@ -743,7 +758,19 @@ bool isBleConnected() {
 
 
 // BT END =====================
-
+uint8_t UIinterval  =   40;              // sets every x ms screenrefresh. costs power. 30 to 50 is very good. 50 makes display minimal slower, but reaction is at 50 ms 4 times higher. 
+long unsigned UIintervalTimerFlag = 0;
+uint16_t processTouchInterval = 100;     //10ms-199ms für gute reactivität 10-40ms, 
+unsigned long processTouchTimeFlag = 0;
+unsigned long timeTrapOneSecond = 0;
+bool _touchDetected = false;             
+int _lastTouchX = 0;
+int _lastTouchY = 0;
+uint16_t processTouchNextKeyDelay = 200; // repeat geschwindigkeit zwischen den tasten abfragen
+unsigned long processTouchNextKeyTimeFlag = 0;
+int _cachedTouchX = -1;
+int _cachedTouchY = -1;
+uint16_t touchHysteresis = 5; // Toleranz in Pixeln (falls der Finger zittert)
 
 int8_t emulationMode = 1;                //bluetooth HID profiles 1 = Quest, 2 = PC, 3 = Android , 4 = Iphone, 5 = Switch (per funktion und if/case rutsche) 
 int8_t emulationModeOverride = 0;        // 0 automatic mode in emulationMode, 
@@ -751,11 +778,7 @@ int8_t emulationModeOverride = 0;        // 0 automatic mode in emulationMode,
 
 #define debounceKey 10                   // 10 ms
 uint32_t milliTimeCopy           = 0;
-uint8_t UIinterval  =   40;              // sets every x ms screenrefresh. costs power. 30 to 50 is very good. 50 makes display minimal slower, but reaction is at 50 ms 4 times higher. 
-long unsigned UIintervalTimerFlag = 0;
-uint16_t processTouchInterval = 200;     //200ms also 5x in der sekunde testen
-unsigned long processTouchTimeFlag = 0;
-unsigned long timeTrapOneSecond = 0;
+
 uint8_t UImenu      =    0;              // Startmenü-Index (auch in klasse lese und schreibbar?) // später über filesystem oder in rtc speichern
 int     sleepTimer  =   10;              // 60 Minuten nach letztem tastendruck deep sleep shutdown. später über filesystem oder in rtc speichern
 int     ledTimeOff  =   60;              // 60 Sekunden = 1 minuten bis die leds zum stromsparen ausgehen. jede taste/touch reaktiviert timer
@@ -1148,30 +1171,16 @@ unsigned long loopStartTime     = 0;
 unsigned long lastLoopStartTime = 0; 
 
 // counter. TODO: laden und speicher auf chip oder NVS
-uint32_t ButtonFlipperLeftCounterToday    = 0;        // counter
-uint32_t ButtonFlipperRightCounterToday   = 0;        // 0 = nicht gedrückt, 1 = gedrückt
+uint32_t ButtonFlipperLeftCounterToday    =   0;      // counter
+uint32_t ButtonFlipperRightCounterToday   =   0;      // 0 = nicht gedrückt, 1 = gedrückt
 uint32_t ButtonFlipperLeftCounterAlltime  = 100;      // 0 = nicht gedrückt, 1 = gedrückt 
 uint32_t ButtonFlipperRightCounterAlltime = 100;      // 0 = nicht gedrückt, 1 = gedrückt
 
-// alte pinbelegung
-// const uint8_t ioPinSideLeft   =   4 ;                 // cut pcb trace
-// const uint8_t ioPinSideRight  =  17 ;                 // cut pcb trace
-// const uint8_t ioPinFrontLeft  =   0 ;                 // only scratch pcb trace GPIO0 shared with boot mode, easy to flash with (FRONT LEFT) pullup resistor
-// const uint8_t ioPinFrontRight =  16 ;                 // cut pcb trace
-// const uint8_t ioPinSideX      =  35 ;                 // solder 10k pullup to 3.3v. button left+right shares 1 line. (same function). liegt auf anderer speicherbank. pin35 - 32 = 3. das gleiche geht mit mod
-// const uint8_t ioPinSideXbit   = ioPinSideX %32;
-
-// neue pinbelegung test 1
-const uint8_t ioPinSideLeft   =  23 ;                 // hardware pullup onboard - // cut pcb trace
-const uint8_t ioPinSideRight  =  19 ;                 // hardware pullup onboard - //cut pcb trace
-const uint8_t ioPinFrontLeft  =   0 ;                 // only scratch pcb trace GPIO0 shared with boot mode, easy to flash with (FRONT LEFT) pullup resistor
-const uint8_t ioPinFrontRight =   5 ;                 // hardware pullup onboard - //cut pcb trace
-const uint8_t ioPinSideX      =  16 ;                 // solder 10k pullup to 3.3v. button left+right shares 1 line. (same function). liegt auf anderer speicherbank. pin35 - 32 = 3. das gleiche geht mit mod
-const uint8_t ioPinSideXbit   = ioPinSideX %32;
 
 
-int  gamepadXfinal             = 0;
-int  gamepadYfinal             = 0;
+
+int  gamepadXfinal            =   0 ;
+int  gamepadYfinal            =   0 ;
 
 
 // bilde instanzen der display klassen
@@ -1722,11 +1731,6 @@ void sendBTcommandActionKeySecondKey(bool inputMode){
 
 
 
-// super schnelle funktion zum lesen der manuellen tasten, die alle gepulluped sind. deutlich schneller als digitalRead
-// inline bool readPinLow(uint8_t pin) {  // gut lesbare turbo funktion zum lesen der 4 manuellen tasten, die alle gepulluped sind. deutlich schneller als digitalRead
-//     return !(GPIO.in & (1 << pin));
-// }
-
 
 // ESPNOW foot pedal datareceiver
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
@@ -1760,7 +1764,16 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
 }
 }
 
+void serialWelcomeMessage(){
 
+Serial.println(F("  ___  ___ _ _ _ ___ ___  ___ "));
+Serial.println(F(" | _ \\| _ ) | | |_  |_  || __|"));
+Serial.println(F(" |  _/| _ \\ | | |/ / / / |__ \\"));
+Serial.println(F(" |_|  |___/\\___//___/___/|___/"));
+Serial.println("");
+Serial.println("PINBAL WIZARD 25");
+Serial.println("(C)2020-2026 by VR-addicted");
+}
 
 // =========================================================================================================================================================== //
 //     SSSS     EEEEEEE   TTTTTTT   UU   UU   PPPPPP   
@@ -1776,9 +1789,12 @@ void setup() {
 
     
 
-    if(dbglvl) Serial.begin(115200);  
+    Serial.begin(115200);  
+    serialWelcomeMessage(); 
+    if(!dbglvl){
 
-    if(dbglvl) Serial.println("enter setup()");
+
+    }            
 
     hid = new GamepadKeyboardHID(DEVICE_NAME, DEVICE_MANUFACTURER);
     
@@ -1882,7 +1898,7 @@ if (esp_now_add_peer(&peerInfo) != ESP_OK) {
         if (touch.begin(TOUCH_INT, TOUCH_RST, GT911_I2C_ADDR, 100000)) {
             if(dbglvl>1) Serial.println("GT911 initialized successfully.");
             touch.setRotation(GT911::Rotate::_0);
-            ui->setTouch(&touch);  // Touch HIER setzen, nach erfolgreicher Init
+            
         } else {
             if(dbglvl>1) Serial.println("ERROR: GT911 initialization failed!");
         }
@@ -1958,7 +1974,7 @@ if (esp_now_add_peer(&peerInfo) != ESP_OK) {
      
     // UI mit Gamepad verknüpfen
     ui->begin();           // Jetzt ist ui initialisiert
-    ui->setTouch(&touch);  
+    // ui->setTouch(&touch);  
 
     // ui->setGamepad(gamepad);
      ui->setGamepad(hid->gamepad);
@@ -2092,11 +2108,11 @@ while(AnimationIsRunning) {
     // pinMode(ioPinSideX,      INPUT);        // an IO35 muss ein 10k-50k pullup widerstand angelötet werden 3.3v 
     
      // Mechanical Switches soldered to                                OLD: IO0,IO4,IO16,IO17 
-    pinMode(ioPinSideLeft,   INPUT_PULLUP); // set internal pullup. if resistor is used, change to "INPUT"
-    pinMode(ioPinSideRight,  INPUT_PULLUP); // set internal pullup. if resistor is used, change to "INPUT"
-    pinMode(ioPinFrontLeft,  INPUT_PULLUP);       // b-key gpio0 fix! shared with boot mode, easy to flash with
-    pinMode(ioPinFrontRight, INPUT_PULLUP);       // a-Key gpio4 theoretisch geht auch INPUT_PULLUP, aber wake up from sleep geht nur mit 47k pull resistor soldered for deep sleep wakeup
-    pinMode(ioPinSideX,      INPUT_PULLUP);        // an IO35 muss ein 10k-50k pullup widerstand angelötet werden 3.3v 
+    pinMode(ioPinSideLeft,   INPUT);       // set internal pullup. if resistor is used, change to "INPUT"
+    pinMode(ioPinSideRight,  INPUT);      // set internal pullup. if resistor is used, change to "INPUT"
+    pinMode(ioPinFrontLeft,  INPUT);       // b-key gpio0 fix! shared with boot mode, easy to flash with
+    pinMode(ioPinFrontRight, INPUT);       // a-Key gpio4 theoretisch geht auch INPUT_PULLUP, aber wake up from sleep geht nur mit 47k pull resistor soldered for deep sleep wakeup
+    pinMode(ioPinSideX,      INPUT);        // an IO35 muss ein 10k-50k pullup widerstand angelötet werden 3.3v 
     
     
     // PCB Power management                // Deep Sleep Wake-Up bei fallender Flanke, also wenn linker plunger gedrückt wird.
@@ -2133,14 +2149,61 @@ void loop() {
     keyboardSendReportFlag  = false;    // damit nur ein report pro schleife gesendet wird, auch wenn mehrere änderungen auftreten
 
 
+// touch time trap evtl komplett mit ins ins ui timetrap. touch ist eh immer kleiner als ui intervall. spart zyklen im main loop. testen. benchmark 
+// >>>>> Time Trap 20-200 ms  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>      
+if (processTouchTimeFlag <= milliTimeCopy) {
+    processTouchTimeFlag = milliTimeCopy + processTouchInterval;
+    // processTouchTimeFlag = milliTimeCopy + (isDimmed ? 200 : processTouchInterval);  // bessere variante. bei gedimmten display geht i2c traffic runter. somit loop speed 250k-->289K 
+
+    int detectedPoints = touch.touched(GT911_MODE_POLLING);
+
+    if (detectedPoints > 0) {
+        GTPoint point = touch.getPoint(0);
+        
+        // Prüfen, ob der Finger sich signifikant bewegt hat oder neu ist
+        bool hasMoved = (abs(point.x - _cachedTouchX) > touchHysteresis) || 
+                        (abs(point.y - _cachedTouchY) > touchHysteresis);
+
+        // Wenn bewegt ODER die Sperrzeit abgelaufen ist
+        if (hasMoved || processTouchNextKeyTimeFlag <= milliTimeCopy) {
+            
+            _lastTouchX = point.x;
+            _lastTouchY = point.y;
+            _cachedTouchX = point.x;
+            _cachedTouchY = point.y;
+            _touchDetected = true;
+
+            // Sperrzeit für "Draufhalten" setzen (z.B. 500ms)
+            processTouchNextKeyTimeFlag = milliTimeCopy + processTouchNextKeyDelay;
+
+            if(dbglvl) Serial.printf("[TOUCH] %s | X: %d | Y: %d\n", hasMoved ? "NEW/MOVE" : "REPEAT", _lastTouchX, _lastTouchY);
+            
+            // Timer-Resets...
+            ledTimeOffMillis  = milliTimeCopy + ledTimeOff  * 1000;      
+            stdMenuTimeMillis = milliTimeCopy + stdMenuTime * 1000;          
+            sleepTimerMillis  = milliTimeCopy + sleepTimer  * 60000;
+        }
+    } else {
+        // KEIN Touch mehr: Cache löschen, damit der nächste Tap sofort zählt
+        _cachedTouchX = -1;
+        _cachedTouchY = -1;
+        processTouchNextKeyTimeFlag = 0; // Sperre sofort aufheben
+    }
+}
 
 
+
+
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
  
 //>>>>>> time trap 20-100 ms [ UIupdate() ] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-        if (UIintervalTimerFlag <= milliTimeCopy) {               // UI update Timetrap
+if (UIintervalTimerFlag <= milliTimeCopy) {               // UI update Timetrap
         UIintervalTimerFlag  = milliTimeCopy + UIinterval;
-        ui->UIupdate(loopsPerSecond, milliTimeCopy);              // refresh actual GUI menu, with time trap
 
+
+
+    ui->UIupdate(loopsPerSecond, milliTimeCopy);              // refresh actual GUI menu
 }  // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
    
 
@@ -2458,9 +2521,9 @@ uint32_t currentGPIO = GPIO.in;
 // 3. Grober Check: Wurde IRGENDEINER dieser Pins auf LOW gezogen?
 if ((currentGPIO & buttonMask) != buttonMask) {
     
-    // RGB LED EMV BUG FIX: Nur verzögern, wenn die Animation wirklich funkt
+    // RGB LED EMV BUG FIX: Nur verzögern, wenn die Animation wirklich funkt. Eigentlich nur notwendig wenn man keine kondensatoren einlötet. schadet aber auch nicht.
     if (AnimationIsRunning) {
-        delayMicroseconds(200); 
+        delayMicroseconds(300); 
         currentGPIO = GPIO.in; // Snapshot mit zweiter lesung, also sicherem Wert überschreiben
     }
 
@@ -2557,7 +2620,6 @@ else
                                                      ui->drawVirtualTiltingJoystickKeys(4,0);              // here is okay, no flags, its not time intense 
                                                     }
                                     flipFlopFlagFrontLeft = 0;
-                                    if(dbglvl)Serial.println("muschifurz");
                                     // RGB set front left to RELEASE-LONG & SHORT(shift)(base color)
                                     strip.SetPixelColor(4, RgbColor(LED_FrontLbase.R,  LED_FrontLbase.G,  LED_FrontLbase.B));    // FR-L
                                     //strip.SetPixelColor(4, RgbColor(255,  255,  20));    // FR-L
@@ -2855,7 +2917,7 @@ AnimationIsRunning = 0;
 
 
 
-//>>>>>> time trap 10 ms [ RGB_animation() ] in die IDLE STRUKTUR DIREKT EINBAUEN>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+//>>>>>> time trap 10 ms [ RGB_animation() ]>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         if (RGBanimationFutureTimeFlag <= milliTimeCopy) {               // UI update Timetrap
             RGBanimationFutureTimeFlag  = RGBanimationFutureTimeFlag + 10;
             // RGB animation frame update
@@ -2865,6 +2927,19 @@ AnimationIsRunning = 0;
                                 strip.Show();
                                 }
 }  // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+ 
+
+
+// _touchDetected = false; 
+
+
+
+
+
+
+
+
 
 
 
@@ -2882,6 +2957,8 @@ AnimationIsRunning = 0;
 // What comes next?
 // take a look into the todos
 
+// pbfxc mystic quest 361
+// pbfx  addams family 426
 
 }
 

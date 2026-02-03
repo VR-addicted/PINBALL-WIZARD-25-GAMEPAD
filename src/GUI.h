@@ -20,18 +20,15 @@
 
 
 #include <TFT_eSPI.h>                         // Bibliothek für den Touchscreen
-#include <GT911.h>                            // Touch-Bibliothek
 #include "Fonts/custom/7Segment7_S520pt7b.h"  // SIMPLE 7-Segment-Font 20px. 8 numeric signs in one 240 px row
 #include "Fonts/custom/7Segment7_S510pt7b.h"  // SIMPLE 7-Segment-Font 10px. 16+ numeric signs in one 240 px row
-
-// #include <BleCompositeHID.h>
-
 
 #include <GamepadKeyboardHID.h>
 
 #include <cstdio>    // für sscanf
 
 extern TFT_eSprite spr;
+
 
 
 class GUI {
@@ -49,9 +46,7 @@ class GUI {
    
     String getDeviceName(const String& macAddress);
 
-    // void setGamepad(GamepadHID* gp);
-
-    // GamepadDevice* _gamepad;
+  
     void setGamepad(GamepadHID* gp);
     void setKeyboard(KeyboardHID* kb);
 
@@ -81,7 +76,6 @@ class GUI {
         
     void drawWaterBubble();// mode 0 = kreis (wasserblase), mode 1 = pfeil links, mode 2 = pfeil rechts, mode 3 = pfeil oben, mode 4 = pfeil unten
 
-    void drawText(int x, int y, const char* text);
     void drawRectangle(int x, int y, int w, int h, uint32_t color);
     void UIupdate(int loopsPerSecond, int loopTimeMs);        // in jedem loop ein durchlauf, aber nur alle 30ms gehts in die routine rein.
     void drawDebug(int loopsPerSecond, int loopTimeMs);       // stelle benchmark zahlen dar
@@ -94,19 +88,16 @@ class GUI {
     void drawTextCheatProfileName(int8_t profileNumber);
     void drawCheatProfileSelector();
 
-bool drawButtonCheatLockRecord(int8_t mode = 0);
-bool buttonCheatBackToPlay(int8_t mode = 0);
-bool drawButtonCheatStoreProfile(int8_t mode = 0);
-
-
+    bool drawButtonCheatLockRecord(int8_t mode = 0);
+    bool buttonCheatBackToPlay(int8_t mode = 0);
+    bool drawButtonCheatStoreProfile(int8_t mode = 0);
+    void DeepSleepShutDownDisplayAnimation();
+    void DisplayAnimationPixelDestroy();
 
     void drawBatteryLocal(uint8_t levelPercent);
     void drawBatteryPedal(uint8_t levelPercent);
 
     void drawPeakMeterNudgeDirection(int8_t direction = 0, int inputPower = 0); // 0 or none = screenrefresh, counters down, 1 = left, 2 = right, 3 = up, 4 = down
-    // Neue Touch-bezogene Methoden:
-    void setTouch(GT911* touch);
-    bool processTouch(int* x, int* y);
 
     void fillSpriteBackground();
     
@@ -114,17 +105,9 @@ bool drawButtonCheatStoreProfile(int8_t mode = 0);
     bool isQuestDevice(const String& macAddress);
 
 private:
-
-    //BleCompositeHID* _hid;
-    //  XboxGamepadDevice* _gamepad;   // statt GamepadDevice*
-    //GamepadDevice* _gamepad; 
+ 
     GamepadHID* _gamepad = nullptr;
     KeyboardHID* _keyboard = nullptr;
-    // Neue Touch-Zustandsvariablen nun in globalen variablen
-    bool _touchDetected = false;
-    int _lastTouchX = 0;
-    int _lastTouchY = 0;
-
 
     #define SCREEN_WIDTH 240        // Korrekte Breite des Touchscreens
     #define SCREEN_HEIGHT 320       // Korrekte Höhe des Touchscreens
@@ -163,8 +146,6 @@ private:
     u_int32_t timeMarkUIbuttonPlungerRight  = 0;
     u_int32_t timeMarkUIdrawDebug = 0;
 
-    // Touch-Instanz, die über den Setter initialisiert wird
-    GT911* _touch = nullptr;
 };
 
 // Zweite Klasse
