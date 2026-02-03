@@ -424,9 +424,9 @@ RgbColor wheel(uint8_t pos, uint8_t brightness)
 
 
 unsigned long ms = 0;                           // decorative for millis to 22.493 format
-int8_t batteryESP32Status  = 0;                 // this esp32  0-100%  3.3-4.2 V
+int8_t batteryESP32Status  = 100;                 // nach 8 runden ist wert stabil.this esp32  0-100%  3.3-4.2 V
 int8_t batteryESPNOWstatus = 0;                 // external esp foot controller
-int8_t batteryESP32StatusLastround = -1;   
+int8_t batteryESP32StatusLastround = 100;  // -1 
 
 // local battery check without MOSFET. TODO: mosfet einbauen um strom zu sparen. benutze einen pin, der so oder so auf high liegt. spart io pins
 
@@ -462,8 +462,8 @@ int readBatteryPercent() {
   // Anzahl gültiger Samples (während der Startphase <8)
   uint8_t count = filled ? 8 : idx;
 
-  // Falls noch kein einziges Sample vorhanden ist → 0%
-  if (count == 0) return 0;
+  // Falls noch kein einziges Sample vorhanden ist → 0% // besser mit 100 starten, dann gehts von oben nach unten, verhindert zu frühes auslösen des deepsleep an battery minimum
+  if (count == 0) return 100;
 
   // Durchschnitt der Samples:
   // Bei 8 Samples → avg = sum >> 3 (Bitshift statt Division)
@@ -2188,10 +2188,11 @@ if (UIintervalTimerFlag <= milliTimeCopy) {               // UI update Timetrap
         batteryESP32StatusLastround = batteryESP32Status;
         if( UImenu == 1 ) ui->drawBatteryLocal(batteryESP32Status); // TODO: change to flag methode
         if (dbglvl) { Serial.print("batteryESP32Status: "); Serial.println(batteryESP32Status);}
+        if(batteryESP32Status < 2) sleepTimerMillis = 0;          // set trigger at 2% to let the device go to sleep
     }
     
-    // Display dimmer timer //  sleep timer react on underflow 
-        
+    
+    //  sleep timer react on underflow     
     if(milliTimeCopy > sleepTimerMillis){
         ui->DeepSleepShutDownDisplayAnimation();
         RGBshutDownSequence();
@@ -2207,9 +2208,8 @@ if (UIintervalTimerFlag <= milliTimeCopy) {               // UI update Timetrap
     
     if(milliTimeCopy > stdMenuTimeMillis && stdMenu != UImenu)
             {
-                ui->UIclearScreen = 1; // setz drawOnce automaticly to 1
+                ui->UIclearScreen = 1; // sets drawOnce automaticly to 1
                 UImenu = stdMenu;
-                // drawOnce = 1;
                 stdMenuTimeMillis = milliTimeCopy + stdMenuTime * 1000;    // verlängere den menu auto switch timeout
             }
    
