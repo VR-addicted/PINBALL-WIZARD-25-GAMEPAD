@@ -519,7 +519,7 @@ unsigned long lastPacketTime = 0;
 bool wasConnected = false;
 // Zustandsvariable (vom Sender empfangen)
 volatile uint8_t espnowAirButtonCurrentState = 0;
-volatile uint8_t espnowAirButtonCurrentStateSend = 0;
+
 // Callback wenn Daten empfangen wurden
 
 struct __attribute__((packed)) KeyEvent {
@@ -2790,8 +2790,38 @@ else
 
 
 
-
+// x- button
 //TODO hier die funkbutton variable als OR implementieren
+
+    // // food pedal integration
+    // static uint32_t espnowAirButtonCurrentStateSend  = 0;
+    // static uint32_t uiButtonESPnowResetviewTimeFlag  = 0;   // loop session übergreifend deklarieren
+    // if(espnowAirButtonCurrentState != espnowAirButtonCurrentStateSend)
+    // {  espnowAirButtonCurrentStateSend =  espnowAirButtonCurrentState;
+    //     if(espnowAirButtonCurrentState == 0) { 
+    //             sendBTcommandActionKey(0);
+    //             if(UImenu == 1) ui->espnowButton(3);            // icon nur updaten in menu 1 // TODO nur flag setzen und menu 1 da drauf triggenr lassen.
+    //             uiButtonESPnowResetviewTimeFlag = milliTimeCopy + 1000;      // set flag in future time mark
+    //             RGBFrontBasecolorsSetter();                 // restore front base colors
+    //         }
+    //     if(espnowAirButtonCurrentState == 1) {          // send bt command and update ui
+    //             sendBTcommandActionKey(1);
+    //             if(UImenu == 1) ui->espnowButton(2);            // icon nur updaten in menu 1
+    //             uiButtonESPnowResetviewTimeFlag=0;
+    //             RGBFrontBasecolorsSetter(1);                // front buttons hellblau
+    //         } 
+    // }
+  
+    // if(uiButtonESPnowResetviewTimeFlag){                    // muss größer als 0 sein
+    //   if(uiButtonESPnowResetviewTimeFlag < milliTimeCopy){  // wenn es jetzt wieder kleiner als die future mark ist, aktion und flag cleanen
+    //         if(UImenu == 1) ui->espnowButton(1);                // update ui
+    //         uiButtonESPnowResetviewTimeFlag = 0;            // clean flag
+    //     }
+    // }
+
+if(espnowAirButtonCurrentState == 1) keyTimerFlagActionKey = milliTimeCopy + debounceKey;
+
+
 //X-Button (physical on gpio35 oder neu 16) Darstellung und Sende BT command
 
 if(keyTimerFlagActionKey > milliTimeCopy){                                                  // wenn größer, muss timer gesetzt sein und taste aktiv 

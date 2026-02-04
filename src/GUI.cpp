@@ -74,7 +74,7 @@ extern int TIMEOUT_MS;
 extern int PWM_POWER_TEMP;
 
 extern volatile uint8_t espnowAirButtonCurrentState;
-extern volatile uint8_t espnowAirButtonCurrentStateSend;
+
 
 extern volatile uint16_t g_lastConnHandle;  // kommt aus main.cpp (siehe unten)
 extern void serialWelcomeMessage(); 
@@ -1352,31 +1352,31 @@ void GUI::UIupdate(int loopsPerSecond, int loopTimeMs) {
         
   
 
-    // food pedal integration
-    static uint32_t uiButtonESPnowResetviewTimeFlag  = 0;   // loop session übergreifend deklarieren
-    if(espnowAirButtonCurrentState != espnowAirButtonCurrentStateSend)
-    {
-        espnowAirButtonCurrentStateSend =  espnowAirButtonCurrentState;
-        if(espnowAirButtonCurrentStateSend == 0) { 
-                sendBTcommandActionKey(0);
-                if(UImenu == 1) espnowButton(3);            // icon nur updaten in menu 1 // TODO nur flag setzen und menu 1 da drauf triggenr lassen.
-                uiButtonESPnowResetviewTimeFlag = milliTimeCopy + 1000;      // set flag in future time mark
-                RGBFrontBasecolorsSetter();                 // restore front base colors
-            }
-        if(espnowAirButtonCurrentStateSend == 1) {          // send bt command and update ui
-                sendBTcommandActionKey(1);
-                if(UImenu == 1) espnowButton(2);            // icon nur updaten in menu 1
-                uiButtonESPnowResetviewTimeFlag=0;
-                RGBFrontBasecolorsSetter(1);                // front buttons hellblau
-            } 
-    }
+    // // food pedal integration
+    // static uint32_t espnowAirButtonCurrentStateSend  = 0;
+    // static uint32_t uiButtonESPnowResetviewTimeFlag  = 0;   // loop session übergreifend deklarieren
+    // if(espnowAirButtonCurrentState != espnowAirButtonCurrentStateSend)
+    // {  espnowAirButtonCurrentStateSend =  espnowAirButtonCurrentState;
+    //     if(espnowAirButtonCurrentState == 0) { 
+    //             sendBTcommandActionKey(0);
+    //             if(UImenu == 1) espnowButton(3);            // icon nur updaten in menu 1 // TODO nur flag setzen und menu 1 da drauf triggenr lassen.
+    //             uiButtonESPnowResetviewTimeFlag = milliTimeCopy + 1000;      // set flag in future time mark
+    //             //RGBFrontBasecolorsSetter();                 // restore front base colors
+    //         }
+    //     if(espnowAirButtonCurrentState == 1) {          // send bt command and update ui
+    //             sendBTcommandActionKey(1);
+    //             if(UImenu == 1) espnowButton(2);            // icon nur updaten in menu 1
+    //             uiButtonESPnowResetviewTimeFlag=0;
+    //             //RGBFrontBasecolorsSetter(1);                // front buttons hellblau
+    //         } 
+    // }
   
-    if(uiButtonESPnowResetviewTimeFlag){                    // muss größer als 0 sein
-      if(uiButtonESPnowResetviewTimeFlag < milliTimeCopy){  // wenn es jetzt wieder kleiner als die future mark ist, aktion und flag cleanen
-            if(UImenu == 1) espnowButton(1);                // update ui
-            uiButtonESPnowResetviewTimeFlag = 0;            // clean flag
-        }
-    }
+    // if(uiButtonESPnowResetviewTimeFlag){                    // muss größer als 0 sein
+    //   if(uiButtonESPnowResetviewTimeFlag < milliTimeCopy){  // wenn es jetzt wieder kleiner als die future mark ist, aktion und flag cleanen
+    //         if(UImenu == 1) espnowButton(1);                // update ui
+    //         uiButtonESPnowResetviewTimeFlag = 0;            // clean flag
+    //     }
+    // }
 
 
     // OSD DBG Timetrap 2:  0-1000  die auch schneller oder langsamer als 30fps (wie der screen) laufen kann.
