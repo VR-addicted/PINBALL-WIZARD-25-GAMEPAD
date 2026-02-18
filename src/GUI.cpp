@@ -35,7 +35,7 @@ extern uint8_t stdMenu;                               // fallback menu, after X 
 extern unsigned long stdMenuTimeMillis;
 extern bool drawOnce;                                 //GLOBAL!
 // extern unsigned long loopStartTime;                   // enthält millis() aus main loop nur für benchmark!
-extern unsigned long milliTimeCopy;                   // diese copy für alles timing basierte nehmen!
+// extern unsigned long milliTimeCopy;                   // diese copy für alles timing basierte nehmen!
 extern uint8_t stdMenuTime;                           // fallback menu time
 extern unsigned long sleepTimerMillis; 
 extern unsigned long keyAbenchmarkTimeMark;
@@ -476,6 +476,7 @@ void GUI::topMenu() {  // 1 bis 3 weiße buttons oben  // TODO: TODO: löschen
 void GUI::menu0() {   
 
     if(drawOnce){
+       drawOnce = 0;
         _tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bgColor);
         _tft.setRotation(0);
         int cellWidth = 220;
@@ -499,8 +500,7 @@ void GUI::menu0() {
             Ycells[i] = startY + i * cellHeight ;          // trennlinien für toucherkennung speichern
             Ycells[i+1] = startY + ((i+1) * cellHeight) ;  // berechne ende der letzten zelle
         }
-       
-    drawOnce = 0;    
+    processTouchRepeatBlockerPerMenu = 0;    
     }
     
 // touch erkennung und reaktionen
@@ -529,7 +529,7 @@ void GUI::menu1() {
    
 static uint8_t batteryESP32StatusOld = 0;   // TODO: war schon draußen. checken
     if(drawOnce){  // reihenfolge ist wichtig!!!!!!!!! dieses flag darf erst zum schluss auf 0 gesetzt werden!!
-        
+       drawOnce = 0;
         _tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bgColor);
        
         if(flagUImenu1SpriteDown){
@@ -574,7 +574,7 @@ static uint8_t batteryESP32StatusOld = 0;   // TODO: war schon draußen. checken
                 drawVirtualTiltingJoystickKeys(3,1);
                 drawVirtualTiltingJoystickKeys(4,1);
        }
-       drawOnce = 0;
+       processTouchRepeatBlockerPerMenu = 0;  
     }  // ------------------------
 
 
@@ -779,6 +779,7 @@ static String deviceNameOld = "scan ...";                // 1st init dummy Name 
                 deviceNameOld = "refresh";                                // fix. setze irgend einen fake namen, damit er beim nächsten mal wieder refresht wird.
                 updateBLEStatus();
                 verifyBLEServices();
+                processTouchRepeatBlockerPerMenu = 0;
             }
     _tft.setTextFont(2);
 
@@ -947,6 +948,7 @@ void GUI::menu3() {
         stdMenuItem.draw(_tft);
         stdMenuTimeItem.draw(_tft);
         drawOnce = 0;   // setze flag zurück
+        processTouchRepeatBlockerPerMenu = 5;
     }
    
 
@@ -999,6 +1001,7 @@ void GUI::menu3() {
             UIclearScreen = 1;
             flagUImenu0DrawRowCells = true;
             flagUImenu2drawBTsymbol = true;       // für zukunft wieder scharf schalten
+            processTouchRepeatBlockerPerMenu = 0;
         } 
     }
 
@@ -1021,6 +1024,7 @@ void GUI::menu4() {
                 drawSkillShotButton(1);
                 draw7SegmentMillisecondBig(skillShotMillisSend);
                 drawButtonCheatPlusMinus(1);
+                processTouchRepeatBlockerPerMenu = 10;
                 }
     
 
@@ -1057,7 +1061,8 @@ void GUI::menu4() {
                 flagUImenu0DrawRowCells = true;
                 flagUImenu2drawBTsymbol = true;                  // für zukunft wieder scharf schalten
 batteryESP32StatusLastround = -1 ;   // War schon rausgeschmissen. checken.
-            } 
+processTouchRepeatBlockerPerMenu = 0;            
+} 
         }
 }
 
@@ -1073,45 +1078,40 @@ void GUI::menu5() {
     static MenuItem dbgGamepadTresholdYItem("DEADZONE Y", 1,200, tiltTresholdMenuY);   // lade aus globaler var aus main.cpp
 
     if(drawOnce){  // draw 1x
+       drawOnce = 0; 
         _tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bgColor);                     // clean background
         buttonBack(1);
         _tft.setTextFont(2);
         _tft.setTextSize(1);
-        _tft.setTextColor(TFT_WHITE);   // TFT_WHITE
-        _tft.setCursor(198, 4);         // x,y  10,10
-        _tft.print("DEBUG");            // text
-        _tft.setCursor(198, 24);        // x,y  10,30                           
-        _tft.print("MODE");             // text
-        
-        
+        _tft.setTextColor(TFT_WHITE);                                                  // TFT_WHITE
+        _tft.setCursor(198, 4);                                                        // x,y  10,10
+        _tft.print("DEBUG");                                                           // text
+        _tft.setCursor(198, 24);                                                       // x,y  10,30                           
+        _tft.print("MODE");                                                            // text
+            
         debugLvlOSDItem.setButtonY(60);                                                // starting at display row 60 +40 +40 +40...
         dbglvlItem.setButtonY(100);                                                 
         uiInterval.setButtonY(140);
         dbgGamepadItem.setButtonY(180);
         dbgGamepadTresholdXItem.setButtonY(220);
         dbgGamepadTresholdYItem.setButtonY(260);
-        
-        // static MenuItem dbgGamepadNudgeLimiter("Nudge Limiter", 100,320, tiltLimiter);  // lade aus globaler var aus main.cpp
-        // dbgGamepadNudgeLimiter.setButtonY(260);
-        
-
         debugLvlOSDItem.draw(_tft);
         dbglvlItem.draw(_tft);
         uiInterval.draw(_tft);
         dbgGamepadItem.draw(_tft);
         dbgGamepadTresholdXItem.draw(_tft);
         dbgGamepadTresholdYItem.draw(_tft);
-        
-        drawOnce = 0;
+           
+        processTouchRepeatBlockerPerMenu = 100;
     }
 
 static unsigned long timeTrap = 0;             
 
         if (_touchDetected ) {
             _touchDetected = 0;                 // menu abhängiges reagieren auf touches . wenn zentrales processTouch() true zurück gab, liegen die coordinaten in touchX, touchY
-            if(timeTrap < milliTimeCopy)        //_millis // nur + und - tasten eingaben langsam machen. return button muss sofort gehen.
-                {
-                timeTrap = milliTimeCopy + 100; // milliTimeCopy = cached _millis // 100ms, damit die zahleneingaben keine zahlen überspringen.
+               //if(timeTrap < milliTimeCopy)        //_millis // nur + und - tasten eingaben langsam machen. return button muss sofort gehen.
+               // {
+               // timeTrap = milliTimeCopy + 100; // milliTimeCopy = cached _millis // 100ms, damit die zahleneingaben keine zahlen überspringen.
                 // Überprüfe, welcher Button, welcher zeile gedrückt wurde
                 int deltaDebugOSD    = debugLvlOSDItem.checkTouch(_lastTouchX, _lastTouchY);                   // return -1,0,1
                 int deltadbglvl      = dbglvlItem.checkTouch(_lastTouchX, _lastTouchY);                        // return -1,0,1
@@ -1160,13 +1160,14 @@ static unsigned long timeTrap = 0;
                     THRESHOLD_Y = tiltTresholdMenuY * 100; // setze TRESHOLDS global
                     }    
                 // tilt limiter 1-200 * (100 intern). größere zahlen sind wegen UI layout und 3 stelligen zahlen nicht gut. simple *100
-            }
+            //}
             // button oben links springe zu "haupt menu0()"", per UImenu variable beim nächsten durchlauf
             if(buttonBack()){  // check back button coordinates area
                 UImenu = 0;                            // setze neues menu  
                 UIclearScreen = 1;
                 flagUImenu0DrawRowCells = true;
                 flagUImenu2drawBTsymbol = true;   // für zukunft wieder scharf schalten
+                // processTouchRepeatBlockerPerMenu = 0;  // wird jetzt in jedem draw once initialisiert, daher muss es nciht gesetzt werden
             } 
         }
 }
@@ -1303,8 +1304,8 @@ void GUI::drawRectangle(int x, int y, int w, int h, uint32_t color) {
 }
 
 
-
-void GUI::UIupdate(int loopsPerSecond, int loopTimeMs) {
+//void GUI::UIupdate(int loopsPerSecond, int loopTimeMs) {
+void GUI::UIupdate(int loopsPerSecond) {
 
         // ESP-NOW
         if (wasConnected && (milliTimeCopy - lastPacketTime > TIMEOUT_MS)) {  // 1000ms check
@@ -1330,62 +1331,35 @@ void GUI::UIupdate(int loopsPerSecond, int loopTimeMs) {
 
 
         if(UIclearScreen)   // clear screen
-        {
-        _tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bgColor);
-        UIclearScreen = 0;
-        drawOnce = 1;       // set flag für einmalige initialisierung des neuen menus
+            {
+            _tft.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, bgColor);
+            UIclearScreen = 0;
+            drawOnce = 1;       // set flag für einmalige initialisierung des neuen menus
+            }
+            
+
+        switch (UImenu) {
+            case 0: menu0(); break;
+            case 1: menu1(); break;
+            case 2: menu2(); break;
+            case 3: menu3(); break;
+            case 4: menu4(); break;
+            case 5: menu5(); break;
+            case 6: menu6(); break;
+            default: menu1(); break;                 
         }
-
-
-        
-        
-                switch (UImenu) {
-                    case 0: menu0(); break;
-                    case 1: menu1(); break;
-                    case 2: menu2(); break;
-                    case 3: menu3(); break;
-                    case 4: menu4(); break;
-                    case 5: menu5(); break;
-                    case 6: menu6(); break;
-                   default: menu1(); break;                 
-                }
         
   
 
-    // // food pedal integration
-    // static uint32_t espnowAirButtonCurrentStateSend  = 0;
-    // static uint32_t uiButtonESPnowResetviewTimeFlag  = 0;   // loop session übergreifend deklarieren
-    // if(espnowAirButtonCurrentState != espnowAirButtonCurrentStateSend)
-    // {  espnowAirButtonCurrentStateSend =  espnowAirButtonCurrentState;
-    //     if(espnowAirButtonCurrentState == 0) { 
-    //             sendBTcommandActionKey(0);
-    //             if(UImenu == 1) espnowButton(3);            // icon nur updaten in menu 1 // TODO nur flag setzen und menu 1 da drauf triggenr lassen.
-    //             uiButtonESPnowResetviewTimeFlag = milliTimeCopy + 1000;      // set flag in future time mark
-    //             //RGBFrontBasecolorsSetter();                 // restore front base colors
-    //         }
-    //     if(espnowAirButtonCurrentState == 1) {          // send bt command and update ui
-    //             sendBTcommandActionKey(1);
-    //             if(UImenu == 1) espnowButton(2);            // icon nur updaten in menu 1
-    //             uiButtonESPnowResetviewTimeFlag=0;
-    //             //RGBFrontBasecolorsSetter(1);                // front buttons hellblau
-    //         } 
-    // }
-  
-    // if(uiButtonESPnowResetviewTimeFlag){                    // muss größer als 0 sein
-    //   if(uiButtonESPnowResetviewTimeFlag < milliTimeCopy){  // wenn es jetzt wieder kleiner als die future mark ist, aktion und flag cleanen
-    //         if(UImenu == 1) espnowButton(1);                // update ui
-    //         uiButtonESPnowResetviewTimeFlag = 0;            // clean flag
-    //     }
-    // }
 
-
-    // OSD DBG Timetrap 2:  0-1000  die auch schneller oder langsamer als 30fps (wie der screen) laufen kann.
-    if(timeMarkUIdrawDebug <= milliTimeCopy){                        
-       timeMarkUIdrawDebug  = milliTimeCopy + UIintervalDBG;         // setze nächste trap
-       if(dbglvlOSD){ 
-        drawDebug(loopsPerSecond, loopTimeMs);               // UI dbg overlay layer
-        // hier kann noch etwas rein das sich sekündlich updated
-        }
+        // OSD DBG Timetrap 2:  0-1000  die auch schneller oder langsamer als 30fps (wie der screen) laufen kann.
+        if(timeMarkUIdrawDebug <= milliTimeCopy){                        
+        timeMarkUIdrawDebug  = milliTimeCopy + UIintervalDBG;         // setze nächste trap
+        if(dbglvlOSD){ 
+            //drawDebug(loopsPerSecond, loopTimeMs);               // UI dbg overlay layer
+            drawDebug(loopsPerSecond);               // UI dbg overlay layer
+            // hier kann noch etwas rein das sich sekündlich updated
+            }
     }
 }
 
@@ -1729,8 +1703,8 @@ void  GUI::fillSpriteBackground(){  // male nur den kreis, wenn man nach ersten 
 }
 
 
-
-void GUI::drawDebug(int loopsPerSecond, int loopTimeMs) {  // debug benchmark
+void GUI::drawDebug(int loopsPerSecond) {  // debug benchmark
+//void GUI::drawDebug(int loopsPerSecond, int loopTimeMs) {  // debug benchmark
     
     if(flagUImenuDebugBackground){
         _tft.fillRect( 60, 0, 120, 31, TFT_BLUE);
@@ -1749,7 +1723,7 @@ void GUI::drawDebug(int loopsPerSecond, int loopTimeMs) {  // debug benchmark
     _tft.setTextSize(1);
     _tft.printf("Loops: %d/s", loopsPerSecond);
     _tft.setCursor(64, 22);
-    _tft.printf("Time:%d ms %d,%d  ", loopTimeMs, _lastTouchX, _lastTouchY); 
+    _tft.printf("Time:%d ms %d,%d  ", milliTimeCopy, _lastTouchX, _lastTouchY); 
 }
 
 

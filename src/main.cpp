@@ -309,14 +309,15 @@ RGB LED_FrontLbase       = {255, 255,  20};   // leerlauf standart farbe wenn ke
 RGB LED_FrontLpressed    = {255, 255, 255};
 RGB LED_FrontLflipped    = {255,   0,   0};   // leuchtet mit den flipper tasten mit
 RGB LED_FrontLshifted    = {  0,   0, 255};   // long pressed shift mode
-RGB LED_FrontLSleepMode  = { 40,  10,  10};   // deepsleep reactivation signal led
 RGB LED_FrontLXbutton    = { 40,  40, 200};   // (Hell Blau) X-Button indicator color
+RGB LED_FrontLSleepMode  = { 40,  10,  10};   // deepsleep reactivation signal led
 
 RGB LED_FrontRbase       = {255,  40,  40};   // leerlauf standart farbe wenn keine animation läuft
 RGB LED_FrontRpressed    = {255, 255, 255};   // wenn taste direkt gedrückt wird
 RGB LED_FrontRflipped    = {255,   0,   0};   // leuchtet mit den flipper tasten mit
 RGB LED_FrontRshifted    = { 20,  20, 255};
 RGB LED_FrontRXbutton    = { 40,  40, 200};   // (Hell Blau) X-Button indicator color
+
 
 RGB LED_NeopxLbase       = { 40,  40,  40};   // leerlauf standart farbe wenn keine animation läuft
 RGB LED_NeopxLflipped    = {255,   0,   0};   // läuft parallel zum flipper L
@@ -326,6 +327,7 @@ RGB LED_NeopxRbase       = { 40,  40,  40};   // leerlauf standart farbe wenn ke
 RGB LED_NeopxRflipped    = {255,   0,   0};
 RGB LED_NeopxRshifted    = {  5,   5, 255};
 
+
 RGB LED_FlipperLbase     = { 40,  40,  40};   // leerlauf standart farbe wenn keine animation läuft
 RGB LED_FlipperLpressed  = {255,   0,   0};   // normal pressed
 RGB LED_FlipperLshifted  = {  0,   0, 255};   // (Hellblau) mit aktiver "shift" taste
@@ -334,14 +336,8 @@ RGB LED_FlipperRbase     = { 40,  40,  40};   // (weiß 20%)  leerlauf standart 
 RGB LED_FlipperRpressed  = {255,   0,   0};   // (max red)   ohne "shift" taste
 RGB LED_FlipperRshifted  = {  0,   0, 255};   // (Hell Blau) bei aktiver "shift" taste + flipper rechts
 
-
-
 unsigned long RGBanimationFutureTimeFlag = 0;
 
-// // vereinfachter 3 byte call, machts aber unnötig langsam. nur ein überbleibsel, wenn man wieder auf die rgbw methode umsteigen will. das geht dann durch austauschen der funktion setPinballLed() hier drüber auskommentieren und den kurzen setPinballLed() auskommentieren
-// void setPinballLed(uint8_t ledIndex, uint8_t r, uint8_t g, uint8_t b) {
-//        strip.SetPixelColor(ledIndex, RgbColor(r, g, b));
-// }
 void RGBall(uint8_t input = 0){
     for (uint16_t i = 0; i < PixelCount ; i++) {  
         strip.SetPixelColor(i, RgbColor(input, input, input));
@@ -363,6 +359,7 @@ void RGBbaseLight(){
 }
 
 
+
 void RGBshutDownSequence(){  // funktion darf ohne time trap in sich geschlossen laufen, da der controller so oder so danach aus geht
 
 for (int i = 0; i < 60; i++) {
@@ -381,11 +378,11 @@ for (int i = 0; i < 60; i++) {
     strip.Show();
     delay(d2);
 }
-
 //setPinballLed(4, 40, 10, 10);
 strip.SetPixelColor(4, RgbColor( 40, 10, 10));       // FRONT-L
 strip.Show();
 }
+
 
 
 // setter um aus gui pixel zu setzen, ohne das komplette objekt in der ui zu nutzen.
@@ -527,8 +524,8 @@ struct __attribute__((packed)) KeyEvent {
 };
 
 
-const char* DEVICE_NAME = "PWZ25";                    //! device name
-const char* DEVICE_MANUFACTURER = "VR1337";           //! manufacturer
+const char* DEVICE_NAME = "X-Arcade";                    //! device name
+const char* DEVICE_MANUFACTURER = "X-Arcade";           //! manufacturer
 bool _isBleConnected = 0;
 
   
@@ -617,7 +614,6 @@ void updateBLEStatus() {
 
 
 
-
 // ======= ZUSÄTZLICHE BLE DEBUG-FUNKTION, kann auch raus, sobald es läuft =======
 void verifyBLEServices() {
     if (dbglvl == 0) return;
@@ -682,6 +678,8 @@ void verifyBLEServices() {
     }, "HID");
 }
 
+
+
 void debugBLEStatus(const char* tag = "BLE")
 {
     if (dbglvl == 0) return;
@@ -720,7 +718,6 @@ void debugBLEStatus(const char* tag = "BLE")
 
 
 
-
 void formatNVS(){
   btStop(); 
   if(dbglvl)Serial.println("btStop()");
@@ -746,7 +743,6 @@ void formatNVS(){
 
 
 
-
 bool isBleConnected() {
     NimBLEServer* srv = NimBLEDevice::getServer();
     bool connected = srv && srv->getConnectedCount() > 0;
@@ -763,35 +759,38 @@ bool isBleConnected() {
 
     // if(dbglvl > 1)Serial.printf("isBleConnected() %d\n", connected );
     return connected;
-}
+}// BT END ========================================================================================================
 
 
 
-// BT END =====================
 uint8_t UIinterval  =   40;               // sets every x ms screenrefresh. costs power. 30 to 50 is very good. 50 makes display minimal slower, but reaction is at 50 ms 4 times higher. 
-long unsigned UIintervalTimerFlag = 0;
-uint16_t processTouchInterval = 100;      //10ms-199ms für gute reactivität 10-40ms, 
-unsigned long processTouchTimeFlag = 0;
-unsigned long timeTrapOneSecond = 0;
-bool _touchDetected = false;             
+bool _touchDetected = false;  
+uint32_t UIintervalTimerFlag   = 0;
 int _lastTouchX = 0;
 int _lastTouchY = 0;
-uint16_t processTouchNextKeyDelay = 300;  // repeat geschwindigkeit zwischen den tasten abfragen
-unsigned long processTouchNextKeyTimeFlag = 0;
 int _cachedTouchX = -1;
 int _cachedTouchY = -1;
-uint16_t touchHysteresis = 1;             // Toleranz in Pixeln ([1-5] falls der Finger zittert. lustiges feature. wenn man den butten reibt, gehts schnell)
-uint32_t lastTouchActivity = 0;           // Speichert den Zeitpunkt der letzten Berührung
-uint32_t touchThrottleTimeout = 5000;     // Die 10 Sekunden als feste Vorgabe
-int processTouchRepeatBlockerPerMenu = 0;  // kann auch mit initialisiert werden.
+uint16_t processTouchIntervalSpeed    =  40; // touch scan speed user operates in menus via touch. 10ms-199ms timetrap für gute reactivität 10-40ms im NICHT throttle mode,
+uint16_t processTouchIntervalThrottle = 500; // touch scan speed in throttle mode aka user is gaming no use of display
+uint16_t processTouchNextKeyDelay     = 300; // repeat on button pressed+hold. geschwindigkeit zwischen den touch tasten ausgaben
+uint32_t touchThrottleTimeout         =4000; // nach zeit x den highspeed mode scan mode verlassen und volle performance zurück in den main loop
+uint16_t touchHysteresis              =   1; // Toleranz in Pixeln ([1-5] falls der Finger zittert. lustiges feature. wenn man den butten reibt, gehts schneller (touchHytseresisKeyRepeatTime))
+uint16_t touchHytseresisKeyRepeatTime = 80;  // spielt nur im speed mode eine rolle, damit nicht zu viele touches/sec auf die moving finger methode raus gefeuert werden. es soll schneller, aber nicht max schnell sein.
+
+uint32_t lastTouchActivityTimerFlag = 0;  // Speichert den Zeitpunkt der letzten Berührung
+uint32_t processTouchNextKeyTimeFlag= 0; 
+uint32_t processTouchTimeFlag       = 0;
+uint32_t timeTrapOneSecond          = 0;
+
+int processTouchRepeatBlockerPerMenu = 0; // kann auch mit initialisiert werden.
     
 
 int8_t emulationMode = 1;                 // bluetooth HID profiles 1 = Quest, 2 = PC, 3 = Android , 4 = Iphone, 5 = Switch (per funktion und if/case rutsche) 
 int8_t emulationModeOverride = 0;         // 0 automatic mode in emulationMode, 
 
 
-#define debounceKey 10                    // 10 ms
-uint32_t milliTimeCopy           = 0;
+#define debounceKey 10                    // 10 ms (machanical flipper keys, x-key, front left+right key)
+uint32_t milliTimeCopy = 0;
 
 uint8_t UImenu      =    0;               // Startmenü-Index (auch in klasse lese und schreibbar?) // später über filesystem oder in rtc speichern
 int     sleepTimer  =   15;               // 10-300 Minuten nach letztem tastendruck deep sleep shutdown. display einbrennen verhindern. akku schonen. später über filesystem oder in rtc speichern
@@ -805,19 +804,19 @@ unsigned long UIpreviousMillis  = 0;      // Letzter Zeitpunkt, zu dem der Code 
 unsigned long ledTimeOffMillis  = millis() + ledTimeOff  * 1000;      // 90 seKunden bis die LEDs ausgehen
 unsigned long sleepTimerMillis  = millis() + sleepTimer  * 60000;      // 10 Minuten deep sleep timer
 unsigned long stdMenuTimeMillis = millis() + stdMenuTime * 1000;      // 20 Sekunden bis zum nächsten Menü
-// Optische Reihenfolge für K.I.T.T. effekt straight von links nach rechts: SideL, FrontL, NeoL, NeoR, FrontR, SideR
-const uint8_t LED_Order[6] = {3, 4, 5, 0, 2, 1};
+
+const uint8_t LED_Order[6] = {3, 4, 5, 0, 2, 1};// Optische Reihenfolge für K.I.T.T. effekt straight von links nach rechts: SideL, FrontL, NeoL, NeoR, FrontR, SideR
 bool AnimationIsRunning = false;          // flag sorgt dafür das der AnimationRunningStep counter auch bei durchlauf über 0 nicht unterbrochen wird.
 int AnimationIsRunningStep = 0;           // hoch bis animation step max, dann wieder ab 0. kein flag. timemmark als flag
 uint16_t AnimationActivationTime = 15000; // 15 sekunden
-unsigned long AnimationDurationEndTimerFlag = 0;          // eigentlich internes paramter und gelocked durch AnimationIsRunning
+unsigned long AnimationDurationEndTimerFlag = 0; // eigentlich internes paramter und gelocked durch AnimationIsRunning
 uint8_t  animationNumber     = 0;
 static uint8_t  animationSpeed  = 100;
 unsigned long gyroUpdateTimeTrapTimerFlag = 0;
 int8_t gyroTimeTrapTimerCycle = 30;       // z.b. 20 ms also 50x die sekunde mit dem per separtem parallel task gesampelten daten synchen
 bool     gamepadSendReportFlag  = false;  // wenn true, wird am ende der schleife ein gamepad report gesendet. so können mehrere tasten in einem report gesendet werden.
 bool     keyboardSendReportFlag = false;  // wenn true, wird am ende der schleife ein keyboard report gesendet. so können mehrere tasten in einem report gesendet werden.
-int      skillShotMillisSend    = 426 ;   // ms
+uint32_t skillShotMillisSend    = 426 ;   // ms
 unsigned long skillShotMillisStartTime = 0;
 int8_t CheatLockRecordMode = 1;           // 1 standart mode alles wie immer aber samplet immer press-release zeitdifferenz, 2 skillshot->A taste bei release triggert sendTimedPlungerButtonA 
 unsigned long keyAbenchmarkTimeMark = 0;  // speicher bei drücken von A den timestamp und bei release ziehen wir millis() ab. differenz = benchmark
@@ -969,7 +968,7 @@ void RGB_animation(uint8_t IN_animationNumber = 0, uint16_t IN_animationDuration
         if (animationSpeed <= 128) speedFactor = 0.2f + (animationSpeed / 128.0f) * 0.8f;
         else speedFactor = 1.0f + ((animationSpeed - 128) / 127.0f) * 9.0f;
 
-        unsigned long elapsed = (unsigned long)((milliTimeCopy - animationStartTime) * speedFactor);
+        uint32_t elapsed = (uint32_t)((milliTimeCopy - animationStartTime) * speedFactor);
 
         switch(animationNumber) {
             case 1: effect_rainbow(elapsed); break;
@@ -978,9 +977,7 @@ void RGB_animation(uint8_t IN_animationNumber = 0, uint16_t IN_animationDuration
             case 4: effect_comet(elapsed); break;
         }
         
-        // Performance-Trick: strip.Show() nur hier zentral
-        //strip.Show();
-        PixelReadyToSend++; 
+        PixelReadyToSend++;  // set trigger for //strip.Show();
     }
     else {  
         if(IN_animationNumber == 0) return;
@@ -1013,42 +1010,6 @@ void RGB_animation(uint8_t IN_animationNumber = 0, uint16_t IN_animationDuration
     //AnimationIsRunning = 0;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1769,14 +1730,13 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
 }
 
 void serialWelcomeMessage(){
-
-Serial.println(F("  ___  ___ _ _ _ ___ ___  ___ "));
-Serial.println(F(" | _ \\| _ ) | | |_  |_  || __|"));
-Serial.println(F(" |  _/| _ \\ | | |/ / / / |__ \\"));
-Serial.println(F(" |_|  |___/\\___//___/___/|___/"));
-Serial.println("");
-Serial.println("PINBAL WIZARD 25");
-Serial.println("(C)2020-2026 by VR-addicted");
+                            Serial.println(F("  ___  ___ _ _ _ ___ ___  ___ "));
+                            Serial.println(F(" | _ \\| _ ) | | |_  |_  || __|"));
+                            Serial.println(F(" |  _/| _ \\ | | |/ / / / |__ \\"));
+                            Serial.println(F(" |_|  |___/\\___//___/___/|___/"));
+                            Serial.println("");
+                            Serial.println("PINBAL WIZARD 25");
+                            Serial.println("(C)2020-2026 by VR-addicted");
 }
 
 // =========================================================================================================================================================== //
@@ -2124,62 +2084,99 @@ void loop() {
 // touch time trap evtl komplett mit ins ins ui timetrap. touch ist eh immer kleiner als ui intervall. spart zyklen im main loop. testen. benchmark 
 // >>>>> Time Trap 20-200 ms  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    
 // mit throttle   
+// if (processTouchTimeFlag <= milliTimeCopy) {
+    
+//     // Wenn die Zeit seit dem letzten Touch > 10 Sek ist -> 500ms, sonst 20ms
+//     uint16_t nextInterval = (milliTimeCopy - lastTouchActivityTimerFlag > touchThrottleTimeout) ? 500 : processTouchInterval;
+//     processTouchTimeFlag  =  milliTimeCopy + nextInterval + processTouchRepeatBlockerPerMenu ;  // so kann man easy 0-1000 ms in submenus aktivieren um bouncen zu reduzieren ohne zu tief in die logik rein zu gehen. 
+
+//     if (touch.touched(GT911_MODE_POLLING) > 0) {
+//         GTPoint point = touch.getPoint(0);
+        
+//         bool hasMoved = (abs(point.x - _cachedTouchX) > touchHysteresis) || (abs(point.y - _cachedTouchY) > touchHysteresis);
+
+//         if (hasMoved || processTouchNextKeyTimeFlag <= milliTimeCopy) {
+//             _lastTouchX = point.x;
+//             _lastTouchY = point.y;
+//             _cachedTouchX = point.x;
+//             _cachedTouchY = point.y;
+//             _touchDetected = true;
+
+//             processTouchNextKeyTimeFlag = milliTimeCopy + 200;   // takt rate wenn man mit dem finger leichte bewegungen auf dem button macht
+            
+//             // NUR HIER setzen wir den Aktivitäts-Timer zurück
+//             lastTouchActivityTimerFlag  = milliTimeCopy;
+
+//             if(dbglvl) Serial.printf("[TOUCH] X:%d Y:%d | Mode: HighSpeed\n", _lastTouchX, _lastTouchY);
+            
+//             // Deine originalen Timer-Resets (die bleiben natürlich!)
+//             ledTimeOffMillis  = milliTimeCopy + (uint32_t)ledTimeOff  * 1000;
+//             stdMenuTimeMillis = milliTimeCopy + (uint32_t)stdMenuTime * 1000;
+//             sleepTimerMillis  = milliTimeCopy + (uint32_t)sleepTimer  * 60000;
+//         }
+//     } else {
+//         _cachedTouchX = -1;
+//         _cachedTouchY = -1;
+        
+//     }
+// }
 
 
 if (processTouchTimeFlag <= milliTimeCopy) {
     
-    // Wenn die Zeit seit dem letzten Touch > 10 Sek ist -> 500ms, sonst 20ms
-    uint16_t nextInterval = (milliTimeCopy - lastTouchActivity > touchThrottleTimeout) ? 500 : processTouchInterval;
-    processTouchTimeFlag = milliTimeCopy + nextInterval + processTouchRepeatBlockerPerMenu ;  // so kann man easy 0-1000 ms in submenus aktivieren um bouncen zu reduzieren ohne zu tief in die logik rein zu gehen. 
+    // 1. Intervall bestimmen: Wenn innerhalb der letzten 4 Sek. Aktivität war -> Turbo (20ms)
+    uint16_t currentInterval = (milliTimeCopy - lastTouchActivityTimerFlag <= touchThrottleTimeout) 
+                               ? processTouchIntervalSpeed 
+                               : processTouchIntervalThrottle;
 
+    // Zeit für die nächste Abfrage setzen (inkl. Menü-Latenz-Modifier)
+    processTouchTimeFlag = milliTimeCopy + currentInterval + processTouchRepeatBlockerPerMenu;
+
+    // 2. Hardware-Abfrage nur im gewählten Intervall
     if (touch.touched(GT911_MODE_POLLING) > 0) {
         GTPoint point = touch.getPoint(0);
         
+        // Hysterese-Check: Hat sich der Finger bewegt?
         bool hasMoved = (abs(point.x - _cachedTouchX) > touchHysteresis) || 
                         (abs(point.y - _cachedTouchY) > touchHysteresis);
 
-        if (hasMoved || processTouchNextKeyTimeFlag <= milliTimeCopy) {
+        // 3. Trigger-Logik: Entweder Bewegung ODER Auto-Repeat Timer abgelaufen
+        if (hasMoved || (milliTimeCopy >= processTouchNextKeyTimeFlag)) {
+            
+            // Werte speichern
             _lastTouchX = point.x;
             _lastTouchY = point.y;
             _cachedTouchX = point.x;
             _cachedTouchY = point.y;
             _touchDetected = true;
 
-            processTouchNextKeyTimeFlag = milliTimeCopy + 500;
-            
-            // NUR HIER setzen wir den Aktivitäts-Timer zurück
-            lastTouchActivity = milliTimeCopy;
+            // Timer für Auto-Repeat (200ms) und Turbo-Modus Aktivität (4000ms)
+            processTouchNextKeyTimeFlag = milliTimeCopy + processTouchNextKeyDelay;
+            lastTouchActivityTimerFlag  = milliTimeCopy;
 
-            if(dbglvl) Serial.printf("[TOUCH] X:%d Y:%d | Mode: HighSpeed\n", _lastTouchX, _lastTouchY);
+            if(dbglvl) Serial.printf("[TOUCH] X:%d Y:%d | Turbo Active\n", _lastTouchX, _lastTouchY);
             
-            // Deine originalen Timer-Resets (die bleiben natürlich!)
+            // System-Timer verlängern
             ledTimeOffMillis  = milliTimeCopy + (uint32_t)ledTimeOff  * 1000;
             stdMenuTimeMillis = milliTimeCopy + (uint32_t)stdMenuTime * 1000;
             sleepTimerMillis  = milliTimeCopy + (uint32_t)sleepTimer  * 60000;
         }
     } else {
+        // Finger weg: Cache löschen, damit der nächste erste Touch sofort hasMoved=true triggert
         _cachedTouchX = -1;
         _cachedTouchY = -1;
-        processTouchNextKeyTimeFlag = 0; 
     }
 }
 
 
-
-
-
-
-
-
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
- 
+
+
+
 //>>>>>> time trap 20-100 ms [ UIupdate() ] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 if (UIintervalTimerFlag <= milliTimeCopy) {               // UI update Timetrap
-        UIintervalTimerFlag  = milliTimeCopy + UIinterval;
-
-
-
-    ui->UIupdate(loopsPerSecond, milliTimeCopy);              // refresh actual GUI menu
+    UIintervalTimerFlag  = milliTimeCopy + UIinterval;
+    ui->UIupdate(loopsPerSecond);                        //ui->UIupdate(loopsPerSecond, milliTimeCopy);              // refresh actual GUI menu
 }  // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
    
 
@@ -2790,34 +2787,7 @@ else
 
 
 
-// x- button
-//TODO hier die funkbutton variable als OR implementieren
 
-    // // food pedal integration
-    // static uint32_t espnowAirButtonCurrentStateSend  = 0;
-    // static uint32_t uiButtonESPnowResetviewTimeFlag  = 0;   // loop session übergreifend deklarieren
-    // if(espnowAirButtonCurrentState != espnowAirButtonCurrentStateSend)
-    // {  espnowAirButtonCurrentStateSend =  espnowAirButtonCurrentState;
-    //     if(espnowAirButtonCurrentState == 0) { 
-    //             sendBTcommandActionKey(0);
-    //             if(UImenu == 1) ui->espnowButton(3);            // icon nur updaten in menu 1 // TODO nur flag setzen und menu 1 da drauf triggenr lassen.
-    //             uiButtonESPnowResetviewTimeFlag = milliTimeCopy + 1000;      // set flag in future time mark
-    //             RGBFrontBasecolorsSetter();                 // restore front base colors
-    //         }
-    //     if(espnowAirButtonCurrentState == 1) {          // send bt command and update ui
-    //             sendBTcommandActionKey(1);
-    //             if(UImenu == 1) ui->espnowButton(2);            // icon nur updaten in menu 1
-    //             uiButtonESPnowResetviewTimeFlag=0;
-    //             RGBFrontBasecolorsSetter(1);                // front buttons hellblau
-    //         } 
-    // }
-  
-    // if(uiButtonESPnowResetviewTimeFlag){                    // muss größer als 0 sein
-    //   if(uiButtonESPnowResetviewTimeFlag < milliTimeCopy){  // wenn es jetzt wieder kleiner als die future mark ist, aktion und flag cleanen
-    //         if(UImenu == 1) ui->espnowButton(1);                // update ui
-    //         uiButtonESPnowResetviewTimeFlag = 0;            // clean flag
-    //     }
-    // }
 
 if(espnowAirButtonCurrentState == 1) keyTimerFlagActionKey = milliTimeCopy + debounceKey;
 

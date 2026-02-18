@@ -1,0 +1,4 @@
+{
+    "clangd.inlayHints.parameterNames": false,
+    "clangd.inlayHints.enable": true
+}

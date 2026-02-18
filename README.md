@@ -13,6 +13,9 @@
 
 **Video:** https://www.youtube.com/watch?v=zgfT5R-a2N8
 
+
+// 18.2.2026 FINALY X-Arcade support on Meta Quest. No more glitching hands. 
+
 // 31.1.2026  
 // VALENTINES UPDATE. RGB ANIMATONS, NEW KEY SAMPLE METHODE WITH EMV SHIELD AGAINST RGB LED INTEREFERENCES.  
 //   

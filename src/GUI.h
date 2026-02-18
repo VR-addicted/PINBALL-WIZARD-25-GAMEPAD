@@ -29,7 +29,7 @@
 
 extern TFT_eSprite spr;
 
-
+extern uint32_t milliTimeCopy;                   // diese copy für alles timing basierte nehmen!
 
 class GUI {
   
@@ -78,7 +78,9 @@ class GUI {
 
     void drawRectangle(int x, int y, int w, int h, uint32_t color);
     void UIupdate(int loopsPerSecond, int loopTimeMs);        // in jedem loop ein durchlauf, aber nur alle 30ms gehts in die routine rein.
-    void drawDebug(int loopsPerSecond, int loopTimeMs);       // stelle benchmark zahlen dar
+    void UIupdate(int loopsPerSecond);        // in jedem loop ein durchlauf, aber nur alle 30ms gehts in die routine rein.
+    // void drawDebug(int loopsPerSecond, int loopTimeMs);       // stelle benchmark zahlen dar
+    void drawDebug(int loopsPerSecond);       // stelle benchmark zahlen dar
     
     void draw7SegmentMillisecondBig(uint32_t output);
     void draw7SegmentNumberSmall(uint32_t number, int segmentPosX, int segmentPosY, bool updateUI);
