@@ -26,23 +26,23 @@ extern uint8_t dbglvlOSD;
 extern int PWM_POWER;                                 // display hintergrund beleuchtung
 extern uint8_t sleepTimer;
 extern uint8_t ledTimeOff;
-extern unsigned long ledTimeOffMillis;
+extern uint32_t ledTimeOffMillis;
 extern int tiltGain;
 extern int tiltTresholdMenuX;
 extern int tiltTresholdMenuY;
 extern int tiltLimiter;
 extern uint8_t stdMenu;                               // fallback menu, after X seconds, next variable
-extern unsigned long stdMenuTimeMillis;
+extern uint32_t stdMenuTimeMillis;
 extern bool drawOnce;                                 //GLOBAL!
-// extern unsigned long loopStartTime;                   // enthält millis() aus main loop nur für benchmark!
-// extern unsigned long milliTimeCopy;                   // diese copy für alles timing basierte nehmen!
+// extern uint32_t loopStartTime;                   // enthält millis() aus main loop nur für benchmark!
+// extern uint32_t milliTimeCopy;                   // diese copy für alles timing basierte nehmen!
 extern uint8_t stdMenuTime;                           // fallback menu time
-extern unsigned long sleepTimerMillis; 
-extern unsigned long keyAbenchmarkTimeMark;
+extern uint32_t sleepTimerMillis; 
+extern uint32_t keyAbenchmarkTimeMark;
 extern int8_t CheatLockRecordMode;
 extern int skillShotMillisSend;
 extern bool sendTimedPlungerButtonA;
-extern unsigned long sendTimedPlungerButtonATimerReleaseFlag;
+extern uint32_t sendTimedPlungerButtonATimerReleaseFlag;
 
 extern int tiltCounterGlob;
 extern int dbgGamePad;
@@ -68,7 +68,7 @@ extern void RGBshutDownSequence();                   // alle leds aus, front lef
 extern void formatNVS();
 extern void sendBTcommandActionKey(bool inputMode);
 extern bool wasConnected;
-extern unsigned long lastPacketTime;
+extern uint32_t lastPacketTime;
 extern int TIMEOUT_MS;
 
 extern int PWM_POWER_TEMP;
@@ -93,7 +93,7 @@ struct HostDevice {
 extern bool _touchDetected;
 extern int  _lastTouchX ;
 extern int  _lastTouchY;
-extern unsigned long processTouchTimeFlag;
+extern uint32_t processTouchTimeFlag;
 extern int processTouchRepeatBlockerPerMenu;
 extern int dbglvOSDldState;
 
@@ -188,7 +188,7 @@ const char* MenuItem::getLabel() const {  //getter
 // end my MenuItem class //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 extern uint8_t  UIinterval;
-unsigned long UIintervalDBG    = 1000;             // von 0 bis 1000ms. (blaues mini debug fenster)
+uint32_t UIintervalDBG    = 1000;             // von 0 bis 1000ms. (blaues mini debug fenster)
 
 extern uint8_t UImenu ;                            // Startmenü-Index importieren
 int touchX, touchY;                                // oberhalb der funktionen anlegen für gemeinsame nutzung.
@@ -1105,7 +1105,7 @@ void GUI::menu5() {
         processTouchRepeatBlockerPerMenu = 100;
     }
 
-static unsigned long timeTrap = 0;             
+static uint32_t timeTrap = 0;             
 
         if (_touchDetected ) {
             _touchDetected = 0;                 // menu abhängiges reagieren auf touches . wenn zentrales processTouch() true zurück gab, liegen die coordinaten in touchX, touchY
@@ -1793,7 +1793,7 @@ void GUI::clearActiveBluetoothPairing() {
         NimBLEServer* srv = NimBLEDevice::getServer();
         if (srv && srv->getConnectedCount() > 0) {
             for (auto h : srv->getPeerDevices()) srv->disconnect(h);
-            unsigned long t = millis() + 1500;
+            uint32_t t = millis() + 1500;
             while (srv->getConnectedCount() > 0 && millis() < t) delay(50);
         }
 
@@ -1875,7 +1875,7 @@ void GUI::startFreshPairing() {
   if (adv) adv->start(0);
 
   // Optional: 10s warten und UI Punkte malen
-  unsigned long t0 = millis();
+  uint32_t t0 = millis();
   while (millis() - t0 < 20000 && !isBleConnected()) {
     delay(1400);
     _tft.print(".");

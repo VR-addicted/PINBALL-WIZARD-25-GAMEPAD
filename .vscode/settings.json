@@ -1,4 +1,10 @@
 {
+    "C_Cpp.intelliSenseEngine": "disabled",
+    "clangd.arguments": [
+        "--query-driver=C:/Users/DOM/.platformio/packages/toolchain-xtensa-esp32/bin/xtensa-esp32-elf-g++*",
+        "--compile-commands-dir=.",
+        "--background-index"
+    ],
     "clangd.inlayHints.parameterNames": false,
     "clangd.inlayHints.enable": true
 }

@@ -177,7 +177,7 @@ void GamepadHID::setHat(uint8_t direction) {
     }
 }
 
-extern unsigned long ms; 
+extern uint32_t ms; 
 void GamepadHID::sendGamepadReport() {
 
 

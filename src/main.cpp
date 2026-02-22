@@ -336,7 +336,7 @@ RGB LED_FlipperRbase     = { 40,  40,  40};   // (weiß 20%)  leerlauf standart 
 RGB LED_FlipperRpressed  = {255,   0,   0};   // (max red)   ohne "shift" taste
 RGB LED_FlipperRshifted  = {  0,   0, 255};   // (Hell Blau) bei aktiver "shift" taste + flipper rechts
 
-unsigned long RGBanimationFutureTimeFlag = 0;
+uint32_t RGBanimationFutureTimeFlag = 0;
 
 void RGBall(uint8_t input = 0){
     for (uint16_t i = 0; i < PixelCount ; i++) {  
@@ -434,7 +434,7 @@ RgbColor wheel(uint8_t pos, uint8_t brightness)
 // end RGB
 
 
-unsigned long ms = 0;                           // decorative for millis to 22.493 format
+uint32_t ms = 0;                           // decorative for millis to 22.493 format
 int8_t batteryESP32Status  = 100;               // nach 8 runden ist wert stabil.this esp32  0-100%  3.3-4.2 V
 int8_t batteryESPNOWstatus = 0;                 // external esp foot controller
 int8_t batteryESP32StatusLastround = 100;       // 
@@ -512,7 +512,7 @@ uint8_t senderMac[] = {0x78, 0xE3, 0x6D, 0x1A, 0x8C, 0xC8}; // MAC des Senders e
 int TIMEOUT_MS = 1000;                                // Zeit ohne esp-now Empfang, bis "Verbindung verloren" (1s)
 
 // Variablen für Verbindungsüberwachung
-unsigned long lastPacketTime = 0;
+uint32_t lastPacketTime = 0;
 bool wasConnected = false;
 // Zustandsvariable (vom Sender empfangen)
 volatile uint8_t espnowAirButtonCurrentState = 0;
@@ -567,10 +567,10 @@ void restoreHIDNotifications(NimBLEServer* srv) {
 
 void updateBLEStatus() {
     static uint8_t lastConnCount = 0;
-    static unsigned long lastCheck = 0;
+    static uint32_t lastCheck = 0;
     
     // // Nur alle 500ms prüfen (spart CPU)
-    // unsigned long now = millis();
+    // uint32_t now = millis();
     // if (now - lastCheck < 500) return;
     // lastCheck = now;
     
@@ -800,26 +800,26 @@ uint8_t stdMenu     =    4;               // fallback menu, next variable define
 int     stdMenuTime =   20;               // springt danach zurück in stdMenu
 int     tiltCounterGlob= 0;
 int     dbgGamePad     = 0;               // um die richtigen tasten codes mit rechter flipper taste raus zu bekommen.
-unsigned long UIpreviousMillis  = 0;      // Letzter Zeitpunkt, zu dem der Code ausgeführt wurde
-unsigned long ledTimeOffMillis  = millis() + ledTimeOff  * 1000;      // 90 seKunden bis die LEDs ausgehen
-unsigned long sleepTimerMillis  = millis() + sleepTimer  * 60000;      // 10 Minuten deep sleep timer
-unsigned long stdMenuTimeMillis = millis() + stdMenuTime * 1000;      // 20 Sekunden bis zum nächsten Menü
+uint32_t UIpreviousMillis  = 0;      // Letzter Zeitpunkt, zu dem der Code ausgeführt wurde
+uint32_t ledTimeOffMillis  = millis() + ledTimeOff  * 1000;      // 90 seKunden bis die LEDs ausgehen
+uint32_t sleepTimerMillis  = millis() + sleepTimer  * 60000;      // 10 Minuten deep sleep timer
+uint32_t stdMenuTimeMillis = millis() + stdMenuTime * 1000;      // 20 Sekunden bis zum nächsten Menü
 
 const uint8_t LED_Order[6] = {3, 4, 5, 0, 2, 1};// Optische Reihenfolge für K.I.T.T. effekt straight von links nach rechts: SideL, FrontL, NeoL, NeoR, FrontR, SideR
 bool AnimationIsRunning = false;          // flag sorgt dafür das der AnimationRunningStep counter auch bei durchlauf über 0 nicht unterbrochen wird.
 int AnimationIsRunningStep = 0;           // hoch bis animation step max, dann wieder ab 0. kein flag. timemmark als flag
 uint16_t AnimationActivationTime = 15000; // 15 sekunden
-unsigned long AnimationDurationEndTimerFlag = 0; // eigentlich internes paramter und gelocked durch AnimationIsRunning
+uint32_t AnimationDurationEndTimerFlag = 0; // eigentlich internes paramter und gelocked durch AnimationIsRunning
 uint8_t  animationNumber     = 0;
 static uint8_t  animationSpeed  = 100;
-unsigned long gyroUpdateTimeTrapTimerFlag = 0;
+uint32_t gyroUpdateTimeTrapTimerFlag = 0;
 int8_t gyroTimeTrapTimerCycle = 30;       // z.b. 20 ms also 50x die sekunde mit dem per separtem parallel task gesampelten daten synchen
 bool     gamepadSendReportFlag  = false;  // wenn true, wird am ende der schleife ein gamepad report gesendet. so können mehrere tasten in einem report gesendet werden.
 bool     keyboardSendReportFlag = false;  // wenn true, wird am ende der schleife ein keyboard report gesendet. so können mehrere tasten in einem report gesendet werden.
 uint32_t skillShotMillisSend    = 426 ;   // ms
-unsigned long skillShotMillisStartTime = 0;
+uint32_t skillShotMillisStartTime = 0;
 int8_t CheatLockRecordMode = 1;           // 1 standart mode alles wie immer aber samplet immer press-release zeitdifferenz, 2 skillshot->A taste bei release triggert sendTimedPlungerButtonA 
-unsigned long keyAbenchmarkTimeMark = 0;  // speicher bei drücken von A den timestamp und bei release ziehen wir millis() ab. differenz = benchmark
+uint32_t keyAbenchmarkTimeMark = 0;  // speicher bei drücken von A den timestamp und bei release ziehen wir millis() ab. differenz = benchmark
 
 /* global timer vars */                   // tastenabfrage variablen timemarks and flipflop flags
 
@@ -851,9 +851,9 @@ uint32_t secondKeyButtonTimeMark = 0;     // Merke Timestamp sobald die taste an
 bool secondKeyButtonFlag         = false; // wenn dieser true ist, dann wird die zweite taste gedrückt, und die erste taste wird nicht mehr abgefragt.
 int  secondKeyActivationTime     = 800;   // 400 ms bis der zweite button erkannt wird.
 bool secondKeySetLaterRelease    = 0;
-unsigned long secondKeySetLaterReleaseTimerFlag = 0;
+uint32_t secondKeySetLaterReleaseTimerFlag = 0;
 bool sendTimedPlungerButtonA     = false;
-unsigned long sendTimedPlungerButtonATimerReleaseFlag = 0;
+uint32_t sendTimedPlungerButtonATimerReleaseFlag = 0;
 uint32_t keyTimerFlagActionKey   = 0;     // Flipper rechts debounce Timemark
 int flipFlopFlagActionKey        = 0;
 bool releaseTrickFlagActionKey;
@@ -894,7 +894,7 @@ int counterKeysPressedToday     = 0;
 // RGB
 
 // 1. Rainbow: Nutzt deine vorhandene wheel() Funktion
-void effect_rainbow(unsigned long t) {
+void effect_rainbow(uint32_t t) {
     for (uint16_t i = 0; i < PixelCount; i++) {
         // i * 42 versetzt die Farben auf den 6 LEDs (255 / 6)
         uint8_t hue = (uint8_t)((t / 10) + (i * 42)) & 255; 
@@ -903,7 +903,7 @@ void effect_rainbow(unsigned long t) {
 }
 
 // 2. Heartbeat: Pulsierendes Rot (Sinus-Welle)
-void effect_heartbeat(unsigned long t) {
+void effect_heartbeat(uint32_t t) {
     // Phase berechnen: t * 0.003f steuert die Frequenz
     float pulse = (sinf(t * 0.003f) + 1.0f) / 2.0f; 
     uint8_t r = (uint8_t)(255 * pulse);
@@ -913,8 +913,8 @@ void effect_heartbeat(unsigned long t) {
 }
 
 // 3. Glitter: Zufällige Pixel faden aus (Random Color per Pixel)
-void effect_glitter(unsigned long t) {
-    static unsigned long lastSparkle = 0;
+void effect_glitter(uint32_t t) {
+    static uint32_t lastSparkle = 0;
     // Alle LEDs ein Stück abdunkeln für den Fade-Effekt
     for (uint16_t i = 0; i < PixelCount; i++) {
         RgbColor col = strip.GetPixelColor(i);
@@ -929,7 +929,7 @@ void effect_glitter(unsigned long t) {
 }
 
 // 4. Scanner: Der klassische K.I.T.T. / Cylon Effekt
-void effect_comet(unsigned long t) {
+void effect_comet(uint32_t t) {
     // Wandelt Zeit in eine Position 0-10 um (für Hin- und Her-Lauf)
     int pos = (t / 120) % 10; 
     int activeLED = (pos > 5) ? (10 - pos) : pos; 
@@ -953,7 +953,7 @@ void effect_comet(unsigned long t) {
 
 void RGB_animation(uint8_t IN_animationNumber = 0, uint16_t IN_animationDurationMS = 1000, uint8_t IN_animationSpeed = 100)
 {
-    static unsigned long animationStartTime = 0;
+    static uint32_t animationStartTime = 0;
     static uint16_t effectiveDuration = 0; // Lokaler Puffer für die berechnete Zeit
 
     if(AnimationIsRunning){
@@ -1139,8 +1139,8 @@ uint32_t loopCounter       = 0;
 uint32_t loopsPerSecond    = 0;
 uint32_t lastLoopTime      = 0;
 uint32_t lastSecondTime    = 0;
-unsigned long loopStartTime     = 0;
-unsigned long lastLoopStartTime = 0; 
+uint32_t loopStartTime     = 0;
+uint32_t lastLoopStartTime = 0; 
 
 // counter. TODO: laden und speicher auf chip oder NVS
 uint32_t ButtonFlipperLeftCounterToday    =   0;      // counter
