@@ -155,7 +155,7 @@ void GamepadHID::press(uint16_t buttonMask) {
 }
 
 void GamepadHID::release(uint16_t buttonMask) {
-    buttons &= ~buttonMask; // kein Auto-Send
+    buttons &= ~buttonMask; // kein Auto-Send 
 }
 
 void GamepadHID::setLeftThumb(int16_t x, int16_t y) {

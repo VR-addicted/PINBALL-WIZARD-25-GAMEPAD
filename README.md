@@ -13,6 +13,10 @@
 
 **Video:** https://www.youtube.com/watch?v=zgfT5R-a2N8
 
+// 31.07.2026 Finaly the Meta Quest with FW 2.6 works with "analog" gamepad protocol, exactly like pinballFX classic.  
+// i just defined the action button in profile 1 (standart boot up profile (profiles are in the bluetooth menu))  
+// now profile 1 works for pinballFX  2026 + Pinballfx classic per profile 1  
+// have phun, and play with the nudge sensitivity setting and in debug menu with the deadzones.  
 
 // 18.2.2026 FINALY X-Arcade support on Meta Quest. No more glitching hands. 
 

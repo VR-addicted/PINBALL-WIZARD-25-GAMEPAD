@@ -2,7 +2,7 @@
 #include "GFX_ARRAYS.h"                               // jpg array
 #include <math.h>
 #include <cstring>                                    // Für strncpy  // evtl nach deepseek nicht mehr nötig
-#include <String.h>                                   // nur wegen mac adressen auflösung drin. könnte man sicher anders lösen
+#include <string.h>                                   // nur wegen mac adressen auflösung drin. könnte man sicher anders lösen
 #include <NimBLEDevice.h>
 
 // #ifndef BLE_ADDR_PUBLIC
@@ -66,7 +66,7 @@ extern bool isBleConnected();
 
 extern void RGBshutDownSequence();                   // alle leds aus, front left flashen, dann front left soft red als standby und reaktivation hinweis leuchte
 extern void formatNVS();
-extern void sendBTcommandActionKey(bool inputMode);
+extern void sendBTcommandActionKey(bool inputMode);  // todo: kann raus
 extern bool wasConnected;
 extern uint32_t lastPacketTime;
 extern int TIMEOUT_MS;
@@ -422,8 +422,7 @@ bool GUI::cheatButton(int8_t mode){
     }
     else{
          if(_lastTouchX > 190 && _lastTouchX < 241 && _lastTouchY > 1 && _lastTouchY < 51) return 1;
-
-            else return 0;
+         else return 0;
     }
 }
 
@@ -617,7 +616,7 @@ static uint8_t batteryESP32StatusOld = 0;   // TODO: war schon draußen. checken
                     }
                // _touchDetected=0 ;         // zurücksetzen. der nächste touch kommt von alleine
                 }
-                else drawOnce = 0;         // fix
+    else drawOnce = 0;         // fix
 
   
     if(secondKeyButtonFlag){
@@ -1132,11 +1131,11 @@ static uint32_t timeTrap = 0;
                     dbglvlItem.draw(_tft);
                     if(dbglvl && !Serial) {Serial.begin(115200); delay(500); serialWelcomeMessage(); }
                     }
-                    else{
-                        Serial.println("closing serial connection. you can reactivate it in debug menu any time.");
-                        delay(500);
-                        Serial.end();
-                    }
+                else{
+                    Serial.println("closing serial connection. you can reactivate it in debug menu any time.");
+                    delay(500);
+                    Serial.end();
+                }
 
                 if (deltaUIinterval != 0) {
                     UIinterval = uiInterval.updateValue(deltaUIinterval);  // globale variable
@@ -1322,7 +1321,7 @@ void GUI::UIupdate(int loopsPerSecond) {
         static uint8_t PWM_POWER_OLD  = 55 ;                        // einmalig fakewert
         
         if(ledTimeOffMillis  < milliTimeCopy)  PWM_POWER_OUT = 5;   // Mindest power, damit man sieht das das display an ist 
-          else                                 PWM_POWER_OUT = PWM_POWER;  
+        else                                 PWM_POWER_OUT = PWM_POWER;  
                    
          if(PWM_POWER_OLD != PWM_POWER_OUT){
             PWM_POWER_OLD =  PWM_POWER_OUT;
@@ -1368,7 +1367,7 @@ void GUI::UIupdate(int loopsPerSecond) {
 void GUI::draw7SegmentNumberSmall(uint32_t number, int segmentPosX, int segmentPosY, bool trigger) {
     if(trigger){
         char buffer[9];                                                      // 8 Zeichen + Nullterminator
-        snprintf(buffer, sizeof(buffer), "%08lu", number);                   // Führende Nullen
+        snprintf(buffer, sizeof(buffer), "%08u", (unsigned int)number);                   // Führende Nullen
         _tft.setFreeFont(&G7_Segment7_S510pt7b);
         _tft.setTextSize(1);
         _tft.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -1622,25 +1621,25 @@ static int timerLeft, timerRight, timerUp = 0;  // timer für fade out loop übe
                 _tft.fillRect(posX -1, (posY +1) - inputPower, 3, inputPower, TFT_RED);    // draw line
             }
         }
-        else{
-                // fade out / clean lines back to white, pixel wise to safe perfomance
-                if(timerLeft){ // draw white line 50-timer or pixel au 50-timer+1 
-                _tft.fillRect(posX -timerLeft , posY , 2, 3, TFT_WHITE);            // draw line _tft.fillRect(posX, posY -1, -inputPower, 3, TFT_RED);    // draw line
-            }
-        
-            if(timerRight){ // draw white line 50-timer or pixel au 50-timer+1 
-                _tft.fillRect(posX +timerRight , posY , 2, 3, TFT_WHITE);           // draw line
-            }
-        
-            if(timerUp){ // draw white line 50-timer or pixel au 50-timer+1 
-                _tft.fillRect(posX -1 , (posY) -timerUp, 3, 2, TFT_WHITE);          // draw line     
-            }
-
-            if(timerLeft > 0)  timerLeft--;
-            if(timerRight > 0) timerRight--;
-            if(timerUp > 0)    timerUp--;
- 
+    else{
+            // fade out / clean lines back to white, pixel wise to safe perfomance
+            if(timerLeft){ // draw white line 50-timer or pixel au 50-timer+1 
+            _tft.fillRect(posX -timerLeft , posY , 2, 3, TFT_WHITE);            // draw line _tft.fillRect(posX, posY -1, -inputPower, 3, TFT_RED);    // draw line
         }
+    
+        if(timerRight){ // draw white line 50-timer or pixel au 50-timer+1 
+            _tft.fillRect(posX +timerRight , posY , 2, 3, TFT_WHITE);           // draw line
+        }
+    
+        if(timerUp){ // draw white line 50-timer or pixel au 50-timer+1 
+            _tft.fillRect(posX -1 , (posY) -timerUp, 3, 2, TFT_WHITE);          // draw line     
+        }
+
+        if(timerLeft > 0)  timerLeft--;
+        if(timerRight > 0) timerRight--;
+        if(timerUp > 0)    timerUp--;
+
+    }
          // if(dbglvl >7) Serial.printf("-timerLeft: %d | timerRight: %d | timerUp: %d\n", timerLeft, timerRight, timerUp);  // debug   
 }
 
@@ -1734,51 +1733,51 @@ static int16_t posY = 220;               // später in klasse und dort per über
 
     if(mode == 0){}                      // straight thru, do nothing                      
 
-        else if(mode == 1){              // refresh the complete gfx elements of the line object 
-                    
-                _tft.fillSmoothRoundRect(3,   posY    , 233, 37, 5, TFT_LIGHTGREY);
-                _tft.fillSmoothRoundRect(10,  posY+3, 30 , 30,  4, TFT_RED, TFT_LIGHTGREY);
-                _tft.fillSmoothRoundRect(200, posY+3, 30,  30,  4, TFT_DARKGREEN, TFT_LIGHTGREY);
-                _tft.setTextFont(2); 
-                _tft.setTextSize(3);
-                _tft.setTextColor(TFT_WHITE);
-                _tft.setCursor(17, posY - 7);
-                _tft.print("-");
-                _tft.setCursor(208, posY - 8);
-                _tft.print("+");
+    else if(mode == 1){              // refresh the complete gfx elements of the line object 
                 
-                // show key mapping profile
-                _tft.setTextFont(2); 
-                _tft.setTextSize(1);
-                _tft.setTextColor(TFT_BLACK, TFT_LIGHTGREY);   // TFT_WHITE
-                _tft.setCursor(64, posY + 11);   // 65     
+            _tft.fillSmoothRoundRect(3,   posY    , 233, 37, 5, TFT_LIGHTGREY);
+            _tft.fillSmoothRoundRect(10,  posY+3, 30 , 30,  4, TFT_RED, TFT_LIGHTGREY);
+            _tft.fillSmoothRoundRect(200, posY+3, 30,  30,  4, TFT_DARKGREEN, TFT_LIGHTGREY);
+            _tft.setTextFont(2); 
+            _tft.setTextSize(3);
+            _tft.setTextColor(TFT_WHITE);
+            _tft.setCursor(17, posY - 7);
+            _tft.print("-");
+            _tft.setCursor(208, posY - 8);
+            _tft.print("+");
+            
+            // show key mapping profile
+            _tft.setTextFont(2); 
+            _tft.setTextSize(1);
+            _tft.setTextColor(TFT_BLACK, TFT_LIGHTGREY);   // TFT_WHITE
+            _tft.setCursor(64, posY + 11);   // 65     
 
-                if(emulationModeOverride > 0){
-                    _tft.print("[MAN] PROFILE ");
-                    _tft.print(emulationModeOverride); 
-                }
-                else{  // if override is 0
-                    _tft.print("[AUTO] PROFILE ");
-                    _tft.print(emulationMode);         
-                }
+            if(emulationModeOverride > 0){
+                _tft.print("[MAN] PROFILE ");
+                _tft.print(emulationModeOverride); 
             }
-        else if(mode == 2)// check touch fields, set redraw flag,  and return 0/1/2
-                {
-                        if(_lastTouchX > 1 && _lastTouchX < 50 && _lastTouchY > posY && _lastTouchY < posY + 40){         // minus button
-                            emulationModeOverride--  ;
-                            if(emulationModeOverride < 1) emulationModeOverride = 0;
-                            if(emulationModeOverride > 0) emulationMode = emulationModeOverride;
+            else{  // if override is 0
+                _tft.print("[AUTO] PROFILE ");
+                _tft.print(emulationMode);         
+            }
+        }
+    else if(mode == 2)// check touch fields, set redraw flag,  and return 0/1/2
+            {
+                    if(_lastTouchX > 1 && _lastTouchX < 50 && _lastTouchY > posY && _lastTouchY < posY + 40){         // minus button
+                        emulationModeOverride--  ;
+                        if(emulationModeOverride < 1) emulationModeOverride = 0;
+                        if(emulationModeOverride > 0) emulationMode = emulationModeOverride;
 
-                            return -1; 
-                         }
-                        else if(_lastTouchX > 199 && _lastTouchX < 241 && _lastTouchY > posY && _lastTouchY < posY + 40){  // plus button
-                            emulationModeOverride++;
-                            if(emulationModeOverride > 5) emulationModeOverride = 6;                                       // limit der profile im menu
-                            if(emulationModeOverride > 0) emulationMode = emulationModeOverride;
-                            
-                            return 1;
+                        return -1; 
                         }
-                    }  
+                    else if(_lastTouchX > 199 && _lastTouchX < 241 && _lastTouchY > posY && _lastTouchY < posY + 40){  // plus button
+                        emulationModeOverride++;
+                        if(emulationModeOverride > 5) emulationModeOverride = 6;                                       // limit der profile im menu
+                        if(emulationModeOverride > 0) emulationMode = emulationModeOverride;
+                        
+                        return 1;
+                    }
+                }  
 return 0;
 }
 

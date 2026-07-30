@@ -3,6 +3,28 @@
 //!   MAYBE SOME COMPONETS ARE NOT FULLY INTEGRATED
 //!   
 
+
+
+
+// ATTENTION if you are using clangd!
+
+// first, before you start and when you are using clangd intellisense instead of platformio+ms intellisense
+// it was a hard fight to get clean intellisense outputs. so much was red hinted. 
+// but clangd needs absolute paths and a file named "compile_commands.json". 
+// to generate it, use follwing command first in the terminal:
+// pio run -t compiledb
+// that will precompile for a short time and a python script does the work for you.
+// this is only once neccesarry. after that, you can check the existance of "compile_commands.json" in your preject root, next to the platformIO ini file.
+// if you are using vs-code+platformIO with MS C++ intellisense out of the box, you are fine. ignore this hint.
+
+
+
+
+
+
+
+
+
 // 31.1.2026
 // VALENTINES UPDATE. RGB ANIMATONS, NEW KEY SAMPLE METHODE WITH EMV SHIELD AGAINST RGB LED INTEREFERENCES.
 // 
@@ -52,6 +74,7 @@
 //!   In the future, we will see what the git hub and the pinball coder community will implement, or not. :-)
 
 
+#include <cstdint>
 #ifndef BUILD_NUMBER                      // sicherung falls in der platformIO das python skript die .build_number datei nicht lesen kann
  #define BUILD_NUMBER 0 
 #endif
@@ -493,13 +516,13 @@ const int RAW_0PCT = 2600;     // Platzhalter (raw adc!! wert messen)
 const int RAW_100PCT = 3200;   // Platzhalter (raw adc!! wert messen)
 int pct;
 if ((int32_t)avg <= RAW_0PCT) { pct = 0; } 
-  else if ((int32_t)avg >= RAW_100PCT) { pct = 100; } 
-  else { int32_t num = ((int32_t)avg - RAW_0PCT) * 100;
-int32_t denom = (RAW_100PCT - RAW_0PCT);
-pct = (int)(num / denom); // integer, aber völlig ausreichend }
-if (dbglvl) { Serial.print("ungefiltert. Prozent: "); Serial.println(pct);}
-return pct;
-  }
+else if ((int32_t)avg >= RAW_100PCT) { pct = 100; } 
+else { int32_t num = ((int32_t)avg - RAW_0PCT) * 100;
+       int32_t denom = (RAW_100PCT - RAW_0PCT);
+       pct = (int)(num / denom); // integer, aber völlig ausreichend }
+       if (dbglvl) { Serial.print("ungefiltert. Prozent: "); Serial.println(pct);}
+       return pct;
+    }
 }
 
 
@@ -691,14 +714,24 @@ void debugBLEStatus(const char* tag = "BLE")
     const bool    connected = connCnt > 0;
     const bool    advOn     = (adv && adv->isAdvertising());
 
-    if(dbglvl) Serial.printf("[%s] getAddress=%s, macAdress=%s, connected=%s, peers=%u, adv=%s, comp=%p, gp=%p, kb=%p\n",
-        tag,
-        NimBLEDevice::getAddress().toString().c_str(),
-        macAdress.c_str(), // macAdress.c_str()
-        connected ? "yes" : "no",
-        connCnt,
-        advOn ? "on" : "off");
+    // if(dbglvl) Serial.printf("[%s] getAddress=%s, macAdress=%s, connected=%s, peers=%u, adv=%s, comp=%p, gp=%p, kb=%p\n",
+    //     tag,
+    //     NimBLEDevice::getAddress().toString().c_str(),
+    //     macAdress.c_str(), // macAdress.c_str()
+    //     connected ? "yes" : "no",
+    //     connCnt,
+    //     advOn ? "on" : "off");
         
+    if(dbglvl) Serial.printf("[%s] getAddress=%s, macAdress=%s, connected=%s, peers=%u, adv=%s\n",
+    tag,
+    NimBLEDevice::getAddress().toString().c_str(),
+    macAdress.c_str(),
+    connected ? "yes" : "no",
+    connCnt,
+    advOn ? "on" : "off"
+    );
+
+
     if(dbglvl) Serial.printf("[%s] Connected: %s, Peers: %d, Advertising: %s, Handle: 0x%04X\n",
         tag,
         srv && srv->getConnectedCount() > 0 ? "YES" : "NO",
@@ -1177,7 +1210,7 @@ bool isGT911Connected() {
 // Plunger links (meta taste B)
 // input Mode 0 = release, 1 set
 void sendBTcommandPlungerLinks(bool inputMode){   // diese taste zuerst abfragen für multi button 500ms trick
-    if(dbglvl) Serial.printf("[%lu.%03lu] sendBTcommandPlungerLinks(bool inputMode) called- set report flag =true\n", milliTimeCopy/1000,milliTimeCopy%1000);         // debug
+    if(dbglvl) Serial.printf("[%lu.%03lu] sendBTcommandPlungerLinks(bool inputMode) called- set report flag =true\n", (unsigned long)milliTimeCopy/1000,(unsigned long) milliTimeCopy%1000);         // debug
     int8_t useMode = emulationMode;  
     if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
     if(inputMode){
@@ -1186,7 +1219,7 @@ void sendBTcommandPlungerLinks(bool inputMode){   // diese taste zuerst abfragen
             case 2: hid->gamepad->press(BUTTON_3);           gamepadSendReportFlag   = true;  break;  // android 5 = (Y)
             case 3: hid->gamepad->press(BUTTON_1);           gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->press(BUTTON_1);           gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->keyboard->keyPress(KEY_I);          keyboardSendReportFlag  = true;  break;  // switch
+            case 5: hid->keyboard->keyPress(KEY_I);          keyboardSendReportFlag  = true;  break;  // pinballFX 2026 meta
             case 6: hid->gamepad->press(BUTTON_2);           gamepadSendReportFlag   = true;  break;  // [verified] quest star wars pinball different keymap
            default: break;                                                                            // wird aufgerufen falls kein case getroffen wurde
         }
@@ -1197,7 +1230,7 @@ void sendBTcommandPlungerLinks(bool inputMode){   // diese taste zuerst abfragen
             case 2: hid->gamepad->release(BUTTON_3);         gamepadSendReportFlag   = true;  break;  // android 5 = (Y)
             case 3: hid->gamepad->release(BUTTON_1);         gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->release(BUTTON_1);         gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->keyboard->keyRelease(KEY_I);        keyboardSendReportFlag  = true;  break;  // pinballFX 2025
+            case 5: hid->keyboard->keyRelease(KEY_I);        keyboardSendReportFlag  = true;  break;  // pinballFX 2026 meta
             case 6: hid->gamepad->release(BUTTON_2);         gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
            default: break;                                                                            // wird aufgerufen falls kein case getroffen wurde
         }
@@ -1218,30 +1251,30 @@ void sendBTcommandPlungerRechts(bool inputMode){
                     case 2: hid->gamepad->press(BUTTON_1);    gamepadSendReportFlag   = true;  break;  // android 4 = (X)
                     case 3: hid->gamepad->press(BUTTON_1);    gamepadSendReportFlag   = true;  break;  // pc
                     case 4: hid->gamepad->press(BUTTON_1);    gamepadSendReportFlag   = true;  break;  // iphone
-                    case 5: hid->keyboard->keyPress(KEY_8);   keyboardSendReportFlag  = true;  break;  // switch
+                    case 5: hid->keyboard->keyPress(KEY_8);   keyboardSendReportFlag  = true;  break;  // pinballFX 2026 meta
                     case 6: hid->gamepad->press(BUTTON_1);    gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
                    default: break;                                                                     // wird aufgerufen falls kein case getroffen wurde
                 }
             }
-        else{
+    else{
                 switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
                     //case 0: gamepad.release(dbgGamePad); break;
                     case 1: hid->gamepad->release(BUTTON_1);  gamepadSendReportFlag   = true;  break;  // [release] quest
                     case 2: hid->gamepad->release(BUTTON_1);  gamepadSendReportFlag   = true;  break;  // android 4 = (X)
                     case 3: hid->gamepad->release(BUTTON_1);  gamepadSendReportFlag   = true;  break;  // pc
                     case 4: hid->gamepad->release(BUTTON_1);  gamepadSendReportFlag   = true;  break;  // iphone
-                    case 5: hid->keyboard->keyRelease(KEY_8); keyboardSendReportFlag  = true;  break;  // keyboard for pinballFX
+                    case 5: hid->keyboard->keyRelease(KEY_8); keyboardSendReportFlag  = true;  break;  // pinballFX 2026 meta
                     case 6: hid->gamepad->release(BUTTON_1);  gamepadSendReportFlag   = true;  break;  // [release] quest star wars pinball different keymap
-                   default: break;                                                                     // wird aufgerufen falls kein case getroffen wurde
-                }
+                    default: break;                                                                     // wird aufgerufen falls kein case getroffen wurde
             }
+        }
 }
 
 
 
 // 0 = release, 1 set
 void sendBTcommandPlungerRechtsSecondKey(bool inputMode){   
-    if(dbglvl) Serial.printf("[%lu.%03lu] sendBTcommandPlungerRechtsSecondKey called- set report flag =true\n", milliTimeCopy/1000,milliTimeCopy%1000);         // debug
+    if(dbglvl) Serial.printf("[%lu.%03lu] sendBTcommandPlungerRechtsSecondKey called- set report flag =true\n", (unsigned long)milliTimeCopy/1000, (unsigned long)milliTimeCopy%1000);         // debug
     int8_t useMode = emulationMode;  
     if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
     if(inputMode){
@@ -1251,22 +1284,22 @@ void sendBTcommandPlungerRechtsSecondKey(bool inputMode){
                     case 2: hid->gamepad->press(BUTTON_1);     gamepadSendReportFlag   = true;  break;  // android 4 = (X)
                     case 3: hid->gamepad->press(BUTTON_1);     gamepadSendReportFlag   = true;  break;  // pc
                     case 4: hid->gamepad->press(BUTTON_1);     gamepadSendReportFlag   = true;  break;  // iphone
-                    case 5: hid->gamepad->press(BUTTON_2);     gamepadSendReportFlag   = true;  break;  // switch
+                    case 5: hid->gamepad->press(BUTTON_2);     gamepadSendReportFlag   = true;  break;  // pinballFX 2026 meta
                     case 6: hid->gamepad->press(BUTTON_11);    gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap oder im game key bindings ändern, wird dann HAT pressed
                    default: break;                                                                      // wird aufgerufen falls kein case getroffen wurde
                 }
             }
-        else{
-                switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
-                    case 1: hid->gamepad->release(BUTTON_11);  gamepadSendReportFlag   = true;  break;  // quest
-                    case 2: hid->gamepad->release(BUTTON_1);   gamepadSendReportFlag   = true;  break;  // android 4 = (X)
-                    case 3: hid->gamepad->release(BUTTON_1);   gamepadSendReportFlag   = true;  break;  // pc
-                    case 4: hid->gamepad->release(BUTTON_1);   gamepadSendReportFlag   = true;  break;  // iphone
-                    case 5: hid->gamepad->release(BUTTON_2);   gamepadSendReportFlag   = true;  break;  // switch
-                    case 6: hid->gamepad->release(BUTTON_11);  gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
-                   default: break;                                                                      // wird aufgerufen falls kein case getroffen wurde
-                }
+    else{
+            switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
+                case 1: hid->gamepad->release(BUTTON_11);  gamepadSendReportFlag   = true;  break;  // quest
+                case 2: hid->gamepad->release(BUTTON_1);   gamepadSendReportFlag   = true;  break;  // android 4 = (X)
+                case 3: hid->gamepad->release(BUTTON_1);   gamepadSendReportFlag   = true;  break;  // pc
+                case 4: hid->gamepad->release(BUTTON_1);   gamepadSendReportFlag   = true;  break;  // iphone
+                case 5: hid->gamepad->release(BUTTON_2);   gamepadSendReportFlag   = true;  break;  // pinballFX 2026 meta
+                case 6: hid->gamepad->release(BUTTON_11);  gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
+                default: break;                                                                      // wird aufgerufen falls kein case getroffen wurde
             }
+        }
 }
 
 
@@ -1283,7 +1316,7 @@ void sendBTcommandFlipperLinks(bool inputMode){
             case 2: hid->gamepad->press(BUTTON_7);       gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->press(BUTTON_7);       gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->press(BUTTON_7);       gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->keyboard->keyPress(KEY_U);      keyboardSendReportFlag  = true;  break;  // keyboard "A"
+            case 5: hid->keyboard->keyPress(KEY_U);      keyboardSendReportFlag  = true;  break;  // keyboard "A" pinballFX 2026 meta
             case 6: hid->gamepad->press(BUTTON_7);       gamepadSendReportFlag   = true;  break;  // 9 quest star wars pinball different keymap [verified]
            default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
         }
@@ -1294,7 +1327,7 @@ void sendBTcommandFlipperLinks(bool inputMode){
             case 2: hid->gamepad->release(BUTTON_7);     gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->release(BUTTON_7);     gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->release(BUTTON_7);     gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->keyboard->keyRelease(KEY_U);    keyboardSendReportFlag  = true;  break;  // switch
+            case 5: hid->keyboard->keyRelease(KEY_U);    keyboardSendReportFlag  = true;  break;  // pinballFX 2026 meta
             case 6: hid->gamepad->release(BUTTON_7);     gamepadSendReportFlag   = true;  break;  // 9 quest star wars pinball different keymap
            default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
         }
@@ -1311,11 +1344,11 @@ void sendBTcommandFlipperLinksSecondKey(bool inputMode){
     if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
     if(inputMode){  // 1 set
         switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
-            case 1: hid->gamepad->setRZ(32767);           gamepadSendReportFlag   = true;  break;  // [verified] quest
+            case 1: hid->gamepad->setRZ(32767);                gamepadSendReportFlag   = true;  break;  // [verified] quest
             case 2: hid->gamepad->press(BUTTON_7);        gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->press(BUTTON_7);        gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->press(BUTTON_7);        gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->gamepad->press(BUTTON_7);        gamepadSendReportFlag   = true;  break;  // switch
+            case 5: hid->gamepad->press(BUTTON_7);        gamepadSendReportFlag   = true;  break;  // pinballFX 2026 meta
             case 6: hid->gamepad->press(BUTTON_15);       gamepadSendReportFlag   = true;  break;  // [BUTTON_15]+[R-HAT-PRESS][recenter view] (muss in starwars pinball auf quest in optionen auf HAT umgestellt werden!)
            default: break;                                                                         // wird aufgerufen falls kein case getroffen wurde
         }
@@ -1326,7 +1359,7 @@ void sendBTcommandFlipperLinksSecondKey(bool inputMode){
             case 2: hid->gamepad->release(BUTTON_7);      gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->release(BUTTON_7);      gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->release(BUTTON_7);      gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->gamepad->release(BUTTON_7);      gamepadSendReportFlag   = true;  break;  // switch
+            case 5: hid->gamepad->release(BUTTON_7);      gamepadSendReportFlag   = true;  break;  // pinballFX 2026 meta
             case 6: hid->gamepad->release(BUTTON_15);     gamepadSendReportFlag   = true;  break;  // [BUTTON_15]+[R-HAT-release][quest star wars pinball different keymap
            default: break;                                                                         // wird aufgerufen falls kein case getroffen wurde
         }
@@ -1350,7 +1383,7 @@ void sendBTcommandFlipperRechts(bool inputMode){
             case 2: hid->gamepad->press(BUTTON_8);        gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->press(BUTTON_8);        gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->press(BUTTON_8);        gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->keyboard->keyPress(KEY_6);       keyboardSendReportFlag  = true;  break;  // keyboard for pinballFX
+            case 5: hid->keyboard->keyPress(KEY_6);       keyboardSendReportFlag  = true;  break;  // keyboard for pinballFX 2026 meta
             case 6: hid->gamepad->press(BUTTON_8);        gamepadSendReportFlag   = true;  break;  // [8][10] [verified] quest star wars pinball different keymap
            default: break;                                                                         // wird aufgerufen falls kein case getroffen wurde 
         }
@@ -1362,7 +1395,7 @@ void sendBTcommandFlipperRechts(bool inputMode){
             case 2: hid->gamepad->release(BUTTON_8);      gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->release(BUTTON_8);      gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->release(BUTTON_8);      gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->keyboard->keyRelease(KEY_6);     keyboardSendReportFlag  = true;  break;  // keyboard for pinballFX
+            case 5: hid->keyboard->keyRelease(KEY_6);     keyboardSendReportFlag  = true;  break;  // keyboard for pinballFX 2026 meta
             case 6: hid->gamepad->release(BUTTON_8);      gamepadSendReportFlag   = true;  break;  // [8][10] [release]] star wars pinball different keymap
            default: break;                                                                         // wird aufgerufen falls kein case getroffen wurde
         }
@@ -1384,7 +1417,7 @@ void sendBTcommandFlipperRechtsSecondKey(bool inputMode){
             case 2: hid->gamepad->press(BUTTON_8);       gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->press(BUTTON_8);       gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->press(BUTTON_8);       gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->gamepad->press(BUTTON_8);       gamepadSendReportFlag   = true;  break;  // switch
+            case 5: hid->gamepad->press(BUTTON_8);       gamepadSendReportFlag   = true;  break;  // pinballFX 2026 meta
             case 6: hid->gamepad->press(BUTTON_8);       gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
            default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
         }
@@ -1395,7 +1428,7 @@ void sendBTcommandFlipperRechtsSecondKey(bool inputMode){
             case 2: hid->gamepad->release(BUTTON_8);     gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->release(BUTTON_8);     gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->release(BUTTON_8);     gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->gamepad->release(BUTTON_8);     gamepadSendReportFlag   = true;  break;  // switch
+            case 5: hid->gamepad->release(BUTTON_8);     gamepadSendReportFlag   = true;  break;  // pinballFX 2026 meta
             case 6: hid->gamepad->release(BUTTON_8);     gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
            default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
         }
@@ -1419,7 +1452,7 @@ void sendBTcommandTiltFront(bool inputMode, int analogValue ){
                 case 2: gamepadYfinal =-analogValue;                                  gamepadSendReportFlag   = true;  break;  // android
                 case 3: gamepadYfinal =-analogValue;                                  gamepadSendReportFlag   = true;  break;  // pc
                 case 4: gamepadYfinal =-analogValue;                                  gamepadSendReportFlag   = true;  break;  // iphone
-                case 5: hid->keyboard->keyPress(KEY_A);                               keyboardSendReportFlag  = true;  break;  // Keyboard Nudge A-up oder S-down testen
+                case 5: hid->keyboard->keyPress(KEY_A);                               keyboardSendReportFlag  = true;  break;  // Keyboard Nudge A-up oder S-down testen pinballFX 2026 meta
                 case 6: gamepadYfinal =-analogValue;                                  gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
                default: break;                                                                                                 // wird aufgerufen falls kein case getroffen wurde
             }
@@ -1431,7 +1464,7 @@ void sendBTcommandTiltFront(bool inputMode, int analogValue ){
                 case 2: gamepadYfinal = 0;                                            gamepadSendReportFlag   = true;  break;  // android
                 case 3: gamepadYfinal = 0;                                            gamepadSendReportFlag   = true;  break;  // pc
                 case 4: gamepadYfinal = 0;                                            gamepadSendReportFlag   = true;  break;  // iphone
-                case 5: hid->keyboard->keyRelease(KEY_A);                             keyboardSendReportFlag  = true;  break;  // Keyboard Nudge A-up oder S-down testen
+                case 5: hid->keyboard->keyRelease(KEY_A);                             keyboardSendReportFlag  = true;  break;  // Keyboard Nudge A-up oder S-down testen pinballFX 2026 meta
                 case 6: gamepadYfinal = 0;                                            gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
                default: break;                                                                                                 // wird aufgerufen falls kein case getroffen wurde 
             }
@@ -1453,7 +1486,7 @@ void sendBTcommandTiltLeft(bool inputMode, int analogValue){
                 case 2: hid->gamepad->setLeftThumb(-analogValue,0);                   gamepadSendReportFlag   = true; break;  // android
                 case 3: hid->gamepad->setLeftThumb(0,-analogValue);                   gamepadSendReportFlag   = true; break;  // pc
                 case 4: hid->gamepad->setLeftThumb(0,-analogValue);                   gamepadSendReportFlag   = true; break;  // iphone
-                case 5: hid->keyboard->keyPress(KEY_F);                               keyboardSendReportFlag  = true; break;  // PinballFX 2025
+                case 5: hid->keyboard->keyPress(KEY_F);                               keyboardSendReportFlag  = true; break;  // pinballFX 2026 meta
                 case 6: hid->gamepad->setLeftThumb(analogValue,0);                    gamepadSendReportFlag   = true; break;  // quest star wars pinball different keymap
                default: break;                                                                                                // wird aufgerufen falls kein case getroffen wurde
             }
@@ -1464,7 +1497,7 @@ void sendBTcommandTiltLeft(bool inputMode, int analogValue){
                 case 2: hid->gamepad->setLeftThumb(0,0);                              gamepadSendReportFlag   = true; break;  // android
                 case 3: hid->gamepad->setLeftThumb(0,0);                              gamepadSendReportFlag   = true; break;  // pc
                 case 4: hid->gamepad->setLeftThumb(0,0);                              gamepadSendReportFlag   = true; break;  // iphone
-                case 5: hid->keyboard->keyRelease(KEY_F);                             keyboardSendReportFlag  = true; break;  // switch   keyboard->keyRelease(KEY_F);
+                case 5: hid->keyboard->keyRelease(KEY_F);                             keyboardSendReportFlag  = true; break;  // pinballFX 2026 meta   keyboard->keyRelease(KEY_F);
                 case 6: hid->gamepad->setLeftThumb(0,0);                              gamepadSendReportFlag   = true; break;  // quest star wars pinball different keymap
                default: break;                                                                                                // wird aufgerufen falls kein case getroffen wurde
             }
@@ -1485,7 +1518,7 @@ void sendBTcommandTiltRight(bool inputMode, int analogValue){ // nudge/side bump
             case 2: hid->gamepad->setLeftThumb(-analogValue,0);                      gamepadSendReportFlag   = true; break;  // android
             case 3: hid->gamepad->setLeftThumb(-analogValue,0);                      gamepadSendReportFlag   = true; break;  // pc
             case 4: hid->gamepad->setLeftThumb(-analogValue,0);                      gamepadSendReportFlag   = true; break;  // iphone
-            case 5: hid->keyboard->keyPress(KEY_D);                                  keyboardSendReportFlag  = true; break;  // keyboard D for pinballFX
+            case 5: hid->keyboard->keyPress(KEY_D);                                  keyboardSendReportFlag  = true; break;  // keyboard D for pinballFX 2026 meta
             case 6: hid->gamepad->setLeftThumb(-analogValue,0);                      gamepadSendReportFlag   = true; break;  // quest star wars pinball different keymap
            default: break;                                                                                                   // wird aufgerufen falls kein case getroffen wurde
         }
@@ -1496,7 +1529,7 @@ void sendBTcommandTiltRight(bool inputMode, int analogValue){ // nudge/side bump
             case 2: hid->gamepad->setLeftThumb(0,0);                                 gamepadSendReportFlag   = true; break;  // android
             case 3: hid->gamepad->setLeftThumb(0,0);                                 gamepadSendReportFlag   = true; break;  // pc
             case 4: hid->gamepad->setLeftThumb(0,0);                                 gamepadSendReportFlag   = true; break;  // iphone
-            case 5: hid->keyboard->keyRelease(KEY_D);                                keyboardSendReportFlag  = true; break;  // keyboard D for pinballFX
+            case 5: hid->keyboard->keyRelease(KEY_D);                                keyboardSendReportFlag  = true; break;  // keyboard D for pinballFX 2026 meta
             case 6: hid->gamepad->setLeftThumb(0,0);                                 gamepadSendReportFlag   = true; break;  // quest star wars pinball different keymap
            default: break;                                                                                                   // wird aufgerufen falls kein case getroffen wurde
         }
@@ -1520,7 +1553,7 @@ void sendBTcommandAngleTiltButtonLeft(bool inputMode, int analogValue = 0){
                 case 2: hid->gamepad->setLeftThumb(-analogValue,0);   gamepadSendReportFlag   = true;  break; // android
                 case 3: hid->gamepad->press(BUTTON_1);                gamepadSendReportFlag   = true;  break; // pc
                 case 4: hid->gamepad->press(BUTTON_1);                gamepadSendReportFlag   = true;  break; // iphone
-                case 5: hid->gamepad->press(BUTTON_2);                gamepadSendReportFlag   = true;  break; // switch
+                case 5: hid->gamepad->press(BUTTON_2);                gamepadSendReportFlag   = true;  break; // pinballFX 2026 meta
                 case 6: hid->gamepad->setLeftThumb(-analogValue,0);   gamepadSendReportFlag   = true;  break; // quest star wars pinball different keymap
                default: break;                                                                                // wird aufgerufen falls kein case getroffen wurde
             }
@@ -1531,7 +1564,7 @@ void sendBTcommandAngleTiltButtonLeft(bool inputMode, int analogValue = 0){
                 case 2: hid->gamepad->setLeftThumb(0,0);              gamepadSendReportFlag   = true;  break;  // android
                 case 3: hid->gamepad->release(BUTTON_1);              gamepadSendReportFlag   = true;  break;  // pc
                 case 4: hid->gamepad->release(BUTTON_1);              gamepadSendReportFlag   = true;  break;  // iphone
-                case 5: hid->gamepad->release(BUTTON_2);              gamepadSendReportFlag   = true;  break;  // keyboard pinball fx 2025
+                case 5: hid->gamepad->release(BUTTON_2);              gamepadSendReportFlag   = true;  break;  // keyboard pinballFX 2026 meta
                 case 6: hid->gamepad->release(BUTTON_2);              gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
                default: break;                                                                                 // wird aufgerufen falls kein case getroffen wurde
             }
@@ -1549,11 +1582,11 @@ void sendBTcommandAngleTiltButtonRight(bool inputMode, int analogValue = 0){
     if(dbglvl  > 0 )Serial.printf("sendBTcommandAngleTiltButtonRight(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
     if(inputMode){
         switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
-            case 1: hid->gamepad->setHat(2);                          gamepadSendReportFlag   = true;  break;  // [verified] android
-            case 2: hid->gamepad->setLeftThumb(analogValue,0);        gamepadSendReportFlag   = true;  break;  // android
+            case 1: hid->gamepad->setHat(2);                           gamepadSendReportFlag   = true;  break;  // [verified] android
+            case 2: hid->gamepad->setLeftThumb(analogValue,0);              gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->press(BUTTON_1);                    gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->press(BUTTON_1);                    gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->gamepad->press(BUTTON_2);                    gamepadSendReportFlag   = true;  break;  // switch
+            case 5: hid->gamepad->press(BUTTON_2);                    gamepadSendReportFlag   = true;  break;  // pinballFX 2026 meta
             case 6: hid->gamepad->press(BUTTON_2);                    gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
            default: break;                                                                                     // wird aufgerufen falls kein case getroffen wurde
         }
@@ -1561,10 +1594,10 @@ void sendBTcommandAngleTiltButtonRight(bool inputMode, int analogValue = 0){
     else{
         switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
             case 1: hid->gamepad->setHat(8);                          gamepadSendReportFlag   = true;  break;  // [release] quest
-            case 2: hid->gamepad->setLeftThumb(0,0);                  gamepadSendReportFlag   = true;  break;  // android
+            case 2: hid->gamepad->setLeftThumb(0,0);                        gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->release(BUTTON_1);                  gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->release(BUTTON_1);                  gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->gamepad->release(BUTTON_2);                  gamepadSendReportFlag   = true;  break;  // switch
+            case 5: hid->gamepad->release(BUTTON_2);                  gamepadSendReportFlag   = true;  break;  // pinballFX 2026 meta
             case 6: hid->gamepad->release(BUTTON_2);                  gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
            default: break;                                                                                     // wird aufgerufen falls kein case getroffen wurde
         }
@@ -1582,22 +1615,22 @@ void sendBTcommandAngleTiltButtonUp(bool inputMode, int analogValue = 0){
     //if(dbglvl  > 0 )Serial.printf("sendBTcommandAngleTiltButtonUp(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values.   
     if(inputMode){
         switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
-            case 1: hid->gamepad->setHat(0);                          gamepadSendReportFlag   = true;  break;  // [verified] quest
+            case 1: hid->gamepad->setHat(0);                    gamepadSendReportFlag   = true;  break;  // [verified] quest
             case 2: hid->gamepad->setLeftThumb(0,-analogValue);       gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->setLeftThumb(0,-analogValue);       gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->setLeftThumb(0,-analogValue);       gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->gamepad->setLeftThumb(0,-analogValue);       gamepadSendReportFlag   = true;  break;  // switch
+            case 5: hid->gamepad->setLeftThumb(0,-analogValue);       gamepadSendReportFlag   = true;  break;  // pinballFX 2026 meta
             case 6: hid->gamepad->setLeftThumb(0,-analogValue);       gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
            default: break;                                                                                     // wird aufgerufen falls kein case getroffen wurde
         }
     }
     else{
         switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
-            case 1: hid->gamepad->setHat(8);                          gamepadSendReportFlag   = true;  break;  // [release] quest  release, set d-pad to neutral (0x08)
+            case 1: hid->gamepad->setHat(8);                     gamepadSendReportFlag   = true;  break;  // [release] quest  release, set d-pad to neutral (0x08)
             case 2: hid->gamepad->setLeftThumb(0,0);                  gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->setLeftThumb(0,0);                  gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->setLeftThumb(0,0);                  gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->gamepad->setLeftThumb(0,0);                  gamepadSendReportFlag   = true;  break;  // switch
+            case 5: hid->gamepad->setLeftThumb(0,0);                  gamepadSendReportFlag   = true;  break;  // pinballFX 2026 meta
             case 6: hid->gamepad->setLeftThumb(0,0);                  gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
            default: break;                                                                                     // wird aufgerufen falls kein case getroffen wurde
         }
@@ -1614,90 +1647,31 @@ void sendBTcommandAngleTiltButtonDown(bool inputMode, int analogValue = 0){ // 4
     if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
     if(inputMode){
         switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
-            case 1: hid->gamepad->setHat(4);                           gamepadSendReportFlag   = true;  break;  // [verified] quest
+            case 1: hid->gamepad->setHat(4);                      gamepadSendReportFlag   = true;  break;  // [verified] quest
             case 2: hid->gamepad->setLeftThumb(0,analogValue);         gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->setLeftThumb(0,analogValue);         gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->setLeftThumb(0,analogValue);         gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->gamepad->setLeftThumb(0,analogValue);         gamepadSendReportFlag   = true;  break;  // switch
+            case 5: hid->gamepad->setLeftThumb(0,analogValue);         gamepadSendReportFlag   = true;  break;  // pinballFX 2026 meta
             case 6: hid->gamepad->setLeftThumb(0,analogValue);         gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
            default: break;                                                                                      // wird aufgerufen falls kein case getroffen wurde
         }
     }
     else{
         switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
-            case 1: hid->gamepad->setHat(8);                           gamepadSendReportFlag   = true;  break;  // [release] quest  release, set d-pad to neutral (0x08)
+            case 1: hid->gamepad->setHat(8);                     gamepadSendReportFlag   = true;  break;  // [release] quest  release, set d-pad to neutral (0x08)
             case 2: hid->gamepad->setLeftThumb(0,0);                   gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->setLeftThumb(0,0);                   gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->setLeftThumb(0,0);                   gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->gamepad->setLeftThumb(0,0);                   gamepadSendReportFlag   = true;  break;  // switch
+            case 5: hid->gamepad->setLeftThumb(0,0);                   gamepadSendReportFlag   = true;  break;  // pinballFX 2026 meta
             case 6: hid->gamepad->setLeftThumb(0,0);                   gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
            default: break;                                                                                      // wird aufgerufen falls kein case getroffen wurde
         }
     }
 }
 
-// Action Key (ist normal X-Key auf dem meta controller) ich verwende ihn z.b. für den funkbutton
-// input Mode 0 = release, 1 set
-void sendBTcommandActionKey(bool inputMode){   
-    if(dbglvl) Serial.printf("[%lu.%03lu] sendBTcommandActionKey called- set report flag =true\n", milliTimeCopy/1000,milliTimeCopy%1000);         // debug
-    int8_t useMode = emulationMode;  
-    if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
-    if(inputMode){
-        switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
-            case 1: hid->gamepad->press(BUTTON_2);       gamepadSendReportFlag   = true;  break;  // [verified] quest 
-            case 2: hid->gamepad->press(BUTTON_3);       gamepadSendReportFlag   = true;  break;  // android 5 = (Y)
-            case 3: hid->gamepad->press(BUTTON_1);       gamepadSendReportFlag   = true;  break;  // pc
-            case 4: hid->gamepad->press(BUTTON_1);       gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->keyboard->keyPress(KEY_5);      keyboardSendReportFlag  = true;  break;  // switch
-            case 6: hid->gamepad->press(BUTTON_2);       gamepadSendReportFlag   = true;  break;  // [verified] quest star wars pinball different keymap
-           default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
-        }
-    }
-    else{
-        switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
-            case 1: hid->gamepad->release(BUTTON_2);     gamepadSendReportFlag   = true;  break;  // [release] quest
-            case 2: hid->gamepad->release(BUTTON_3);     gamepadSendReportFlag   = true;  break;  // android 5 = (Y)
-            case 3: hid->gamepad->release(BUTTON_1);     gamepadSendReportFlag   = true;  break;  // pc
-            case 4: hid->gamepad->release(BUTTON_1);     gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->keyboard->keyRelease(KEY_5);    keyboardSendReportFlag  = true;  break;  // pinballFX 2025
-            case 6: hid->gamepad->release(BUTTON_2);     gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
-           default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
-        }
-    }
-}
-
-void sendBTcommandActionKeySecondKey(bool inputMode){   
-    if(dbglvl) Serial.printf("[%lu.%03lu] sendBTcommandActionKeySecondKey called- set report flag =true\n", milliTimeCopy/1000,milliTimeCopy%1000);         // debug
-    int8_t useMode = emulationMode;  
-    if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
-    if(inputMode){
-        switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
-            case 1: hid->gamepad->press(BUTTON_2);       gamepadSendReportFlag   = true;  break;  // [verified] quest 
-            case 2: hid->gamepad->press(BUTTON_3);       gamepadSendReportFlag   = true;  break;  // android 5 = (Y)
-            case 3: hid->gamepad->press(BUTTON_1);       gamepadSendReportFlag   = true;  break;  // pc
-            case 4: hid->gamepad->press(BUTTON_1);       gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->keyboard->keyPress(KEY_5);      keyboardSendReportFlag  = true;  break;  // switch
-            case 6: hid->gamepad->press(BUTTON_2);       gamepadSendReportFlag   = true;  break;  // [verified] quest star wars pinball different keymap
-           default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
-        }
-    }
-    else{
-        switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
-            case 1: hid->gamepad->release(BUTTON_2);     gamepadSendReportFlag   = true;  break;  // [release] quest
-            case 2: hid->gamepad->release(BUTTON_3);     gamepadSendReportFlag   = true;  break;  // android 5 = (Y)
-            case 3: hid->gamepad->release(BUTTON_1);     gamepadSendReportFlag   = true;  break;  // pc
-            case 4: hid->gamepad->release(BUTTON_1);     gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->keyboard->keyRelease(KEY_5);    keyboardSendReportFlag  = true;  break;  // pinballFX 2025
-            case 6: hid->gamepad->release(BUTTON_2);     gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
-           default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
-        }
-    }
-}
 
 
-
-
-// ESPNOW foot pedal datareceiver
+// ESPNOW foot pedal datareceiver for the "action key" in challange modes. (x button on the meta quest controller in game)
 void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   // Quick and dirty.... Nur akzeptieren, wenn Länge exakt passt
   // TODO: bestätigungs system mit time stamps
@@ -1728,6 +1702,73 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     // }
 }
 }
+
+
+
+// Action Key (ist normal X-Key auf dem meta controller) ich verwende ihn z.b. für den funkbutton
+// input Mode 0 = release, 1 set
+void sendBTcommandActionKey(bool inputMode){   
+    if(dbglvl) Serial.printf("[%lu.%03lu] sendBTcommandActionKey called- set report flag =true\n", (unsigned long)milliTimeCopy/1000,(unsigned long)milliTimeCopy%1000);         // debug
+    // int8_t useMode = emulationMode;  
+    // if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
+    if(dbglvl) Serial.printf("sendBTcommandActionKey(inputMode=%d , emulationMode=%d)",inputMode,emulationMode);
+    if(inputMode){
+        switch (emulationMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
+            case 1: hid->gamepad->press(BUTTON_4);       gamepadSendReportFlag   = true;  break;  // [verified] quest 
+            case 2: hid->gamepad->press(BUTTON_3);       gamepadSendReportFlag   = true;  break;  // android 5 = (Y)
+            case 3: hid->gamepad->press(BUTTON_1);       gamepadSendReportFlag   = true;  break;  // pc
+            case 4: hid->gamepad->press(BUTTON_1);       gamepadSendReportFlag   = true;  break;  // iphone
+            case 5: hid->keyboard->keyPress(KEY_5);         keyboardSendReportFlag  = true;  break;  // pinballFX 2026 meta
+            case 6: hid->gamepad->press(BUTTON_2);       gamepadSendReportFlag   = true;  break;  // [verified] quest star wars pinball different keymap
+           default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
+        }
+    }
+    else{
+        switch (emulationMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
+            case 1: hid->gamepad->release(BUTTON_4);     gamepadSendReportFlag   = true;  break;  // [release] quest
+            case 2: hid->gamepad->release(BUTTON_3);     gamepadSendReportFlag   = true;  break;  // android 5 = (Y)
+            case 3: hid->gamepad->release(BUTTON_1);     gamepadSendReportFlag   = true;  break;  // pc
+            case 4: hid->gamepad->release(BUTTON_1);     gamepadSendReportFlag   = true;  break;  // iphone
+            case 5: hid->keyboard->keyRelease(KEY_5);       keyboardSendReportFlag  = true;  break;  // pinballFX 2025
+            case 6: hid->gamepad->release(BUTTON_2);     gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
+           default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
+        }
+    }
+}
+
+void sendBTcommandActionKeySecondKey(bool inputMode){   
+    if(dbglvl) Serial.printf("[%lu.%03lu] sendBTcommandActionKeySecondKey called- set report flag =true\n", (unsigned long)(milliTimeCopy/1000), (unsigned long)(milliTimeCopy%1000));
+    int8_t useMode = emulationMode;  
+    if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
+    if(dbglvl) Serial.printf("sendBTcommandActionKey(inputMode=%d)",inputMode);
+    if(inputMode){
+        switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
+            case 1: hid->gamepad->press(BUTTON_6);       gamepadSendReportFlag   = true;  break;  // [verified] quest 
+            case 2: hid->gamepad->press(BUTTON_3);       gamepadSendReportFlag   = true;  break;  // android 5 = (Y)
+            case 3: hid->gamepad->press(BUTTON_1);       gamepadSendReportFlag   = true;  break;  // pc
+            case 4: hid->gamepad->press(BUTTON_1);       gamepadSendReportFlag   = true;  break;  // iphone
+            case 5: hid->keyboard->keyPress(KEY_5);         keyboardSendReportFlag  = true;  break;  // pinballFX 2026 meta
+            case 6: hid->gamepad->press(BUTTON_2);       gamepadSendReportFlag   = true;  break;  // [verified] quest star wars pinball different keymap
+           default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
+        }
+    }
+    else{
+        switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
+            case 1: hid->gamepad->release(BUTTON_6);     gamepadSendReportFlag   = true;  break;  // [release] quest
+            case 2: hid->gamepad->release(BUTTON_3);     gamepadSendReportFlag   = true;  break;  // android 5 = (Y)
+            case 3: hid->gamepad->release(BUTTON_1);     gamepadSendReportFlag   = true;  break;  // pc
+            case 4: hid->gamepad->release(BUTTON_1);     gamepadSendReportFlag   = true;  break;  // iphone
+            case 5: hid->keyboard->keyRelease(KEY_5);    keyboardSendReportFlag  = true;  break;     // pinballFX 2026 meta
+            case 6: hid->gamepad->release(BUTTON_2);     gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
+           default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
+        }
+    }
+}
+
+
+
+
+
 
 void serialWelcomeMessage(){
                             Serial.println(F("  ___  ___ _ _ _ ___ ___  ___ "));
@@ -1865,71 +1906,7 @@ if (esp_now_add_peer(&peerInfo) != ESP_OK) {
         if(dbglvl>1) Serial.println("ERROR: GT911 not found on I2C bus!");
     }
     
-
-    // // Sensor Setup
-    // if(dbglvl>1) Serial.println("Initializing Gyro Sensor...");
-      
-    //   Wire.begin(I2C_SDA, I2C_SCL, 1000000);
-    //   delay(50);
-
-    //   // BMI160 Initialisierung 
-    //   // 1. Hardware-Reset (optional, aber sauber), falls man im programm noch mal neu kalibrieren will, vllt nützlich
-    //   Wire.beginTransmission(BMI160_ADDR);
-    //   Wire.write(0x7E);
-    //   Wire.write(0xB6); // Softreset
-    //   Wire.endTransmission();
-    //   delay(50);
-    
-    //   Wire.beginTransmission(BMI160_ADDR);     // SetAccelFilter first!!! TIEFPASSFILTER INTERNAL in BMI160
-    //   Wire.write(0x40);                        // Accel Config Register
-    //   Wire.write(0b00001011);                  // ODR=200Hz, BW=0b1011 (OSR4, ~200Hz Cutoff) //BW=0b1100 (NORMAL_AVG4, ~62.5Hz Cutoff),0b1000: OSR4 (höchste Bandbreite), 0b1111: OSR2 (stärkste Filterung)
-    //   Wire.endTransmission();
-    //   delay(50);
-      
-    //   Wire.beginTransmission(BMI160_ADDR);
-    //   Wire.write(0x7E);     // CMD-Register
-    //   Wire.write(0x11);     // Accel normal mode
-    //   Wire.endTransmission();
-    //   delay(50);
-    
-    //   Wire.beginTransmission(BMI160_ADDR);
-    //   Wire.write(0x7E); 
-    //   Wire.write(0x15);     // Gyro normal mode
-    //   Wire.endTransmission();
-    //   delay(50);
-      
-    //   Wire.beginTransmission(BMI160_ADDR);
-    //   Wire.write(0x41);
-    //   Wire.write(0x0F);     // Accel-Range ±16G (Register 0x41: 0x0F)
-    //   Wire.endTransmission();
-    //   delay(50);
-      
-    //   Wire.beginTransmission(BMI160_ADDR);
-    //   Wire.write(0x43);
-    //   Wire.write(0x00);     // Gyro-Range 250DPS (Register 0x43: 0x00)
-    //   Wire.endTransmission();
-    //   delay(50);
-    
-    //   // Auto-Kalibrierung (Accel)
-    //   Wire.beginTransmission(BMI160_ADDR);
-    //   Wire.write(0x7E);
-    //   Wire.write(0x37);     // Accel Offset Kalibrierung
-    //   Wire.endTransmission();
-    //   delay(500);
-    
-    // power_mutex = xSemaphoreCreateMutex();   // Multitask Mutex für den Sensor
-    // xTaskCreatePinnedToCore(
-    //   sensorTask,
-    //   "SensorTask",
-    //   TASK_STACK,
-    //   NULL,
-    //   TASK_PRIORITY,
-    //   NULL,
-    //   0
-    // );
-    
-    //   if(dbglvl>1) Serial.println("Initialisierung abgeschlossen");
-   
+  
      
     // UI mit Gamepad verknüpfen
     ui->begin();           // Jetzt ist ui initialisiert
@@ -1962,15 +1939,8 @@ RGB_animation(1, 1000, 150);
 delay(2000);
 // Halte das Setup hier fest, bis die Animation durchgelaufen ist, lass aber die andere cpu ihren dienst machen. deshalb kein delay
 
-// while(AnimationIsRunning) {
-//     milliTimeCopy = millis(); // WICHTIG: Zeit für die Logik aktualisieren
-//     RGB_animation();          // Frame berechnen und strip.Show() ausführen
-//     delay(1);                 // Kleines Delay für den Watchdog-Timer (WDT)
-// }
 
-
-
-      // BMI160 Initialisierung 
+// BMI160 Initialisierung 
       // 1. Hardware-Reset (optional, aber sauber), falls man im programm noch mal neu kalibrieren will, vllt nützlich
       Wire.beginTransmission(BMI160_ADDR);
       Wire.write(0x7E);
@@ -2072,101 +2042,56 @@ void loop() {
 
     _isBleConnected = isBleConnected();
     milliTimeCopy = millis();           // to reduce traffic to the millis() function and for consistence  
-    // loopStartTime = milliTimeCopy;   // Startzeit der aktuellen Loop. loopStartTime nur für benchmark nehmen.
-    
-    //lastLoopTime = loopStartTime - lastLoopStartTime;  // Zeit seit letzter Loop benchmark berechnen (nur für benchmark benutzen!!)
-    //lastLoopStartTime = milliTimeCopy;// Aktuelle Startzeit für nächsten Durchlauf speichern. benchmark   
     
     gamepadSendReportFlag   = false;    // damit nur ein report pro schleife gesendet wird, auch wenn mehrere änderungen auftreten
     keyboardSendReportFlag  = false;    // damit nur ein report pro schleife gesendet wird, auch wenn mehrere änderungen auftreten
 
 
-// touch time trap evtl komplett mit ins ins ui timetrap. touch ist eh immer kleiner als ui intervall. spart zyklen im main loop. testen. benchmark 
-// >>>>> Time Trap 20-200 ms  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    
-// mit throttle   
-// if (processTouchTimeFlag <= milliTimeCopy) {
-    
-//     // Wenn die Zeit seit dem letzten Touch > 10 Sek ist -> 500ms, sonst 20ms
-//     uint16_t nextInterval = (milliTimeCopy - lastTouchActivityTimerFlag > touchThrottleTimeout) ? 500 : processTouchInterval;
-//     processTouchTimeFlag  =  milliTimeCopy + nextInterval + processTouchRepeatBlockerPerMenu ;  // so kann man easy 0-1000 ms in submenus aktivieren um bouncen zu reduzieren ohne zu tief in die logik rein zu gehen. 
-
-//     if (touch.touched(GT911_MODE_POLLING) > 0) {
-//         GTPoint point = touch.getPoint(0);
+    if (processTouchTimeFlag <= milliTimeCopy) {
         
-//         bool hasMoved = (abs(point.x - _cachedTouchX) > touchHysteresis) || (abs(point.y - _cachedTouchY) > touchHysteresis);
+        // 1. Intervall bestimmen: Wenn innerhalb der letzten 4 Sek. Aktivität war -> Turbo (20ms)
+        uint16_t currentInterval = (milliTimeCopy - lastTouchActivityTimerFlag <= touchThrottleTimeout) 
+                                ? processTouchIntervalSpeed 
+                                : processTouchIntervalThrottle;
 
-//         if (hasMoved || processTouchNextKeyTimeFlag <= milliTimeCopy) {
-//             _lastTouchX = point.x;
-//             _lastTouchY = point.y;
-//             _cachedTouchX = point.x;
-//             _cachedTouchY = point.y;
-//             _touchDetected = true;
+        // Zeit für die nächste Abfrage setzen (inkl. Menü-Latenz-Modifier)
+        processTouchTimeFlag = milliTimeCopy + currentInterval + processTouchRepeatBlockerPerMenu;
 
-//             processTouchNextKeyTimeFlag = milliTimeCopy + 200;   // takt rate wenn man mit dem finger leichte bewegungen auf dem button macht
+        // 2. Hardware-Abfrage nur im gewählten Intervall
+        if (touch.touched(GT911_MODE_POLLING) > 0) {
+            GTPoint point = touch.getPoint(0);
             
-//             // NUR HIER setzen wir den Aktivitäts-Timer zurück
-//             lastTouchActivityTimerFlag  = milliTimeCopy;
+            // Hysterese-Check: Hat sich der Finger bewegt?
+            bool hasMoved = (abs(point.x - _cachedTouchX) > touchHysteresis) || 
+                            (abs(point.y - _cachedTouchY) > touchHysteresis);
 
-//             if(dbglvl) Serial.printf("[TOUCH] X:%d Y:%d | Mode: HighSpeed\n", _lastTouchX, _lastTouchY);
-            
-//             // Deine originalen Timer-Resets (die bleiben natürlich!)
-//             ledTimeOffMillis  = milliTimeCopy + (uint32_t)ledTimeOff  * 1000;
-//             stdMenuTimeMillis = milliTimeCopy + (uint32_t)stdMenuTime * 1000;
-//             sleepTimerMillis  = milliTimeCopy + (uint32_t)sleepTimer  * 60000;
-//         }
-//     } else {
-//         _cachedTouchX = -1;
-//         _cachedTouchY = -1;
-        
-//     }
-// }
+            // 3. Trigger-Logik: Entweder Bewegung ODER Auto-Repeat Timer abgelaufen
+            if (hasMoved || (milliTimeCopy >= processTouchNextKeyTimeFlag)) {
+                
+                // Werte speichern
+                _lastTouchX = point.x;
+                _lastTouchY = point.y;
+                _cachedTouchX = point.x;
+                _cachedTouchY = point.y;
+                _touchDetected = true;
 
+                // Timer für Auto-Repeat (200ms) und Turbo-Modus Aktivität (4000ms)
+                processTouchNextKeyTimeFlag = milliTimeCopy + processTouchNextKeyDelay;
+                lastTouchActivityTimerFlag  = milliTimeCopy;
 
-if (processTouchTimeFlag <= milliTimeCopy) {
-    
-    // 1. Intervall bestimmen: Wenn innerhalb der letzten 4 Sek. Aktivität war -> Turbo (20ms)
-    uint16_t currentInterval = (milliTimeCopy - lastTouchActivityTimerFlag <= touchThrottleTimeout) 
-                               ? processTouchIntervalSpeed 
-                               : processTouchIntervalThrottle;
-
-    // Zeit für die nächste Abfrage setzen (inkl. Menü-Latenz-Modifier)
-    processTouchTimeFlag = milliTimeCopy + currentInterval + processTouchRepeatBlockerPerMenu;
-
-    // 2. Hardware-Abfrage nur im gewählten Intervall
-    if (touch.touched(GT911_MODE_POLLING) > 0) {
-        GTPoint point = touch.getPoint(0);
-        
-        // Hysterese-Check: Hat sich der Finger bewegt?
-        bool hasMoved = (abs(point.x - _cachedTouchX) > touchHysteresis) || 
-                        (abs(point.y - _cachedTouchY) > touchHysteresis);
-
-        // 3. Trigger-Logik: Entweder Bewegung ODER Auto-Repeat Timer abgelaufen
-        if (hasMoved || (milliTimeCopy >= processTouchNextKeyTimeFlag)) {
-            
-            // Werte speichern
-            _lastTouchX = point.x;
-            _lastTouchY = point.y;
-            _cachedTouchX = point.x;
-            _cachedTouchY = point.y;
-            _touchDetected = true;
-
-            // Timer für Auto-Repeat (200ms) und Turbo-Modus Aktivität (4000ms)
-            processTouchNextKeyTimeFlag = milliTimeCopy + processTouchNextKeyDelay;
-            lastTouchActivityTimerFlag  = milliTimeCopy;
-
-            if(dbglvl) Serial.printf("[TOUCH] X:%d Y:%d | Turbo Active\n", _lastTouchX, _lastTouchY);
-            
-            // System-Timer verlängern
-            ledTimeOffMillis  = milliTimeCopy + (uint32_t)ledTimeOff  * 1000;
-            stdMenuTimeMillis = milliTimeCopy + (uint32_t)stdMenuTime * 1000;
-            sleepTimerMillis  = milliTimeCopy + (uint32_t)sleepTimer  * 60000;
+                if(dbglvl) Serial.printf("[TOUCH] X:%d Y:%d | Turbo Active\n", _lastTouchX, _lastTouchY);
+                
+                // System-Timer verlängern
+                ledTimeOffMillis  = milliTimeCopy + (uint32_t)ledTimeOff  * 1000;
+                stdMenuTimeMillis = milliTimeCopy + (uint32_t)stdMenuTime * 1000;
+                sleepTimerMillis  = milliTimeCopy + (uint32_t)sleepTimer  * 60000;
+            }
+        } else {
+            // Finger weg: Cache löschen, damit der nächste erste Touch sofort hasMoved=true triggert
+            _cachedTouchX = -1;
+            _cachedTouchY = -1;
         }
-    } else {
-        // Finger weg: Cache löschen, damit der nächste erste Touch sofort hasMoved=true triggert
-        _cachedTouchX = -1;
-        _cachedTouchY = -1;
     }
-}
 
 
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -2253,19 +2178,6 @@ if((60000*sleepTimer)-(sleepTimerMillis - milliTimeCopy) > AnimationActivationTi
     int powerCalculatedLeft = 0, powerCalculatedRight = 0, powerCalculatedUp = 0;
         
     xSemaphoreTake(power_mutex, portMAX_DELAY);
-
-
-// // Statt portMAX_DELAY (was alles einfriert)
-// if (xSemaphoreTake(power_mutex, pdMS_TO_TICKS(2)) == pdTRUE) {
-//     // ... berechne powerCalculated ...
-//     xSemaphoreGive(power_mutex);
-// } else {
-//     // Sensor war beschäftigt oder blockiert - überspringen für Performance
-// }
-
-
-
-
 
     //if(UImenu == 1 && !secondKeyButtonFlag){  // führe nur aus, wenn UImenu = 1 also "play" mode ist. 1 if statt 3, in allen anderen menus spart taktzyklen
     // wieder in allen menus verfügbar machen. keine timingprbleme mehr.
@@ -2391,12 +2303,12 @@ if(secondKeyButtonFlag)
         keyTimerFlagAngleDown = (milliTimeCopy + 100);
         }
 
-        if(pitch > angleTrigger / 2)   
+        if(pitch > angleTrigger / 2.0)   
         {
         keyTimerFlagAngleLeft = (milliTimeCopy + 100);   
         }
 
-        if(pitch < -angleTrigger / 2)  
+        if(pitch < -angleTrigger / 2.0)  
         {
         keyTimerFlagAngleRight = (milliTimeCopy + 100);   
         }
@@ -2412,14 +2324,14 @@ if(secondKeyButtonFlag)
                                                 flipFlopFlagAngleUp = 1;
                                             }
             }
-            else
-                {   // zeit ist abgelaufen, setze einmal auf weiß und auf release
-                if (flipFlopFlagAngleUp == 1){   
-                                                sendBTcommandAngleTiltButtonDown(0);
-                                                ui->drawVirtualTiltingJoystickKeys(1,0);    // TODO: change to flag methode
-                                                flipFlopFlagAngleUp = 0;
-                                                }
-            }
+        else
+            {   // zeit ist abgelaufen, setze einmal auf weiß und auf release
+            if (flipFlopFlagAngleUp == 1){   
+                                            sendBTcommandAngleTiltButtonDown(0);
+                                            ui->drawVirtualTiltingJoystickKeys(1,0);    // TODO: change to flag methode
+                                            flipFlopFlagAngleUp = 0;
+                                            }
+        }
 
 
 // Angle Down Trigger simulation aus Neigungswinkel /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2431,14 +2343,14 @@ if(secondKeyButtonFlag)
                                                 flipFlopFlagAngleDown = 1;
                                                 }
             }
-            else
-                {   // zeit ist abgelaufen, setze einmal auf weiß und auf release
-                if (flipFlopFlagAngleDown == 1){   
-                                                sendBTcommandAngleTiltButtonUp(0);                                
-                                                ui->drawVirtualTiltingJoystickKeys(2,0);    // TODO: change to flag methode
-                                                flipFlopFlagAngleDown = 0;
-                                                }
-        }
+        else
+            {   // zeit ist abgelaufen, setze einmal auf weiß und auf release
+            if (flipFlopFlagAngleDown == 1){   
+                                            sendBTcommandAngleTiltButtonUp(0);                                
+                                            ui->drawVirtualTiltingJoystickKeys(2,0);    // TODO: change to flag methode
+                                            flipFlopFlagAngleDown = 0;
+                                            }
+            }
 
 
 // Angle Left Trigger simulation aus Neigungswinkel ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2469,14 +2381,14 @@ if(secondKeyButtonFlag)
                                                 flipFlopFlagAngleRight = 1;
                                             }
             }
-            else
-                {   // zeit ist abgelaufen, setze einmal auf weiß und auf release
-                if (flipFlopFlagAngleRight == 1){   
-                                                sendBTcommandAngleTiltButtonLeft(0); 
-                                                ui->drawVirtualTiltingJoystickKeys(4,0);   // TODO: change to flag methode
-                                                flipFlopFlagAngleRight = 0;
-                                                }
-        }
+        else
+            {   // zeit ist abgelaufen, setze einmal auf weiß und auf release
+            if (flipFlopFlagAngleRight == 1){   
+                                            sendBTcommandAngleTiltButtonLeft(0); 
+                                            ui->drawVirtualTiltingJoystickKeys(4,0);   // TODO: change to flag methode
+                                            flipFlopFlagAngleRight = 0;
+                                            }
+            }
 }
 
 
@@ -2611,9 +2523,9 @@ if( milliTimeCopy - secondKeyButtonTimeMark >= secondKeyActivationTime && flipFl
     strip.SetPixelColor(4, RgbColor(LED_FrontLshifted.R,   LED_FrontLshifted.G,   LED_FrontLshifted.B  ));   // Front-L
     PixelReadyToSend++;                                    // set trigger, and use counter for what ever.  
     // AnimationIsRunning = 0; // TODO: kann wohl weg, da am ende der mainschleife beim tasten druck dieses flag gesetzt wird
-if(dbglvl)Serial.println("milliTimeCopy - secondKeyButtonTimeMark >= secondKeyActivationTime && flipFlopFlagFrontLeft == 1 && !secondKeyButtonFlag");    
+    if(dbglvl)Serial.println("milliTimeCopy - secondKeyButtonTimeMark >= secondKeyActivationTime && flipFlopFlagFrontLeft == 1 && !secondKeyButtonFlag");    
 }
- else 
+else 
    {secondKeyButtonFlag = 0;  // hier nix weiter einfügen, läuft ständig durch. eigentlich setzt er es viel zu oft.
    }
 
@@ -2652,12 +2564,12 @@ else
     {                                                                                      // zeit ist abgelaufen, setze einmal auf weiß und auf release
     if (flipFlopFlagFrontRight == 1){                                                      // release 
                                     if(!releaseTrickFlagFrontR){                           // Standart Key release  // 
-                if(CheatLockRecordMode == 1){
-                                        skillShotMillisSend = millis() - keyAbenchmarkTimeMark;  // skillshot benchmark und variable aktualisieren
-                                        sendBTcommandPlungerRechts(0); 
-                                        }
-                                        if(CheatLockRecordMode == 2) sendTimedPlungerButtonA = true;   // set virtual key "skillshot" with timed release                
-                                        if(UImenu == 1) ui->drawPhysicalVirtualKeys(1,0);  // TODO: change to flag methode
+                                                                if(CheatLockRecordMode == 1){
+                                                                                        skillShotMillisSend = millis() - keyAbenchmarkTimeMark;  // skillshot benchmark und variable aktualisieren
+                                                                                        sendBTcommandPlungerRechts(0); 
+                                                                                        }
+                                                                if(CheatLockRecordMode == 2) sendTimedPlungerButtonA = true;   // set virtual key "skillshot" with timed release                
+                                                                if(UImenu == 1) ui->drawPhysicalVirtualKeys(1,0);  // TODO: change to flag methode
                                     }
                                     else{                                                  // virtual "second" key front right release
                                         sendBTcommandPlungerRechtsSecondKey(0);                       
@@ -2789,10 +2701,13 @@ else
 
 
 
-if(espnowAirButtonCurrentState == 1) keyTimerFlagActionKey = milliTimeCopy + debounceKey;
+if(espnowAirButtonCurrentState == 1){
+                                     keyTimerFlagActionKey = milliTimeCopy + debounceKey;
+                                     // espnowAirButtonCurrentState == 1;     // Todo, remove. its only to test something, but useless.
+                                        }
 
 
-//X-Button (physical on gpio35 oder neu 16) Darstellung und Sende BT command
+//X-Button (physical on gpio35 oder neu gpio16) Darstellung und Sende BT command
 
 if(keyTimerFlagActionKey > milliTimeCopy){                                                  // wenn größer, muss timer gesetzt sein und taste aktiv 
     
@@ -2822,7 +2737,7 @@ else
     {   // zeit ist abgelaufen, setze einmal auf weiß und auf release
     if (flipFlopFlagActionKey == 1){   
                                     if(!releaseTrickFlagActionKey){                         // Standart Key release  // 
-                                       sendBTcommandActionKeySecondKey(0); 
+                                       sendBTcommandActionKey(0); 
                                        if(UImenu == 1) ui->espnowButton(1);                 // draw white flipper  // TODO: change to flag methode
 
                                        //strip.SetPixelColor(4, RgbColor( LED_FrontLbase.R, LED_FrontLbase.G, LED_FrontLbase.B));      // FRONT-L  (front-l base color preset)

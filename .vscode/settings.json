@@ -6,5 +6,6 @@
         "--background-index"
     ],
     "clangd.inlayHints.parameterNames": false,
-    "clangd.inlayHints.enable": true
+    "clangd.inlayHints.enable": true,
+    "idf.currentSetup": "C:\\DEV\\.espressif\\v5.4.4\\esp-idf"
 }
