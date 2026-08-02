@@ -19,10 +19,7 @@
 
 
 
-
-
-
-
+// 31.07.2026 Analaog Nudge and Gamepad Protol now works with Meta Quest (FW2.6+) and PinbalFX 2025. I just added the "X" (action button) to the Profile 1 (PinballFX classic + PinballFX now shares the same profile)
 
 
 // 31.1.2026
@@ -713,14 +710,6 @@ void debugBLEStatus(const char* tag = "BLE")
     const uint8_t connCnt   = srv ? srv->getConnectedCount() : 0;
     const bool    connected = connCnt > 0;
     const bool    advOn     = (adv && adv->isAdvertising());
-
-    // if(dbglvl) Serial.printf("[%s] getAddress=%s, macAdress=%s, connected=%s, peers=%u, adv=%s, comp=%p, gp=%p, kb=%p\n",
-    //     tag,
-    //     NimBLEDevice::getAddress().toString().c_str(),
-    //     macAdress.c_str(), // macAdress.c_str()
-    //     connected ? "yes" : "no",
-    //     connCnt,
-    //     advOn ? "on" : "off");
         
     if(dbglvl) Serial.printf("[%s] getAddress=%s, macAdress=%s, connected=%s, peers=%u, adv=%s\n",
     tag,
@@ -1210,28 +1199,27 @@ bool isGT911Connected() {
 // Plunger links (meta taste B)
 // input Mode 0 = release, 1 set
 void sendBTcommandPlungerLinks(bool inputMode){   // diese taste zuerst abfragen für multi button 500ms trick
-    if(dbglvl) Serial.printf("[%lu.%03lu] sendBTcommandPlungerLinks(bool inputMode) called- set report flag =true\n", (unsigned long)milliTimeCopy/1000,(unsigned long) milliTimeCopy%1000);         // debug
-    int8_t useMode = emulationMode;  
-    if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
+    //if(dbglvl) Serial.printf("[%lu.%03lu] sendBTcommandPlungerLinks(bool inputMode) called- set report flag =true\n", (unsigned long)milliTimeCopy/1000,(unsigned long) milliTimeCopy%1000);         // debug
+
     if(inputMode){
-        switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
-            case 1: hid->gamepad->press(BUTTON_2);           gamepadSendReportFlag   = true;  break;  // [verified] quest 
-            case 2: hid->gamepad->press(BUTTON_3);           gamepadSendReportFlag   = true;  break;  // android 5 = (Y)
-            case 3: hid->gamepad->press(BUTTON_1);           gamepadSendReportFlag   = true;  break;  // pc
-            case 4: hid->gamepad->press(BUTTON_1);           gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->keyboard->keyPress(KEY_I);          keyboardSendReportFlag  = true;  break;  // pinballFX 2026 meta
-            case 6: hid->gamepad->press(BUTTON_2);           gamepadSendReportFlag   = true;  break;  // [verified] quest star wars pinball different keymap
+        switch (emulationMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
+            case 1: hid->gamepad->press(BUTTON_2);           gamepadSendReportFlag   = true;  break;  // PinballFX classic analog   gamepad emulation 2021  meta quest
+            case 2: hid->gamepad->press(BUTTON_3);           gamepadSendReportFlag   = true;  break;  // Android (key:Y)   analog   gamepad
+            case 3: hid->gamepad->press(BUTTON_1);           gamepadSendReportFlag   = true;  break;  // PC  (Todo: rumble)analog   gamepad
+            case 4: hid->gamepad->press(BUTTON_1);           gamepadSendReportFlag   = true;  break;  // PinballFX         analog   gamepad  emulation 2026 meta quest
+            case 5: hid->keyboard->keyPress(KEY_I);          keyboardSendReportFlag  = true;  break;  // pinballFX         x-arcade keyboard emulation 2025 meta quest
+            case 6: hid->gamepad->press(BUTTON_2);           gamepadSendReportFlag   = true;  break;  // Star Wars PB      analog   gamepad  emulation 2023 meta quest
            default: break;                                                                            // wird aufgerufen falls kein case getroffen wurde
         }
     }
     else{
-        switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
-            case 1: hid->gamepad->release(BUTTON_2);         gamepadSendReportFlag   = true;  break;  // [release] quest
-            case 2: hid->gamepad->release(BUTTON_3);         gamepadSendReportFlag   = true;  break;  // android 5 = (Y)
-            case 3: hid->gamepad->release(BUTTON_1);         gamepadSendReportFlag   = true;  break;  // pc
-            case 4: hid->gamepad->release(BUTTON_1);         gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->keyboard->keyRelease(KEY_I);        keyboardSendReportFlag  = true;  break;  // pinballFX 2026 meta
-            case 6: hid->gamepad->release(BUTTON_2);         gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
+        switch (emulationMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
+            case 1: hid->gamepad->release(BUTTON_2);         gamepadSendReportFlag   = true;  break;  // PinballFX classic analog   gamepad emulation 2021  meta quest
+            case 2: hid->gamepad->release(BUTTON_3);         gamepadSendReportFlag   = true;  break;  // Android (key:Y)   analog   gamepad
+            case 3: hid->gamepad->release(BUTTON_1);         gamepadSendReportFlag   = true;  break;  // PC  (Todo: rumble)analog   gamepad
+            case 4: hid->gamepad->release(BUTTON_1);         gamepadSendReportFlag   = true;  break;  // PinballFX         analog   gamepad  emulation 2026 meta quest
+            case 5: hid->keyboard->keyRelease(KEY_I);        keyboardSendReportFlag  = true;  break;  // pinballFX         x-arcade keyboard emulation 2025 meta quest
+            case 6: hid->gamepad->release(BUTTON_2);         gamepadSendReportFlag   = true;  break;  // Star Wars PB      analog   gamepad  emulation 2023 meta quest
            default: break;                                                                            // wird aufgerufen falls kein case getroffen wurde
         }
     }
@@ -1242,11 +1230,8 @@ void sendBTcommandPlungerLinks(bool inputMode){   // diese taste zuerst abfragen
 // 0 = release, 1 set
 void sendBTcommandPlungerRechts(bool inputMode){   
   
-    int8_t useMode = emulationMode;  
-    if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
     if(inputMode){
-                  switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
-                    //case 0: gamepad.press(dbgGamePad); break;// debug BUTTON_1-128 // wenn dbgGamePad, kann über debug menu taste zum testen gesetzt werden
+                  switch (emulationMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
                     case 1: hid->gamepad->press(BUTTON_1);    gamepadSendReportFlag   = true;  break;  // [verified][A] quest 
                     case 2: hid->gamepad->press(BUTTON_1);    gamepadSendReportFlag   = true;  break;  // android 4 = (X)
                     case 3: hid->gamepad->press(BUTTON_1);    gamepadSendReportFlag   = true;  break;  // pc
@@ -1257,8 +1242,7 @@ void sendBTcommandPlungerRechts(bool inputMode){
                 }
             }
     else{
-                switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
-                    //case 0: gamepad.release(dbgGamePad); break;
+                switch (emulationMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
                     case 1: hid->gamepad->release(BUTTON_1);  gamepadSendReportFlag   = true;  break;  // [release] quest
                     case 2: hid->gamepad->release(BUTTON_1);  gamepadSendReportFlag   = true;  break;  // android 4 = (X)
                     case 3: hid->gamepad->release(BUTTON_1);  gamepadSendReportFlag   = true;  break;  // pc
@@ -1274,12 +1258,11 @@ void sendBTcommandPlungerRechts(bool inputMode){
 
 // 0 = release, 1 set
 void sendBTcommandPlungerRechtsSecondKey(bool inputMode){   
-    if(dbglvl) Serial.printf("[%lu.%03lu] sendBTcommandPlungerRechtsSecondKey called- set report flag =true\n", (unsigned long)milliTimeCopy/1000, (unsigned long)milliTimeCopy%1000);         // debug
-    int8_t useMode = emulationMode;  
-    if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
+    //if(dbglvl) Serial.printf("[%lu.%03lu] sendBTcommandPlungerRechtsSecondKey called- set report flag =true\n", (unsigned long)milliTimeCopy/1000, (unsigned long)milliTimeCopy%1000);         // debug
+
     if(inputMode){
                 //if(dbglvl >6 )Serial.println("sendBTcommandPlungerRechtsSecondKey()"); // debug
-                switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
+                switch (emulationMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
                     case 1: hid->gamepad->press(BUTTON_11);    gamepadSendReportFlag   = true;  break;  // [verified] quest  back, at table toggle menu on off
                     case 2: hid->gamepad->press(BUTTON_1);     gamepadSendReportFlag   = true;  break;  // android 4 = (X)
                     case 3: hid->gamepad->press(BUTTON_1);     gamepadSendReportFlag   = true;  break;  // pc
@@ -1290,7 +1273,7 @@ void sendBTcommandPlungerRechtsSecondKey(bool inputMode){
                 }
             }
     else{
-            switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
+            switch (emulationMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
                 case 1: hid->gamepad->release(BUTTON_11);  gamepadSendReportFlag   = true;  break;  // quest
                 case 2: hid->gamepad->release(BUTTON_1);   gamepadSendReportFlag   = true;  break;  // android 4 = (X)
                 case 3: hid->gamepad->release(BUTTON_1);   gamepadSendReportFlag   = true;  break;  // pc
@@ -1306,12 +1289,9 @@ void sendBTcommandPlungerRechtsSecondKey(bool inputMode){
 
 // input Mode 0 = release, 1 set
 void sendBTcommandFlipperLinks(bool inputMode){   
-    
-    // wenn emulationModeOverride >0 ist, soll der emulationsmode 1 bis 6 sein.
-    int8_t useMode = emulationMode;  
-    if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
+
     if(inputMode){  // 1 set
-        switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
+        switch (emulationMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
             case 1: hid->gamepad->press(BUTTON_7);       gamepadSendReportFlag   = true;  break;  // [verified] quest
             case 2: hid->gamepad->press(BUTTON_7);       gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->press(BUTTON_7);       gamepadSendReportFlag   = true;  break;  // pc
@@ -1322,7 +1302,7 @@ void sendBTcommandFlipperLinks(bool inputMode){
         }
     }
     else{           // 0 release
-        switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
+        switch (emulationMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
             case 1: hid->gamepad->release(BUTTON_7);     gamepadSendReportFlag   = true;  break;  // [release] quest
             case 2: hid->gamepad->release(BUTTON_7);     gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->release(BUTTON_7);     gamepadSendReportFlag   = true;  break;  // pc
@@ -1338,13 +1318,10 @@ void sendBTcommandFlipperLinks(bool inputMode){
 
 // input Mode 0 = release, 1 set
 void sendBTcommandFlipperLinksSecondKey(bool inputMode){   
-    
-    // wenn emulationModeOverride >0 ist, soll der emulationsmode 1 bis 6 sein.
-    int8_t useMode = emulationMode;  
-    if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
+
     if(inputMode){  // 1 set
-        switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
-            case 1: hid->gamepad->setRZ(32767);                gamepadSendReportFlag   = true;  break;  // [verified] quest
+        switch (emulationMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
+            case 1: hid->gamepad->setRZ(32767);           gamepadSendReportFlag   = true;  break;  // [verified] quest
             case 2: hid->gamepad->press(BUTTON_7);        gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->press(BUTTON_7);        gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->press(BUTTON_7);        gamepadSendReportFlag   = true;  break;  // iphone
@@ -1354,7 +1331,7 @@ void sendBTcommandFlipperLinksSecondKey(bool inputMode){
         }
     }
     else{           // 0 release
-        switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
+        switch (emulationMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
             case 1: hid->gamepad->setRZ(0);               gamepadSendReportFlag   = true;  break;  // [release] quest
             case 2: hid->gamepad->release(BUTTON_7);      gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->release(BUTTON_7);      gamepadSendReportFlag   = true;  break;  // pc
@@ -1370,15 +1347,10 @@ void sendBTcommandFlipperLinksSecondKey(bool inputMode){
 
 // 0 = release, 1 set
 void sendBTcommandFlipperRechts(bool inputMode){   
-    
-    int8_t useMode = emulationMode;  
-    if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
+    //if(dbglvl  > 0 )Serial.printf("sendBTcommandFlipperRechts(inputMode:%d) dbgGamepad:%d\n",inputMode, dbgGamePad); // debug
 
-    // if(dbgGamePad > 0) useMode = 0;  // wenn im debug menu die zahl größer 1 ist, überschreibe pin mit zahl aus UI // debug mode UM TASTEN DURCHZUPROBIEREN
-    // if(dbglvl  > 0 )Serial.printf("sendBTcommandFlipperRechts(inputMode:%d) useMode:%d, dbgGamepad:%d\n",inputMode,useMode,dbgGamePad); // debug
     if(inputMode){
-        switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
-            //case 0: gamepad->press(dbgGamePad);  break;  // debug BUTTON_1-128 // wenn dbgGamePad, kann über debug menu rechte flipper taste zum testen gesetzt werden
+        switch (emulationMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
             case 1: hid->gamepad->press(BUTTON_8);        gamepadSendReportFlag   = true;  break;  // [verified] quest
             case 2: hid->gamepad->press(BUTTON_8);        gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->press(BUTTON_8);        gamepadSendReportFlag   = true;  break;  // pc
@@ -1389,8 +1361,7 @@ void sendBTcommandFlipperRechts(bool inputMode){
         }
     }
     else{
-        switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
-            //case 0: gamepad->release(dbgGamePad);break;
+        switch (emulationMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
             case 1: hid->gamepad->release(BUTTON_8);      gamepadSendReportFlag   = true;  break;  // [release] quest
             case 2: hid->gamepad->release(BUTTON_8);      gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->release(BUTTON_8);      gamepadSendReportFlag   = true;  break;  // pc
@@ -1406,13 +1377,9 @@ void sendBTcommandFlipperRechts(bool inputMode){
 
 // 0 = release, 1 set
 void sendBTcommandFlipperRechtsSecondKey(bool inputMode){   
-    
-    int8_t useMode = emulationMode;  
-    if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
 
     if(inputMode){
-        switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
-            //case 1: gamepadXfinal = -32767;           gamepadSendReportFlag   = true;  break;   // [verified] quest setRZ(32767);
+        switch (emulationMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
             case 1: hid->gamepad->setZ(32767);           gamepadSendReportFlag   = true;  break;  // [verified] quest setRZ(32767);
             case 2: hid->gamepad->press(BUTTON_8);       gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->press(BUTTON_8);       gamepadSendReportFlag   = true;  break;  // pc
@@ -1423,7 +1390,7 @@ void sendBTcommandFlipperRechtsSecondKey(bool inputMode){
         }
     }
     else{
-        switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
+        switch (emulationMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
             case 1: hid->gamepad->setZ(0);               gamepadSendReportFlag   = true;  break;  // [release] quest
             case 2: hid->gamepad->release(BUTTON_8);     gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->release(BUTTON_8);     gamepadSendReportFlag   = true;  break;  // pc
@@ -1441,13 +1408,9 @@ void sendBTcommandFlipperRechtsSecondKey(bool inputMode){
 // NUDGE UP , 1 = set, 0 release, optional analog input 0-32737 for analog joystick profiles 
 void sendBTcommandTiltFront(bool inputMode, int analogValue ){ 
         //if (dbglvl > 0) {Serial.printf("Nudge TiltFront:\n");}
-        
-        int8_t useMode = emulationMode;  
-        if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
+
         if(inputMode){
-            switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
-                // case 1: gamepad->setLeftThumb(0,-analogValue); gamepadSendReportFlag   = true;  break; // [verified] quest WICHTIG "-"
-                // case 1: gamepadYfinal =-analogValue;                gamepadSendReportFlag   = true;  break;  // [verified] quest WICHTIG "-" (different syntax to set y axis only!)
+            switch (emulationMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
                 case 1: hid->gamepad->setLeftThumb(hid->gamepad->lx ,-analogValue);   gamepadSendReportFlag   = true;  break;  // [verified] quest WICHTIG "-" (different syntax to set y axis only!)
                 case 2: gamepadYfinal =-analogValue;                                  gamepadSendReportFlag   = true;  break;  // android
                 case 3: gamepadYfinal =-analogValue;                                  gamepadSendReportFlag   = true;  break;  // pc
@@ -1458,8 +1421,7 @@ void sendBTcommandTiltFront(bool inputMode, int analogValue ){
             }
         }
         else{
-            switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
-                // case 1: gamepad->setLeftThumb(0,0);            gamepadSendReportFlag   = true;  break;  // [release] quest
+            switch (emulationMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
                 case 1: hid->gamepad->setLeftThumb(hid->gamepad->lx , 0);             gamepadSendReportFlag   = true;  break;  // [release] quest (different syntax to set y axis only!)
                 case 2: gamepadYfinal = 0;                                            gamepadSendReportFlag   = true;  break;  // android
                 case 3: gamepadYfinal = 0;                                            gamepadSendReportFlag   = true;  break;  // pc
@@ -1475,13 +1437,10 @@ void sendBTcommandTiltFront(bool inputMode, int analogValue ){
 
 // NUDGE LEFT , 1 = set, 0 release, optional analog input 0-32737 for analog joystick profiles 
 void sendBTcommandTiltLeft(bool inputMode, int analogValue){ 
-   
-        int8_t useMode = emulationMode;  
-        if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
-        //if(dbglvl)Serial.printf("sendBTcommandTiltLeft(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values.    
+        //if(dbglvl)Serial.printf("sendBTcommandTiltLeft(inputMode:%d) analogValue:%d\n",inputMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values.    
+
         if(inputMode){
-            switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
-                // case 1: gamepad->setLeftThumb(analogValue,0);   gamepadSendReportFlag   = true;  break;  // [verified] quest  gamepadSendReportFlag   = false; kann eigentlich raus
+            switch (emulationMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
                 case 1: hid->gamepad->setLeftThumb(analogValue, hid->gamepad->ly);    gamepadSendReportFlag   = true; break;  // [verified] quest  gamepadSendReportFlag (different syntax to set x axis only!)
                 case 2: hid->gamepad->setLeftThumb(-analogValue,0);                   gamepadSendReportFlag   = true; break;  // android
                 case 3: hid->gamepad->setLeftThumb(0,-analogValue);                   gamepadSendReportFlag   = true; break;  // pc
@@ -1492,7 +1451,7 @@ void sendBTcommandTiltLeft(bool inputMode, int analogValue){
             }
         }
         else{
-            switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
+            switch (emulationMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
                 case 1: hid->gamepad->setLeftThumb(0 , hid->gamepad->ly);             gamepadSendReportFlag   = true; break;  // [release] quest (different syntax to set x axis only!)
                 case 2: hid->gamepad->setLeftThumb(0,0);                              gamepadSendReportFlag   = true; break;  // android
                 case 3: hid->gamepad->setLeftThumb(0,0);                              gamepadSendReportFlag   = true; break;  // pc
@@ -1508,12 +1467,10 @@ void sendBTcommandTiltLeft(bool inputMode, int analogValue){
 
 // NUDGE RIGHT , 1 = set, 0 release, optional analog input 0-32737 for analog joystick profiles 
 void sendBTcommandTiltRight(bool inputMode, int analogValue){ // nudge/side bump
-    
-    int8_t useMode = emulationMode;  
-    if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
-    //if(dbglvl)Serial.printf("sendBTcommandTiltRight(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
+    //if(dbglvl)Serial.printf("sendBTcommandTiltRight(inputMode:%d) analogValue:%d\n",inputMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
+
     if(inputMode){
-        switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
+        switch (emulationMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
             case 1: hid->gamepad->setLeftThumb(-analogValue, hid->gamepad->ly);      gamepadSendReportFlag   = true; break;  // [verified] quest (different syntax to set x axis only!)
             case 2: hid->gamepad->setLeftThumb(-analogValue,0);                      gamepadSendReportFlag   = true; break;  // android
             case 3: hid->gamepad->setLeftThumb(-analogValue,0);                      gamepadSendReportFlag   = true; break;  // pc
@@ -1524,7 +1481,7 @@ void sendBTcommandTiltRight(bool inputMode, int analogValue){ // nudge/side bump
         }
     }
     else{
-        switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
+        switch (emulationMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
             case 1: hid->gamepad->setLeftThumb(0, hid->gamepad->ly);                 gamepadSendReportFlag   = true; break;  // [release] quest (different syntax to set x axis only!) 
             case 2: hid->gamepad->setLeftThumb(0,0);                                 gamepadSendReportFlag   = true; break;  // android
             case 3: hid->gamepad->setLeftThumb(0,0);                                 gamepadSendReportFlag   = true; break;  // pc
@@ -1541,14 +1498,10 @@ void sendBTcommandTiltRight(bool inputMode, int analogValue){ // nudge/side bump
 // 40 degrees angle based virtual buttons to bluetooth//////////////////////////////////////////////////////////////////////////////////////////////////////
 // 1 = set, 0 release , optional analogValue 0-32767 for joystick 
 void sendBTcommandAngleTiltButtonLeft(bool inputMode, int analogValue = 0){ 
-        
-        int8_t useMode = emulationMode;  
-        if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
-        if(dbglvl  > 0 )Serial.printf("sendBTcommandAngleTiltButtonLeft(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
+        //if(dbglvl  > 0 )Serial.printf("sendBTcommandAngleTiltButtonLeft(inputMode:%d) analogValue:%d\n",inputMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
         
         if(inputMode){
-            switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
-                // setHat() 0 = up, 2 = Right, 4 = down, 6 = left, 8 = NEUTRAL!!  //diagonal: Up‑Right, 3 = Down‑Right, 5 = Down‑Left, 7 = Up‑Left
+            switch (emulationMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
                 case 1: hid->gamepad->setHat(6);                      gamepadSendReportFlag   = true;  break; // [verified] quest
                 case 2: hid->gamepad->setLeftThumb(-analogValue,0);   gamepadSendReportFlag   = true;  break; // android
                 case 3: hid->gamepad->press(BUTTON_1);                gamepadSendReportFlag   = true;  break; // pc
@@ -1559,7 +1512,7 @@ void sendBTcommandAngleTiltButtonLeft(bool inputMode, int analogValue = 0){
             }
         }
         else{
-            switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
+            switch (emulationMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
                 case 1: hid->gamepad->setHat(8);                      gamepadSendReportFlag   = true;  break;  // [release] quest 
                 case 2: hid->gamepad->setLeftThumb(0,0);              gamepadSendReportFlag   = true;  break;  // android
                 case 3: hid->gamepad->release(BUTTON_1);              gamepadSendReportFlag   = true;  break;  // pc
@@ -1574,16 +1527,14 @@ void sendBTcommandAngleTiltButtonLeft(bool inputMode, int analogValue = 0){
 
 
 // 40 degrees angle based virtual buttons to bluetooth
-// 1 = set, 0 release , optional analogValue 0-32767 for joystick
+// 1 = set, 0 release , optional analogValue +- 0-32767 for joystick
 void sendBTcommandAngleTiltButtonRight(bool inputMode, int analogValue = 0){ 
-    
-    int8_t useMode = emulationMode;  
-    if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
-    if(dbglvl  > 0 )Serial.printf("sendBTcommandAngleTiltButtonRight(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
+    //if(dbglvl  > 0 )Serial.printf("sendBTcommandAngleTiltButtonRight(inputMode:%d) analogValue:%d\n",inputMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values. 
+
     if(inputMode){
-        switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
-            case 1: hid->gamepad->setHat(2);                           gamepadSendReportFlag   = true;  break;  // [verified] android
-            case 2: hid->gamepad->setLeftThumb(analogValue,0);              gamepadSendReportFlag   = true;  break;  // android
+        switch (emulationMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
+            case 1: hid->gamepad->setHat(2);                          gamepadSendReportFlag   = true;  break;  // [verified] android
+            case 2: hid->gamepad->setLeftThumb(analogValue,0);        gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->press(BUTTON_1);                    gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->press(BUTTON_1);                    gamepadSendReportFlag   = true;  break;  // iphone
             case 5: hid->gamepad->press(BUTTON_2);                    gamepadSendReportFlag   = true;  break;  // pinballFX 2026 meta
@@ -1592,9 +1543,9 @@ void sendBTcommandAngleTiltButtonRight(bool inputMode, int analogValue = 0){
         }
     }
     else{
-        switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
+        switch (emulationMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
             case 1: hid->gamepad->setHat(8);                          gamepadSendReportFlag   = true;  break;  // [release] quest
-            case 2: hid->gamepad->setLeftThumb(0,0);                        gamepadSendReportFlag   = true;  break;  // android
+            case 2: hid->gamepad->setLeftThumb(0,0);                  gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->release(BUTTON_1);                  gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->release(BUTTON_1);                  gamepadSendReportFlag   = true;  break;  // iphone
             case 5: hid->gamepad->release(BUTTON_2);                  gamepadSendReportFlag   = true;  break;  // pinballFX 2026 meta
@@ -1609,13 +1560,11 @@ void sendBTcommandAngleTiltButtonRight(bool inputMode, int analogValue = 0){
 // 40 degrees angle based virtual buttons to bluetooth
 // 1 = set, 0 release , optional analogValue 0-32767 for joystick
 void sendBTcommandAngleTiltButtonUp(bool inputMode, int analogValue = 0){ 
-    
-    int8_t useMode = emulationMode;  
-    if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
-    //if(dbglvl  > 0 )Serial.printf("sendBTcommandAngleTiltButtonUp(inputMode:%d) useMode:%d, analogValue:%d\n",inputMode,useMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values.   
+    //if(dbglvl  > 0 )Serial.printf("sendBTcommandAngleTiltButtonUp(inputMode:%d) analogValue:%d\n",inputMode,analogValue); // to safe every possible cpu cylcle, de-comment it only if needed for develpemnt and to understand the var values.   
+
     if(inputMode){
-        switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
-            case 1: hid->gamepad->setHat(0);                    gamepadSendReportFlag   = true;  break;  // [verified] quest
+        switch (emulationMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
+            case 1: hid->gamepad->setHat(0);                          gamepadSendReportFlag   = true;  break;  // [verified] quest
             case 2: hid->gamepad->setLeftThumb(0,-analogValue);       gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->setLeftThumb(0,-analogValue);       gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->setLeftThumb(0,-analogValue);       gamepadSendReportFlag   = true;  break;  // iphone
@@ -1625,8 +1574,8 @@ void sendBTcommandAngleTiltButtonUp(bool inputMode, int analogValue = 0){
         }
     }
     else{
-        switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
-            case 1: hid->gamepad->setHat(8);                     gamepadSendReportFlag   = true;  break;  // [release] quest  release, set d-pad to neutral (0x08)
+        switch (emulationMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
+            case 1: hid->gamepad->setHat(8);                          gamepadSendReportFlag   = true;  break;  // [release] quest  release, set d-pad to neutral (0x08)
             case 2: hid->gamepad->setLeftThumb(0,0);                  gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->setLeftThumb(0,0);                  gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->setLeftThumb(0,0);                  gamepadSendReportFlag   = true;  break;  // iphone
@@ -1642,12 +1591,10 @@ void sendBTcommandAngleTiltButtonUp(bool inputMode, int analogValue = 0){
 // 40 degrees angle based virtual buttons to bluetooth
 // 1 = set, 0 release , optional analogValue 0-32767 for joystick
 void sendBTcommandAngleTiltButtonDown(bool inputMode, int analogValue = 0){ // 40 degree angle tilt/pitch/roll
-    
-    int8_t useMode = emulationMode;  
-    if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
+
     if(inputMode){
-        switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
-            case 1: hid->gamepad->setHat(4);                      gamepadSendReportFlag   = true;  break;  // [verified] quest
+        switch (emulationMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
+            case 1: hid->gamepad->setHat(4);                           gamepadSendReportFlag   = true;  break;  // [verified] quest
             case 2: hid->gamepad->setLeftThumb(0,analogValue);         gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->setLeftThumb(0,analogValue);         gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->setLeftThumb(0,analogValue);         gamepadSendReportFlag   = true;  break;  // iphone
@@ -1657,8 +1604,8 @@ void sendBTcommandAngleTiltButtonDown(bool inputMode, int analogValue = 0){ // 4
         }
     }
     else{
-        switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
-            case 1: hid->gamepad->setHat(8);                     gamepadSendReportFlag   = true;  break;  // [release] quest  release, set d-pad to neutral (0x08)
+        switch (emulationMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
+            case 1: hid->gamepad->setHat(8);                           gamepadSendReportFlag   = true;  break;  // [release] quest  release, set d-pad to neutral (0x08)
             case 2: hid->gamepad->setLeftThumb(0,0);                   gamepadSendReportFlag   = true;  break;  // android
             case 3: hid->gamepad->setLeftThumb(0,0);                   gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->setLeftThumb(0,0);                   gamepadSendReportFlag   = true;  break;  // iphone
@@ -1708,17 +1655,15 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
 // Action Key (ist normal X-Key auf dem meta controller) ich verwende ihn z.b. für den funkbutton
 // input Mode 0 = release, 1 set
 void sendBTcommandActionKey(bool inputMode){   
-    if(dbglvl) Serial.printf("[%lu.%03lu] sendBTcommandActionKey called- set report flag =true\n", (unsigned long)milliTimeCopy/1000,(unsigned long)milliTimeCopy%1000);         // debug
-    // int8_t useMode = emulationMode;  
-    // if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
-    if(dbglvl) Serial.printf("sendBTcommandActionKey(inputMode=%d , emulationMode=%d)",inputMode,emulationMode);
+    //if(dbglvl) Serial.printf("[%lu.%03lu] sendBTcommandActionKey called- set report flag =true\n", (unsigned long)milliTimeCopy/1000,(unsigned long)milliTimeCopy%1000);         // debug
+    
     if(inputMode){
         switch (emulationMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
             case 1: hid->gamepad->press(BUTTON_4);       gamepadSendReportFlag   = true;  break;  // [verified] quest 
             case 2: hid->gamepad->press(BUTTON_3);       gamepadSendReportFlag   = true;  break;  // android 5 = (Y)
             case 3: hid->gamepad->press(BUTTON_1);       gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->press(BUTTON_1);       gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->keyboard->keyPress(KEY_5);         keyboardSendReportFlag  = true;  break;  // pinballFX 2026 meta
+            case 5: hid->keyboard->keyPress(KEY_5);      keyboardSendReportFlag  = true;  break;  // pinballFX 2026 meta
             case 6: hid->gamepad->press(BUTTON_2);       gamepadSendReportFlag   = true;  break;  // [verified] quest star wars pinball different keymap
            default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
         }
@@ -1729,7 +1674,7 @@ void sendBTcommandActionKey(bool inputMode){
             case 2: hid->gamepad->release(BUTTON_3);     gamepadSendReportFlag   = true;  break;  // android 5 = (Y)
             case 3: hid->gamepad->release(BUTTON_1);     gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->release(BUTTON_1);     gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->keyboard->keyRelease(KEY_5);       keyboardSendReportFlag  = true;  break;  // pinballFX 2025
+            case 5: hid->keyboard->keyRelease(KEY_5);    keyboardSendReportFlag  = true;  break;  // pinballFX 2025
             case 6: hid->gamepad->release(BUTTON_2);     gamepadSendReportFlag   = true;  break;  // quest star wars pinball different keymap
            default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
         }
@@ -1737,23 +1682,21 @@ void sendBTcommandActionKey(bool inputMode){
 }
 
 void sendBTcommandActionKeySecondKey(bool inputMode){   
-    if(dbglvl) Serial.printf("[%lu.%03lu] sendBTcommandActionKeySecondKey called- set report flag =true\n", (unsigned long)(milliTimeCopy/1000), (unsigned long)(milliTimeCopy%1000));
-    int8_t useMode = emulationMode;  
-    if(emulationModeOverride > 0)  useMode = emulationModeOverride; 
-    if(dbglvl) Serial.printf("sendBTcommandActionKey(inputMode=%d)",inputMode);
+    //if(dbglvl) Serial.printf("[%lu.%03lu] sendBTcommandActionKeySecondKey called- set report flag =true\n", (unsigned long)(milliTimeCopy/1000), (unsigned long)(milliTimeCopy%1000));
+
     if(inputMode){
-        switch (useMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
+        switch (emulationMode) { // SEND ACTIVE, abhängig von globaler variable: eumulationMode
             case 1: hid->gamepad->press(BUTTON_6);       gamepadSendReportFlag   = true;  break;  // [verified] quest 
             case 2: hid->gamepad->press(BUTTON_3);       gamepadSendReportFlag   = true;  break;  // android 5 = (Y)
             case 3: hid->gamepad->press(BUTTON_1);       gamepadSendReportFlag   = true;  break;  // pc
             case 4: hid->gamepad->press(BUTTON_1);       gamepadSendReportFlag   = true;  break;  // iphone
-            case 5: hid->keyboard->keyPress(KEY_5);         keyboardSendReportFlag  = true;  break;  // pinballFX 2026 meta
+            case 5: hid->keyboard->keyPress(KEY_5);      keyboardSendReportFlag  = true;  break;  // pinballFX 2026 meta
             case 6: hid->gamepad->press(BUTTON_2);       gamepadSendReportFlag   = true;  break;  // [verified] quest star wars pinball different keymap
            default: break;                                                                        // wird aufgerufen falls kein case getroffen wurde
         }
     }
     else{
-        switch (useMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
+        switch (emulationMode) { // SEND RELEASE, abhängig von globaler variable: eumulationMode
             case 1: hid->gamepad->release(BUTTON_6);     gamepadSendReportFlag   = true;  break;  // [release] quest
             case 2: hid->gamepad->release(BUTTON_3);     gamepadSendReportFlag   = true;  break;  // android 5 = (Y)
             case 3: hid->gamepad->release(BUTTON_1);     gamepadSendReportFlag   = true;  break;  // pc
@@ -1773,7 +1716,7 @@ void sendBTcommandActionKeySecondKey(bool inputMode){
 void serialWelcomeMessage(){
                             Serial.println(F("  ___  ___ _ _ _ ___ ___  ___ "));
                             Serial.println(F(" | _ \\| _ ) | | |_  |_  || __|"));
-                            Serial.println(F(" |  _/| _ \\ | | |/ / / / |__ \\"));
+                            Serial.println(F(" |  _/| _ \\ | | |/ / / / |_ \\"));
                             Serial.println(F(" |_|  |___/\\___//___/___/|___/"));
                             Serial.println("");
                             Serial.println("PINBAL WIZARD 25");
@@ -2845,6 +2788,9 @@ AnimationIsRunning = 0;
 
 // pbfxc mystic quest 361
 // pbfx  addams family 426
+
+// Pinball Wizard 2026 its prototype hardware is done, and needs only some small changes for future PCB and Speaker.
+// Software Dev is in the beginning. So much more possibilities need its time. 
 
 }
 
